@@ -104,9 +104,11 @@ class Session:
 
     # -- one turn ----------------------------------------------------------------
 
-    def run_turn(self, prompt: str, on_event: Callable[[dict], None]) -> None:
+    def run_turn(self, prompt: str, on_event: Callable[[dict], None], images=None) -> None:
         self._ensure()
-        params = {"threadId": self.thread, "input": [{"type": "text", "text": prompt}]}
+        inputs = [{"type": "localImage", "path": i["path"]} for i in images or []]
+        inputs.append({"type": "text", "text": prompt or "Look at this image."})
+        params = {"threadId": self.thread, "input": inputs}
         if self.model:
             params["model"] = self.model
         if self.effort:

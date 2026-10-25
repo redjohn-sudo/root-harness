@@ -50,6 +50,9 @@ class Session:
         self.effort: str | None = None
         self.mode = "default"
         self.cwd = str(Path.home())
+        self.resume_id: str | None = None   # continue this Claude Code session
+        self.fork = False                     # True: continue in a copy (terminal sessions)
+        self.session_id: str | None = None    # the session this window writes to
         self.client = None
         self.info: dict | None = None
         self.tools: list[str] = []
@@ -75,6 +78,7 @@ class Session:
             system_prompt={"type": "preset", "preset": "claude_code"},
             cwd=self.cwd, model=self.model, permission_mode=self.mode,
             can_use_tool=self._can_use_tool,
+            resume=self.resume_id, fork_session=self.fork,
             effort=self.effort if self.effort not in (None, *EFFORTS_EXTRA) else None)
         client = sdk.ClaudeSDKClient(options=options)
         await client.connect()
@@ -105,13 +109,23 @@ class Session:
 
     # -- one turn ----------------------------------------------------------------
 
-    def run_turn(self, prompt: str, on_event: Callable[[dict], None]) -> None:
+    def run_turn(self, prompt: str, on_event: Callable[[dict], None], images=None) -> None:
         self.wait_ready()
-        self._do(self._turn(prompt, on_event))
+        self._do(self._turn(prompt, on_event, images or []))
 
-    async def _turn(self, prompt: str, on_event) -> None:
+    async def _turn(self, prompt: str, on_event, images: list) -> None:
         sdk = _sdk()
-        await self.client.query(prompt)
+        if images:      # pasted or dropped pictures go with the text
+            content = [{"type": "image", "source": {"type": "base64", "media_type": i["media_type"],
+                                                     "data": i["data"]}} for i in images]
+            content.append({"type": "text", "text": prompt or "Look at this image."})
+
+            async def message():
+                yield {"type": "user", "message": {"role": "user", "content": content},
+                       "parent_tool_use_id": None}
+            await self.client.query(message())
+        else:
+            await self.client.query(prompt)
         async for m in self.client.receive_response():
             if getattr(m, "parent_tool_use_id", None):
                 continue        # inside a sub-agent: the window shows the main thread
@@ -131,8 +145,11 @@ class Session:
             elif isinstance(m, sdk.SystemMessage):
                 if m.subtype == "init":
                     self.tools = m.data.get("tools", [])
+                    self.session_id = m.data.get("session_id") or self.session_id
                 elif m.subtype == "status" and m.data.get("status"):
                     on_event({"type": "status", "text": m.data["status"]})
+            elif isinstance(m, sdk.ResultMessage):
+                self.session_id = getattr(m, "session_id", None) or self.session_id
         on_event(await self._usage())
         on_event({"type": "done", "text": ""})
 

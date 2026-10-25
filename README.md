@@ -81,6 +81,9 @@ memory, skills, MCP servers, agents and every slash command (`/context`,
 - the permission modes, with **Shift+Tab** as in the terminal: ask, accept edits, plan, auto
 - **Esc** stops the answer; the status bar shows the real context usage
 - permission questions become Allow / Deny cards; when Claude asks you to choose, the options become buttons
+- paste (Cmd+V) or drop images: they go with your next message, to any brain that can see
+- every conversation is kept, **sorted by agent**, and you can make **folders** and drag
+  conversations into them; your terminal sessions are listed too, and continue here in a copy
 
 ## Commands
 

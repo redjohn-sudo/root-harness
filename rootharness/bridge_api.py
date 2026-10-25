@@ -61,10 +61,16 @@ class Session:
             detail = e.read().decode("utf-8", "replace")[:300]
             raise RuntimeError(f"{b['name']} answered {e.code}: {detail}") from None
 
-    def run_turn(self, prompt: str, on_event: Callable[[dict], None]) -> None:
+    def run_turn(self, prompt: str, on_event: Callable[[dict], None], images=None) -> None:
         if not self.model:
             raise RuntimeError(f"{self.brain['name']}: no model found (is it running?)")
-        self.messages.append({"role": "user", "content": prompt})
+        if images:      # OpenAI format; only models that see images accept it
+            content = [{"type": "image_url", "image_url": {
+                "url": f"data:{i['media_type']};base64,{i['data']}"}} for i in images]
+            content.append({"type": "text", "text": prompt or "Look at this image."})
+            self.messages.append({"role": "user", "content": content})
+        else:
+            self.messages.append({"role": "user", "content": prompt})
         for _ in range(MAX_STEPS):
             msg = self._call()
             # keep the message as the provider sent it (some need their own

@@ -108,6 +108,58 @@ body::before{content:"";position:fixed;inset:0;background:var(--givre) 0 0/200px
 .info .ligne{display:flex;gap:12px;padding:4px 0}.info .ligne .c{font-family:var(--mono);color:var(--vert-clair);min-width:110px}
 .info .ligne .d{color:var(--encre-2)}
 
+/* ── Images: pasted or dropped ── */
+#pieces{flex-basis:100%;display:flex;gap:8px;flex-wrap:wrap;padding:2px 0 4px}
+#pieces:empty{display:none}
+.piece{position:relative;width:58px;height:58px;border-radius:11px;overflow:hidden;border:1px solid var(--trait-fort);animation:pop .4s var(--ease-out)}
+.piece img{width:100%;height:100%;object-fit:cover;display:block}
+.piece button{position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;font-size:11px;line-height:18px;opacity:0;transition:opacity .2s}
+.piece:hover button{opacity:1}
+.msg.toi .vignettes{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.msg.toi .vignettes img{width:84px;height:84px;object-fit:cover;border-radius:10px;border:1px solid var(--trait)}
+#depot{position:fixed;inset:0;z-index:50;display:grid;place-items:center;pointer-events:none;opacity:0;transition:opacity .2s;
+  background:rgba(8,14,12,.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+#depot div{padding:22px 30px;border:2px dashed rgba(111,212,182,.6);border-radius:22px;color:var(--vert-clair);font-weight:600;transform:scale(.94);transition:transform .3s var(--ease-out)}
+body.depose #depot{opacity:1} body.depose #depot div{transform:none}
+
+/* ── Panneau Discussions ── */
+.disc-haut{display:flex;gap:8px;margin:4px 0 10px}
+.disc-haut button{flex:1;padding:8px;border-radius:11px;font-size:12.5px;border:1px solid var(--trait);color:var(--encre-2);background:rgba(255,255,255,.04);transition:.2s}
+.disc-haut button:hover{color:var(--encre);border-color:var(--trait-fort);transform:translateY(-1px)}
+.disc-haut button.vert{color:var(--vert-clair);border-color:rgba(111,212,182,.4);background:rgba(63,157,132,.14)}
+.cherche{width:100%;background:rgba(0,0,0,.25);border:1px solid var(--trait);border-radius:10px;padding:8px 10px;color:var(--encre);font:13px var(--police);outline:0;margin-bottom:6px}
+.cherche:focus{border-color:rgba(111,212,182,.5)}
+.saisie{display:flex;gap:6px;margin:6px 0}
+.saisie input{flex:1;min-width:0;background:rgba(0,0,0,.25);border:1px solid rgba(111,212,182,.5);border-radius:9px;padding:7px 9px;color:var(--encre);font:13px var(--police);outline:0}
+.saisie button{padding:7px 11px;border-radius:9px;font-size:12px;color:var(--vert-clair);border:1px solid rgba(111,212,182,.4);background:rgba(63,157,132,.14)}
+.gtete{display:flex;align-items:center;gap:7px;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--encre-3);
+  margin:14px 0 6px;padding:5px 6px;border-radius:9px;cursor:pointer;transition:background .2s,color .2s,box-shadow .2s}
+.gtete:hover{color:var(--encre-2)}
+.gtete .chev{transition:transform .3s var(--ease)}.gtete.ferme .chev{transform:rotate(-90deg)}
+.gtete .nb{margin-left:auto;font-size:11px;letter-spacing:0}
+.gtete .act{opacity:0;font-size:13px;letter-spacing:0;padding:0 4px;transition:opacity .2s}.gtete:hover .act{opacity:1}
+.gtete.dossier{color:var(--encre-2)}
+.gtete.cible{background:rgba(63,157,132,.2);color:var(--vert-clair);box-shadow:0 0 0 1px rgba(111,212,182,.45)}
+.gcorps{display:grid;grid-template-rows:1fr;transition:grid-template-rows .35s var(--ease)}
+.gcorps>div{overflow:hidden}
+.gcorps.ferme{grid-template-rows:0fr}
+.disc{position:relative;padding:8px 10px;border-radius:11px;cursor:pointer;margin-bottom:3px;border:1px solid transparent;
+  opacity:0;animation:monte .4s var(--ease-out) forwards;animation-delay:calc(var(--i)*14ms);transition:background .2s,border-color .2s,transform .2s var(--ease)}
+.disc:hover{background:rgba(255,255,255,.05);transform:translateX(2px)}
+.disc.actuelle{border-color:rgba(111,212,182,.45);background:rgba(63,157,132,.12)}
+.disc.glisse{opacity:.4!important}
+.disc .t{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:22px}
+.disc .m{font-size:11.5px;color:var(--encre-3);margin-top:2px}
+.disc .tag{font-size:10.5px;color:var(--ambre);border:1px solid rgba(240,179,90,.35);border-radius:6px;padding:0 5px;margin-left:5px}
+.disc .plus{position:absolute;right:6px;top:7px;width:22px;height:22px;border-radius:7px;color:var(--encre-3);opacity:0;transition:opacity .2s,background .2s}
+.disc:hover .plus{opacity:1}.disc .plus:hover{background:rgba(255,255,255,.1);color:var(--encre)}
+.menu-disc{margin:4px 0 8px;padding:5px;border-radius:12px;border:1px solid var(--trait);background:rgba(0,0,0,.3);animation:arrive .25s var(--ease-out)}
+.menu-disc button{display:block;width:100%;text-align:left;padding:6px 9px;border-radius:8px;font-size:12.5px;color:var(--encre-2)}
+.menu-disc button:hover{background:rgba(255,255,255,.07);color:var(--encre)}
+.menu-disc .sous-titre{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--encre-3);padding:6px 9px 2px}
+.menu-disc .rouge{color:#f87171}
+.vide-disc{color:var(--encre-3);font-size:12.5px;padding:8px 6px}
+
 /* ── Header ──────────────────────────────────────────────────── */
 header{position:relative;z-index:2;margin:14px 16px 0;padding:11px 14px;border-radius:var(--rayon);
   background:var(--givre) 0 0/200px,var(--verre);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
@@ -164,7 +216,7 @@ body.reflechit #etat .point{background:var(--ambre);box-shadow:0 0 10px var(--am
 .verdict{font-weight:600;font-size:13.5px}
 
 /* ── Composer ────────────────────────────────────────────────── */
-footer{position:relative;z-index:2;margin:0 16px 8px;padding:8px 8px 8px 16px;display:flex;align-items:center;gap:8px;
+footer{position:relative;z-index:2;margin:0 16px 8px;padding:8px 8px 8px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
   border-radius:var(--rayon);background:var(--givre) 0 0/200px,var(--verre-fort);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--trait)}
 #entree{flex:1;background:none;border:0;outline:0;color:var(--encre);font:15px var(--police);resize:none;height:26px;line-height:26px;max-height:120px}
 #entree::placeholder{color:var(--encre-3)}
@@ -207,6 +259,8 @@ body.reflechit #envoyer svg.fleche{display:none} #envoyer svg.stop{display:none}
     <div class="logo">R</div>
     <button class="dicone" id="ic-chat" title="Chat" onclick="ouvrir(null)">
       <svg viewBox="0 0 24 24" fill="none"><path d="M21 12a8 8 0 01-11.5 7.2L4 20l1-4.6A8 8 0 1121 12z" stroke="currentColor" stroke-width="1.8"/></svg></button>
+    <button class="dicone" id="ic-discussions" title="Conversations" onclick="ouvrir('discussions')">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M3.5 7.5a2 2 0 012-2h4l2 2h7a2 2 0 012 2v8a2 2 0 01-2 2h-13a2 2 0 01-2-2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 12.5h8M8 15.5h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
     <button class="dicone" id="ic-cerveaux" title="Brains" onclick="ouvrir('cerveaux')">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 4.5a3 3 0 0 0-3 3v.3a3 3 0 0 0-1.5 5.2A3 3 0 0 0 9 17.6V19.5h1.5V4.5zM15 4.5a3 3 0 0 1 3 3v.3a3 3 0 0 1 1.5 5.2 3 3 0 0 1-4.5 4.6v1.9h-1.5V4.5z"/></svg></button>
     <div class="dock-bas">
@@ -214,6 +268,17 @@ body.reflechit #envoyer svg.fleche{display:none} #envoyer svg.stop{display:none}
         <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3.2" stroke="currentColor" stroke-width="1.8"/><path d="M19 12a7 7 0 00-.1-1.2l2-1.5-2-3.4-2.3 1a7 7 0 00-2-1.2L14 1h-4l-.6 2.5a7 7 0 00-2 1.2l-2.3-1-2 3.4 2 1.5A7 7 0 005 12c0 .4 0 .8.1 1.2l-2 1.5 2 3.4 2.3-1a7 7 0 002 1.2L10 23h4l.6-2.5a7 7 0 002-1.2l2.3 1 2-3.4-2-1.5c.1-.4.1-.8.1-1.2z" stroke="currentColor" stroke-width="1.5"/></svg></button>
     </div>
   </nav>
+
+  <!-- Panneau Discussions : classees par agent, et vos dossiers -->
+  <aside class="panneau" id="discussions">
+    <h3>Conversations</h3>
+    <div class="sous">By agent, and in your own folders. Drag one onto a folder.</div>
+    <div class="disc-haut"><button class="vert" onclick="nouvelleDiscussion()">+ New chat</button><button onclick="saisieDossier()">+ Folder</button></div>
+    <input class="cherche" id="cherche-disc" placeholder="Search" oninput="rendreDiscussions()">
+    <div id="zone-dossier"></div>
+    <div id="liste-disc"></div>
+  </aside>
+  <div id="depot"><div>Drop your image here</div></div>
 
   <!-- Panneau Cerveaux : qui pense pour l'agent -->
   <aside class="panneau" id="cerveaux">
@@ -248,6 +313,7 @@ body.reflechit #envoyer svg.fleche{display:none} #envoyer svg.stop{display:none}
 
   <footer>
     <div class="slash" id="slash"></div>
+    <div id="pieces"></div>
     <textarea id="entree" placeholder="Ask your agent something, or type / for commands" rows="1"></textarea>
     <button id="envoyer" onclick="document.body.classList.contains('reflechit')?stopper():send()" title="Send (Esc stops)">
       <svg class="stop" width="13" height="13" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3" fill="currentColor"/></svg>
@@ -315,6 +381,7 @@ function ouvrir(nom){
   document.querySelectorAll('.dicone').forEach(d=>d.classList.remove('on'));
   if(nom) document.getElementById('ic-'+nom).classList.add('on');
   if(nom==='cerveaux') rendreCerveaux();
+  if(nom==='discussions'){MENU=null;chargerDiscussions();}
 }
 
 // -- brains --
@@ -406,14 +473,158 @@ async function stopper(){ if(api()&&await api().interrupt()) sys('Stopped.'); }
 const OUTILS={};
 
 function send(){
-  const t=document.getElementById('entree');const text=t.value.trim();if(!text)return;
+  const t=document.getElementById('entree');const text=t.value.trim();if(!text&&!PIECES.length)return;
   t.value=''; envoyer(text);
+}
+function bulleToi(text,thumbs){
+  const v=(thumbs||[]).length?`<div class="vignettes">${thumbs.map(t=>`<img src="${t}" alt="">`).join('')}</div>`:'';
+  add(`<div class="msg toi">${v}${esc(text)}</div>`);
 }
 function envoyer(text){
   if(hint)hint.style.display='none';
-  add(`<div class="msg toi">${esc(text)}</div>`);
+  const imgs=PIECES.splice(0); rendrePieces();
+  bulleToi(text,imgs.map(i=>i.thumb));
   setStatus('thinking', true);
-  window.pywebview.api.send(text);
+  window.pywebview.api.send(text,imgs);
+}
+
+// -- images: paste (Cmd+V) or drop them, they go with the next message --
+const PIECES=[];
+function rendrePieces(){
+  const z=document.getElementById('pieces');
+  z.innerHTML=PIECES.map((p,i)=>`<div class="piece"><img src="${p.thumb}" alt=""><button title="Remove" onclick="PIECES.splice(${i},1);rendrePieces()">✕</button></div>`).join('');
+}
+function redimensionner(img,max,type,q){
+  const k=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));
+  const c=document.createElement('canvas');c.width=Math.round(img.naturalWidth*k);c.height=Math.round(img.naturalHeight*k);
+  c.getContext('2d').drawImage(img,0,0,c.width,c.height);return c.toDataURL(type,q);
+}
+function ajouterImage(file){
+  if(!file||!file.type.startsWith('image/'))return;
+  const r=new FileReader();
+  r.onload=()=>{const img=new Image();img.onload=()=>{
+    const type=file.type==='image/png'?'image/png':'image/jpeg';
+    const full=redimensionner(img,1568,type,.9);          // the size models read best
+    PIECES.push({media_type:type,data:full.split(',')[1],thumb:redimensionner(img,200,'image/jpeg',.8)});
+    rendrePieces(); ta.focus();
+  };img.src=r.result;};
+  r.readAsDataURL(file);
+}
+document.addEventListener('paste',e=>{
+  const files=[...(e.clipboardData?.items||[])].filter(i=>i.type.startsWith('image/')).map(i=>i.getAsFile());
+  if(files.length){e.preventDefault();files.forEach(ajouterImage);}
+});
+let profondeur=0;
+document.addEventListener('dragenter',e=>{if([...(e.dataTransfer?.types||[])].includes('Files')){profondeur++;document.body.classList.add('depose');}});
+document.addEventListener('dragleave',()=>{if(--profondeur<=0){profondeur=0;document.body.classList.remove('depose');}});
+document.addEventListener('dragover',e=>{if([...(e.dataTransfer?.types||[])].includes('Files'))e.preventDefault();});
+document.addEventListener('drop',e=>{
+  if(!e.dataTransfer?.files?.length)return;
+  e.preventDefault();profondeur=0;document.body.classList.remove('depose');
+  [...e.dataTransfer.files].forEach(ajouterImage);
+});
+
+// -- conversations: by agent, and in folders --
+let DISC={folders:[],conversations:[]}, FERMES=new Set(), MENU=null;
+function quand(ms){
+  const d=(Date.now()-ms)/1000;
+  if(d<60)return 'now'; if(d<3600)return Math.floor(d/60)+' min'; if(d<86400)return Math.floor(d/3600)+' h';
+  if(d<7*86400)return Math.floor(d/86400)+' d'; return new Date(ms).toLocaleDateString();
+}
+async function chargerDiscussions(){ if(!api())return; DISC=await api().conversations_list(); rendreDiscussions(); }
+function ligneDisc(c,i){
+  return `<div class="disc${c.current?' actuelle':''}" draggable="true" data-id="${esc(c.id)}" style="--i:${i}">
+    <div class="t">${esc(c.title)}</div><div class="m">${esc(c.brain_name)} · ${quand(c.updated)}${c.terminal?'<span class="tag">terminal</span>':''}</div>
+    <button class="plus" title="More">⋯</button></div>${MENU===c.id?menuDisc(c):''}`;
+}
+function menuDisc(c){
+  return `<div class="menu-disc" data-menu="${esc(c.id)}">
+    <button data-a="renommer">Rename</button>
+    <div class="sous-titre">Move to</div>
+    ${DISC.folders.filter(f=>f.id!==c.folder).map(f=>`<button data-a="deplacer" data-f="${esc(f.id)}">${esc(f.name)}</button>`).join('')}
+    ${c.folder?'<button data-a="deplacer" data-f="">Out of the folder</button>':''}
+    ${DISC.folders.length?'':'<div class="vide-disc">No folder yet: + Folder above.</div>'}
+    <button data-a="supprimer" class="rouge">${c.terminal?'Hide from this list':'Delete'}</button></div>`;
+}
+function groupe(cle,titre,items,dossier){
+  const ferme=FERMES.has(cle);
+  const act=dossier?`<span class="act" data-ren="${esc(dossier.id)}" title="Rename">✎</span><span class="act" data-del="${esc(dossier.id)}" title="Delete folder">✕</span>`:'';
+  return `<div class="gtete${dossier?' dossier':''}${ferme?' ferme':''}" data-cle="${esc(cle)}" ${dossier?`data-dossier="${esc(dossier.id)}"`:''}>
+    <span class="chev">▾</span>${dossier?'▤ ':''}${esc(titre)}${act}<span class="nb">${items.length}</span></div>
+    <div class="gcorps${ferme?' ferme':''}"><div>${items.length?items.map(ligneDisc).join(''):(dossier?'<div class="vide-disc">Drag conversations here.</div>':'')}</div></div>`;
+}
+function rendreDiscussions(){
+  const q=(document.getElementById('cherche-disc').value||'').toLowerCase();
+  const L=DISC.conversations.filter(c=>!q||c.title.toLowerCase().includes(q));
+  let html='';
+  if(DISC.folders.length) html+='<div class="groupe">Folders</div>'+DISC.folders.map(f=>groupe('f:'+f.id,f.name,L.filter(c=>c.folder===f.id),f)).join('');
+  const parAgent={}; L.filter(c=>!c.folder).forEach(c=>(parAgent[c.brain_name]=parAgent[c.brain_name]||[]).push(c));
+  const agents=Object.keys(parAgent);
+  if(agents.length) html+='<div class="groupe">By agent</div>'+agents.map(n=>groupe('a:'+n,n,parAgent[n])).join('');
+  if(!L.length) html+=`<div class="vide-disc">${q?'Nothing matches.':'No conversation yet. Say hello!'}</div>`;
+  const Z=document.getElementById('liste-disc'); Z.innerHTML=html;
+  Z.querySelectorAll('.gtete').forEach(h=>{
+    h.onclick=e=>{
+      if(e.target.dataset.ren){return saisieDossier(e.target.dataset.ren);}
+      if(e.target.dataset.del){api().delete_folder(e.target.dataset.del).then(chargerDiscussions);return;}
+      const cle=h.dataset.cle; FERMES.has(cle)?FERMES.delete(cle):FERMES.add(cle);
+      h.classList.toggle('ferme'); h.nextElementSibling.classList.toggle('ferme');
+    };
+    if(h.dataset.dossier){
+      h.ondragover=e=>{e.preventDefault();h.classList.add('cible');};
+      h.ondragleave=()=>h.classList.remove('cible');
+      h.ondrop=async e=>{e.preventDefault();h.classList.remove('cible');
+        const id=e.dataTransfer.getData('text/rh-disc'); if(id){await api().move_conversation(id,h.dataset.dossier);chargerDiscussions();}};
+    }
+  });
+  Z.querySelectorAll('.disc').forEach(d=>{
+    d.ondragstart=e=>{e.dataTransfer.setData('text/rh-disc',d.dataset.id);d.classList.add('glisse');};
+    d.ondragend=()=>d.classList.remove('glisse');
+    d.onclick=e=>{
+      if(e.target.classList.contains('plus')){MENU=MENU===d.dataset.id?null:d.dataset.id;rendreDiscussions();return;}
+      ouvrirDiscussion(d.dataset.id);
+    };
+  });
+  Z.querySelectorAll('.menu-disc button').forEach(b=>b.onclick=async()=>{
+    const id=b.closest('.menu-disc').dataset.menu, a=b.dataset.a; MENU=null;
+    if(a==='renommer'){return saisieRenommer(id);}
+    if(a==='deplacer') await api().move_conversation(id,b.dataset.f||null);
+    if(a==='supprimer') await api().delete_conversation(id);
+    chargerDiscussions();
+  });
+}
+function saisie(placeholder,valeur,faire){
+  const z=document.getElementById('zone-dossier');
+  z.innerHTML=`<div class="saisie"><input placeholder="${esc(placeholder)}" value="${esc(valeur||'')}"><button>OK</button></div>`;
+  const i=z.querySelector('input'), ok=async()=>{const v=i.value.trim();z.innerHTML='';if(v){await faire(v);chargerDiscussions();}};
+  i.focus(); i.select(); i.onkeydown=e=>{if(e.key==='Enter')ok();if(e.key==='Escape')z.innerHTML='';};
+  z.querySelector('button').onclick=ok;
+}
+function saisieDossier(fid){
+  const f=fid&&DISC.folders.find(x=>x.id===fid);
+  saisie(f?'Folder name':'New folder name',f?f.name:'',v=>f?api().rename_folder(f.id,v):api().create_folder(v));
+}
+function saisieRenommer(id){
+  const c=DISC.conversations.find(x=>x.id===id);
+  saisie('Conversation title',c?c.title:'',v=>api().rename_conversation(id,v));
+}
+function viderFil(){ fil.querySelectorAll(':scope > :not(.accueil)').forEach(n=>n.remove()); }
+async function ouvrirDiscussion(id){
+  if(document.body.classList.contains('reflechit')){sys('Wait for the current answer to finish.');return;}
+  const r=await api().open_conversation(id);
+  if(!r){sys("Can't open this conversation (its brain isn't ready).");return;}
+  viderFil(); if(hint)hint.style.display='none';
+  for(const ev of r.events){
+    if(ev.type==='user') bulleToi(ev.text,ev.thumbs);
+    else { onEvent(ev); if(ev.type==='tool'&&lastTool) lastTool.classList.add('fait'); }
+  }
+  fil.querySelectorAll('.outil').forEach(o=>o.classList.add('fait'));
+  r.notes.forEach(n=>sys(esc(n)));
+  DISTANTES=null; badge(r.brain); setStatus('ready',false); ouvrir(null);
+}
+async function nouvelleDiscussion(){
+  const r=await api().new_conversation(); if(!r){sys('Wait for the current answer to finish.');return;}
+  viderFil(); if(hint)hint.style.display=''; badge(r); ouvrir(null);
 }
 const ta=document.getElementById('entree');
 ta.addEventListener('keydown',e=>{
@@ -515,7 +726,7 @@ async function executer(cmd,arg){
     if(r){DISTANTES=null;badge(r);sys(`Now thinking with <b>${esc(r.name)} ${esc(r.label)}</b>. New conversation.`);} else sys(`Can't switch to "${esc(arg)}". Type /brain to see them.`);
   } else if(cmd==='/clear'){
     const r=await api().clear(); if(!r){sys(OCCUPE);return;}
-    fil.querySelectorAll(':scope > :not(.accueil)').forEach(n=>n.remove());
+    viderFil();
     sys(`New conversation with <b>${esc(r.name)} ${esc(r.label)}</b>.`);
   } else if(cmd==='/tools'){
     const t=await api().tools_list();
@@ -595,6 +806,7 @@ function shareChat(){
 }
 // close panel on outside click
 document.addEventListener('click',e=>{
+  if(!e.target.isConnected)return;   // the click re-drew a panel: it was inside
   if(!e.target.closest('.panneau')&&!e.target.closest('#dock')&&!e.target.closest('#st-modele')) document.querySelectorAll('.panneau.ouvert').forEach(p=>{p.classList.remove('ouvert');document.querySelectorAll('.dicone').forEach(d=>d.classList.remove('on'));});
 });
 </script>
