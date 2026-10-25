@@ -102,7 +102,9 @@ function unwrap(ev) {
 }
 
 async function order(op, extra = {}) {
-  const payload = { v: 1, dir: 'phone', id: crypto.randomUUID(), ts: now(), op, ...extra }
+  // getRandomValues works on any page; randomUUID only on https pages
+  const id = Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, '0')).join('')
+  const payload = { v: 1, dir: 'phone', id, ts: now(), op, ...extra }
   try { await Promise.any(pool.publish(RELAYS, wrap(payload))); return true } catch { return false }
 }
 
