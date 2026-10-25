@@ -56,6 +56,9 @@ async def run_turn(prompt: str, on_event: Callable[[dict], None]) -> None:
         mcp_servers={"root-harness": server},
         # Only our tools are allowed; Claude Code's native tools stay off.
         allowed_tools=[f"mcp__root-harness__{n}" for n in tools.REGISTRY],
+        # Our own tools self-gate through permissions.ask, so the SDK does not
+        # add a second prompt. Only our MCP tools are reachable (allowed_tools).
+        permission_mode="bypassPermissions",
     )
     async for message in sdk["query"](prompt=prompt, options=options):
         AssistantMessage = sdk["AssistantMessage"]
