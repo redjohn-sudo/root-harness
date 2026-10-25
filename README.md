@@ -71,9 +71,21 @@ def weather(city: str) -> str:
 A read-only tool runs freely; a tool that changes something calls
 `permissions.ask(...)` first. See [examples/add_your_own_tool.py](examples/add_your_own_tool.py).
 
+## Everything your terminal does, in a window
+
+With Claude, root-harness runs **the real Claude Code**: your settings, CLAUDE.md,
+memory, skills, MCP servers, agents and every slash command (`/context`,
+`/compact`, `/usage`, your own skills...). Nothing is re-implemented, only shown:
+
+- every model your plan offers (`/model`), every effort up to `max`, and `ultracode`
+- the permission modes, with **Shift+Tab** as in the terminal: ask, accept edits, plan, auto
+- **Esc** stops the answer; the status bar shows the real context usage
+- permission questions become Allow / Deny cards; when Claude asks you to choose, the options become buttons
+
 ## Commands
 
-Type `/` in the message box. Arrows to move, Enter or Tab to pick.
+Type `/` in the message box. Arrows to move, Enter or Tab to pick. With Claude,
+the list also holds all of your Claude Code commands.
 
 | Command | What it does |
 |---|---|
@@ -85,6 +97,7 @@ Type `/` in the message box. Arrows to move, Enter or Tab to pick.
 | `/status` | brain, model and effort right now |
 | `/background` | change the background |
 | `/export` | save the conversation as a page |
+| `/mode` | ask, accept edits, plan or auto (or Shift+Tab) |
 | `/help` | all commands |
 
 ## Pick your brain
@@ -94,8 +107,8 @@ your agent. One brain per provider; pick its model with `/model`:
 
 | Brain | What you need | How it runs |
 |---|---|---|
-| Claude (Sonnet, Opus, Haiku) | a Claude Pro/Max plan | Claude Agent SDK (`bridge_claude.py`) |
-| Codex | a ChatGPT plan or OpenAI key | Codex app server (`bridge_codex.py`) |
+| Claude (every model your plan offers) | a Claude Pro/Max plan | the real Claude Code, through the Agent SDK (`bridge_claude.py`) |
+| Codex (every model Codex lists) | a ChatGPT plan or OpenAI key | Codex app server (`bridge_codex.py`) |
 | DeepSeek, Kimi, GLM, Claude API | an API key | our own short loop (`bridge_api.py`) |
 | Ollama | nothing, it runs on your machine | our own short loop (`bridge_api.py`) |
 

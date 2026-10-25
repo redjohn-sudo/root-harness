@@ -77,15 +77,26 @@ class Session:
     def list_models(self) -> list[dict]:
         """The models Codex offers, with the efforts each one supports."""
         self._ensure()
-        out = []
-        for m in self._request("model/list", {}).get("data", []):
-            if m.get("hidden"):
-                continue
+        out, cursor = [], None
+        while True:     # every model Codex knows, hidden ones included, page by page
+            page = self._request("model/list", {"includeHidden": True, "cursor": cursor})
+            data = page.get("data", [])
+            out += data
+            cursor = page.get("nextCursor")
+            if not cursor or not data:
+                break
+        models = []
+        for m in out:
             efforts = [e.get("reasoningEffort") if isinstance(e, dict) else e
                        for e in m.get("supportedReasoningEfforts") or []]
-            out.append({"id": m["id"], "label": m.get("displayName") or m["id"],
-                        "efforts": efforts, "default": bool(m.get("isDefault"))})
-        return out
+            models.append({"id": m["id"], "label": m.get("displayName") or m["id"],
+                           "desc": m.get("description") or "",
+                           "efforts": efforts, "default": bool(m.get("isDefault"))})
+        return models
+
+    def list_efforts(self, model: str | None) -> list[str]:
+        m = next((m for m in self.list_models() if m["id"] == model), None)
+        return m["efforts"] if m else []
 
     def close(self) -> None:
         if self.proc and self.proc.poll() is None:

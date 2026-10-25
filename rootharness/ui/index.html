@@ -125,6 +125,7 @@ body.reflechit #etat .point{background:var(--ambre);box-shadow:0 0 10px var(--am
 
 /* ── Fil ─────────────────────────────────────────────────────── */
 #fil{position:relative;z-index:1;flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:11px}
+#fil>*{flex-shrink:0}   /* never squeeze a message: the thread scrolls instead */
 .accueil{align-self:center;max-width:380px;margin-top:18px;text-align:center;color:var(--encre-2);font-size:13.5px;line-height:1.6;padding:16px 18px;
   border-radius:var(--rayon);border:1px solid var(--trait);background:var(--givre) 0 0/200px,var(--verre);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);animation:arrive .6s var(--ease-out)}
 .msg{max-width:84%;font-size:14.5px;line-height:1.6;animation:arrive .5s var(--ease-out)}
@@ -134,7 +135,14 @@ body.reflechit #etat .point{background:var(--ambre);box-shadow:0 0 10px var(--am
 .msg.root{align-self:flex-start;display:flex;border:1px solid var(--trait);background:var(--givre) 0 0/200px,var(--verre);
   border-radius:6px var(--rayon) var(--rayon) var(--rayon);overflow:hidden}
 .msg.root .lisere{width:3px;flex:none;background:linear-gradient(var(--vert-clair),var(--vert) 60%,transparent)}
-.msg.root .corps{padding:11px 16px;white-space:pre-wrap;word-break:break-word}
+.msg.root .corps{padding:11px 16px;word-break:break-word;min-width:0}
+.corps p{margin:0 0 8px}.corps p:last-child{margin:0}
+.corps code{font-family:var(--mono);font-size:12.5px;background:rgba(255,255,255,.07);padding:1px 5px;border-radius:5px}
+.corps pre{font-family:var(--mono);font-size:12px;background:rgba(0,0,0,.3);border:1px solid var(--trait);border-radius:10px;padding:10px 12px;overflow-x:auto;margin:6px 0 8px;white-space:pre}
+.corps h4{font-size:13.5px;margin:10px 0 6px;color:var(--vert-clair)}
+.corps table{border-collapse:collapse;font-size:12.5px;margin:6px 0 10px;display:block;overflow-x:auto}
+.corps td,.corps th{border:1px solid var(--trait);padding:4px 8px;text-align:left}.corps th{color:var(--encre-2)}
+.corps a{color:var(--vert-clair)}
 .outil{align-self:flex-start;max-width:84%;border:1px solid var(--trait);border-radius:14px;overflow:hidden;animation:arrive .5s var(--ease-out);
   background:var(--givre) 0 0/200px,var(--verre);font-size:13px}
 .outil .tete{display:flex;align-items:center;gap:9px;padding:9px 13px}
@@ -167,13 +175,30 @@ body.reflechit #envoyer{animation:respire 1.2s ease-in-out infinite}
 @keyframes respire{0%,100%{transform:scale(1)}50%{transform:scale(1.12);filter:brightness(1.15)}}
 
 /* ── Barre de statut (facon terminal) ────────────────────────── */
-#statut{position:relative;z-index:2;margin:0 16px 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+#statut{position:relative;z-index:2;margin:0 16px 12px;display:flex;flex-direction:column;gap:5px;
   font-size:12.5px;font-family:var(--mono);color:var(--encre-2)}
+#statut .rang{display:flex;align-items:center;gap:9px;white-space:nowrap;overflow:hidden;min-width:0}
+#statut .rang>*{flex-shrink:0}
 #statut .badge{font-weight:700;color:#06130f;background:var(--vert-clair);border-radius:7px;padding:2px 9px;box-shadow:0 0 14px var(--lueur)}
 #statut .sep{color:var(--encre-3)}
 #statut .bar{width:70px;height:9px;border-radius:5px;background:rgba(255,255,255,.08);overflow:hidden}
 #statut .bar i{display:block;height:100%;width:var(--w,0%);background:var(--vert-clair);transition:width .6s var(--ease)}
-#statut .live{color:var(--vert-clair)} body.reflechit #statut .live{color:var(--ambre)}
+#statut .live{color:var(--vert-clair)}
+#statut .mode{cursor:pointer;color:var(--encre-2);transition:color .2s}#statut .mode:hover{color:var(--encre)}
+#statut .mode.auto{color:var(--vert-clair)}#statut .mode.plan{color:#8fb8ff}#statut .mode.edits{color:var(--ambre)}
+#statut .mode.change{animation:pop .45s var(--ease-out)}
+.cache{display:none!important}
+/* question card: the agent asks you to choose */
+.question{align-self:stretch;border:1px solid rgba(111,212,182,.4);border-radius:var(--rayon);padding:13px 16px;
+  background:var(--givre) 0 0/200px,rgba(14,40,34,.55);animation:arrive .45s var(--ease-out)}
+.question .q{font-size:14.5px;margin:2px 0 10px}.question .h{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--vert-clair)}
+.question .opts{display:flex;flex-direction:column;gap:7px;margin-bottom:12px}
+.question .opt{text-align:left;padding:9px 12px;border-radius:11px;border:1px solid var(--trait);background:rgba(255,255,255,.04);transition:transform .15s,border-color .2s,background .2s}
+.question .opt:hover{border-color:var(--trait-fort);transform:translateX(3px)}
+.question .opt.on{border-color:rgba(111,212,182,.6);background:rgba(63,157,132,.2)}
+.question .opt small{display:block;color:var(--encre-3);font-size:12px;margin-top:2px}
+.question .row{display:flex;gap:10px}.question .row button{flex:1;padding:9px;border-radius:11px;border:1px solid var(--trait);font-weight:600}
+body.reflechit #envoyer svg.fleche{display:none} #envoyer svg.stop{display:none} body.reflechit #envoyer svg.stop{display:block} body.reflechit #statut .live{color:var(--ambre)}
 </style></head>
 <body data-bg="vert">
   <div id="fond" aria-hidden="true"></div>
@@ -224,18 +249,24 @@ body.reflechit #envoyer{animation:respire 1.2s ease-in-out infinite}
   <footer>
     <div class="slash" id="slash"></div>
     <textarea id="entree" placeholder="Ask your agent something, or type / for commands" rows="1"></textarea>
-    <button id="envoyer" onclick="send()" title="Send">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <button id="envoyer" onclick="document.body.classList.contains('reflechit')?stopper():send()" title="Send (Esc stops)">
+      <svg class="stop" width="13" height="13" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3" fill="currentColor"/></svg>
+      <svg class="fleche" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
   </footer>
 
   <!-- Barre de statut facon terminal : agent/modele choisis + statut live -->
   <div id="statut">
-    <span class="badge" id="st-modele" onclick="ouvrir('cerveaux')" title="Change brain">Claude</span>
-    <span class="sep">·</span><span id="st-agent">Sonnet</span>
-    <span class="sep" id="st-effort-sep" style="display:none">·</span><span id="st-effort"></span>
-    <span class="sep">·</span><span class="bar"><i id="st-bar"></i></span>
-    <span class="sep">·</span><span class="live" id="st-live">ready</span>
+    <div class="rang">
+      <span class="badge" id="st-modele" onclick="ouvrir('cerveaux')" title="Change brain">Claude</span>
+      <span class="sep">·</span><span id="st-agent">Sonnet</span>
+      <span class="sep" id="st-effort-sep" style="display:none">·</span><span id="st-effort"></span>
+    </div>
+    <div class="rang">
+      <span class="bar cache" id="st-barre"><i id="st-bar"></i></span><span class="cache" id="st-ctx"></span><span class="sep cache" id="st-ctx-sep">·</span>
+      <span class="mode cache" id="st-mode" onclick="cycleMode()" title="Shift+Tab"></span>
+      <span class="sep cache" id="st-mode-sep">·</span><span class="live" id="st-live">ready</span>
+    </div>
   </div>
 
 <script>
@@ -294,6 +325,7 @@ function badge(b){ ACTIF=b;
   el.textContent=b.name; document.getElementById('st-agent').textContent=b.label||'';
   document.getElementById('st-effort').textContent=b.effort?('effort '+b.effort):'';
   document.getElementById('st-effort-sep').style.display=b.effort?'':'none';
+  montrerMode(b);
   el.classList.remove('change'); void el.offsetWidth; el.classList.add('change');
 }
 async function rendreCerveaux(){
@@ -313,7 +345,7 @@ async function rendreCerveaux(){
     if(e.target.closest('.cle')||el.classList.contains('off'))return;
     const b=await api().choose_brain(el.dataset.id);
     if(!b)return;
-    ACTIF=b; badge(b); rendreCerveaux();
+    ACTIF=b; DISTANTES=null; badge(b); rendreCerveaux();
     sys(`Now thinking with <b>${esc(b.name)} ${esc(b.label)}</b>. New conversation.`);
   });
   L.querySelectorAll('.cle button').forEach(bt=>bt.onclick=async()=>{
@@ -328,18 +360,65 @@ function setStatus(txt, thinking){
   document.getElementById('st-live').textContent = txt;
   document.body.classList.toggle('reflechit', !!thinking);
 }
-let steps=0;
-function bump(){ steps++; document.getElementById('st-bar').style.setProperty('--w', Math.min(95, 20+steps*12)+'%'); }
+function bump(){}
+// Mini Markdown (from Root): code blocks, `code`, **bold**, headings, lists, tables, links
+function enRiche(texte){
+  const blocs=[]; texte=(texte||'').replace(/```[\w-]*\n?([\s\S]*?)```/g,(_,c)=>`\u0000${blocs.push(c)-1}\u0000`);
+  const ligne=x=>esc(x).replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g,'<a href="$2">$1</a>');
+  return texte.split(/\n{2,}/).map(par=>{
+    const m=par.match(/^\u0000(\d+)\u0000$/); if(m) return `<pre>${esc(blocs[+m[1]])}</pre>`;
+    const L=par.split('\n');
+    if(L.length>1&&L.every(l=>/^\s*\|.*\|\s*$/.test(l))){
+      const rows=L.filter(l=>!/^\s*\|[\s:|-]+\|\s*$/.test(l)).map(l=>l.trim().slice(1,-1).split('|').map(c=>ligne(c.trim())));
+      return '<table>'+rows.map((r,i)=>'<tr>'+r.map(c=>i?`<td>${c}</td>`:`<th>${c}</th>`).join('')+'</tr>').join('')+'</table>';
+    }
+    return L.map(l=>{
+      const h=l.match(/^#{1,6}\s+(.*)$/); if(h) return `<h4>${ligne(h[1])}</h4>`;
+      if(/^\s*[-•*]\s+/.test(l)) return '• '+ligne(l.replace(/^\s*[-•*]\s+/,''))+'<br>';
+      return ligne(l)+'<br>';
+    }).join('').replace(/(<br>)+$/,'').replace(/^/,'<p>')+'</p>';
+  }).join('');
+}
+function kilo(n){return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?Math.round(n/1e3)+'k':String(n||0);}
+function usage(ev){
+  const ok=ev.percent!==undefined;
+  ['st-ctx-sep','st-barre','st-ctx'].forEach(i=>document.getElementById(i).classList.toggle('cache',!ok));
+  if(!ok)return;
+  document.getElementById('st-bar').style.setProperty('--w',Math.max(2,ev.percent)+'%');
+  document.getElementById('st-ctx').textContent=`${ev.percent}% · ${kilo(ev.tokens)}/${kilo(ev.max)}`;
+}
+const NOMS_MODES={default:'ask mode',acceptEdits:'accept edits on',plan:'plan mode on',auto:'auto mode on'};
+const CLASSES_MODES={acceptEdits:'edits',plan:'plan',auto:'auto'};
+function montrerMode(b){
+  const el=document.getElementById('st-mode'), ok=!!(b.modes&&b.modes.length);
+  el.classList.toggle('cache',!ok); document.getElementById('st-mode-sep').classList.toggle('cache',!ok);
+  if(!ok)return;
+  el.textContent='▸▸ '+(NOMS_MODES[b.mode]||b.mode); el.className='mode '+(CLASSES_MODES[b.mode]||'');
+  void el.offsetWidth; el.classList.add('change');
+}
+async function cycleMode(){
+  if(!api()||!(ACTIF.modes||[]).length)return;
+  const L=ACTIF.modes, next=L[(L.indexOf(ACTIF.mode)+1)%L.length];
+  const r=await api().set_mode(next); if(r)badge(r);
+}
+async function stopper(){ if(api()&&await api().interrupt()) sys('Stopped.'); }
+const OUTILS={};
 
 function send(){
   const t=document.getElementById('entree');const text=t.value.trim();if(!text)return;
+  t.value=''; envoyer(text);
+}
+function envoyer(text){
   if(hint)hint.style.display='none';
-  add(`<div class="msg toi">${esc(text)}</div>`); t.value='';
-  steps=0; bump(); setStatus('thinking', true);
+  add(`<div class="msg toi">${esc(text)}</div>`);
+  setStatus('thinking', true);
   window.pywebview.api.send(text);
 }
 const ta=document.getElementById('entree');
 ta.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&!SL.on&&document.body.classList.contains('reflechit')){e.preventDefault();stopper();return;}
+  if(e.key==='Tab'&&e.shiftKey&&!SL.on){e.preventDefault();cycleMode();return;}
   if(SL.on){
     if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();choisir(SL.sel+(e.key==='ArrowDown'?1:-1));return;}
     if(e.key==='Escape'){e.preventDefault();fermerSlash();return;}
@@ -366,8 +445,11 @@ const COMMANDES=[
   {c:'/status',d:'Brain, model and effort right now'},
   {c:'/background',d:'Change the background'},
   {c:'/export',d:'Save this conversation as a page'},
+  {c:'/mode',d:'Ask, accept edits, plan or auto (Shift+Tab)',arg:true},
   {c:'/help',d:'All commands'},
 ];
+let DISTANTES=null;     // the brain's own commands (Claude Code: all of yours)
+async function distantes(){ if(DISTANTES===null&&api()) DISTANTES=await api().commands(); return DISTANTES||[]; }
 const SL={on:false,items:[],sel:0,jeton:0};
 const slash=document.getElementById('slash');
 function fermerSlash(){SL.on=false;slash.classList.remove('on');}
@@ -386,13 +468,22 @@ async function majSlash(){
   if(!espace){
     items=COMMANDES.filter(x=>x.c.startsWith(cmd)).map(x=>({c:x.c,d:x.d,faire:()=>{
       if(x.arg){ta.value=x.c+' ';majSlash();} else executer(x.c,'');}}));
+    const locales=new Set(COMMANDES.map(x=>x.c));
+    const autres=(await distantes()).filter(x=>!locales.has(x.name)&&x.name.toLowerCase().startsWith(cmd));
+    if(autres.length){ titre='Commands';
+      items=items.concat(autres.map(x=>({c:x.name,d:(x.hint?x.hint+' · ':'')+x.desc,faire:()=>{
+        if(x.hint){ta.value=x.name+' ';fermerSlash();} else {ta.value='';fermerSlash();envoyer(x.name);}}})));
+    }
   } else if(cmd==='/model'&&api()){
     const r=await api().models(); titre='Models · '+(ACTIF.name||'');
     items=r.models.filter(x=>(x.label+' '+x.id).toLowerCase().includes(arg))
-      .map(x=>({c:x.label,d:x.id!==x.label?x.id:'',ok:x.id===r.current,faire:()=>executer('/model',x.id)}));
+      .map(x=>({c:x.label,d:x.desc||(x.id!==x.label?x.id:''),ok:x.id===r.current,faire:()=>executer('/model',x.id)}));
   } else if(cmd==='/effort'&&api()){
     const r=await api().efforts(); titre='Effort · '+(ACTIF.label||'');
     items=r.efforts.filter(x=>x.includes(arg)).map(x=>({c:x,d:'',ok:x===r.current,faire:()=>executer('/effort',x)}));
+  } else if(cmd==='/mode'&&api()){
+    const b=await api().active_brain(); titre='Permission mode';
+    items=(b.modes||[]).filter(x=>x.toLowerCase().includes(arg)).map(x=>({c:NOMS_MODES[x]||x,d:{default:'Asks before edits and commands',acceptEdits:'Edits files without asking',plan:'Plans first, changes nothing',auto:'Decides safely on its own'}[x]||'',ok:x===b.mode,faire:()=>executer('/mode',x)}));
   } else if(cmd==='/brain'&&api()){
     const r=await api().brains_list(); titre='Brains';
     items=r.brains.filter(x=>x.name.toLowerCase().includes(arg))
@@ -417,11 +508,11 @@ async function executer(cmd,arg){
   } else if(cmd==='/effort'){
     if(!arg){ta.value='/effort ';return majSlash();}
     const r=await api().set_effort(arg.toLowerCase());
-    if(r){badge(r);sys(`Effort: <b>${esc(r.effort)}</b>`);} else sys(document.body.classList.contains('reflechit')?OCCUPE:`No effort "${esc(arg)}" for this model. Type /effort to see them.`);
+    if(r){badge(r);sys(r.note?esc(r.note):`Effort: <b>${esc(r.effort)}</b>`);} else sys(document.body.classList.contains('reflechit')?OCCUPE:`No effort "${esc(arg)}" for this model. Type /effort to see them.`);
   } else if(cmd==='/brain'){
     if(!arg){ouvrir('cerveaux');return;}
     const r=await api().choose_brain(arg);
-    if(r){badge(r);sys(`Now thinking with <b>${esc(r.name)} ${esc(r.label)}</b>. New conversation.`);} else sys(`Can't switch to "${esc(arg)}". Type /brain to see them.`);
+    if(r){DISTANTES=null;badge(r);sys(`Now thinking with <b>${esc(r.name)} ${esc(r.label)}</b>. New conversation.`);} else sys(`Can't switch to "${esc(arg)}". Type /brain to see them.`);
   } else if(cmd==='/clear'){
     const r=await api().clear(); if(!r){sys(OCCUPE);return;}
     fil.querySelectorAll(':scope > :not(.accueil)').forEach(n=>n.remove());
@@ -432,9 +523,13 @@ async function executer(cmd,arg){
   } else if(cmd==='/status'){
     const b=await api().active_brain();
     infos([['brain',b.name],['model',b.label+(b.model&&b.model!==b.label?' ('+b.model+')':'')],['effort',b.effort||'default']]);
+  } else if(cmd==='/mode'){
+    if(!arg){ta.value='/mode ';return majSlash();}
+    const r=await api().set_mode(arg); if(r){badge(r);sys(`<b>${esc(NOMS_MODES[r.mode]||r.mode)}</b>`);} else sys('This brain has no permission modes.');
   } else if(cmd==='/background'){ ouvrir('reglages');
   } else if(cmd==='/export'){ shareChat(); sys('Saved this conversation as a page.');
   } else if(cmd==='/help'){ infos(COMMANDES.map(x=>[x.c,x.d]));
+  } else if((await distantes()).some(x=>x.name===cmd)){ envoyer((cmd+' '+arg).trim());
   } else sys(`Unknown command ${esc(cmd)}. Type / to see them all.`);
 }
 function infos(lignes){
@@ -444,20 +539,45 @@ function infos(lignes){
 
 let lastTool=null;
 function onEvent(ev){
-  if(ev.type==='text'){ setStatus('ready', false);
-    add(`<div class="msg root"><div class="lisere"></div><div class="corps">${esc(ev.text)}</div></div>`); }
-  else if(ev.type==='tool'){ bump(); setStatus('using a tool', true);
+  if(ev.type==='text'){
+    add(`<div class="msg root"><div class="lisere"></div><div class="corps">${enRiche(ev.text)}</div></div>`); }
+  else if(ev.type==='tool'){ setStatus('using '+ev.name, true);
     lastTool=add(`<div class="outil"><div class="tete"><span class="rond"></span><span class="nom">${esc(ev.name)}</span><span class="args">${esc(JSON.stringify(ev.args))}</span></div></div>`);
+    if(ev.id)OUTILS[ev.id]=lastTool;
   }
   else if(ev.type==='result'){
-    if(lastTool){lastTool.classList.add('fait');}
-    const host=lastTool||add(`<div class="outil fait"><div class="tete"><span class="rond"></span><span class="nom">result</span></div></div>`);
+    const cible=(ev.id&&OUTILS[ev.id])||lastTool;
+    if(cible){cible.classList.add('fait');}
+    const host=cible||add(`<div class="outil fait"><div class="tete"><span class="rond"></span><span class="nom">result</span></div></div>`);
     const d=document.createElement('div');d.className='detail';d.textContent=(ev.text||'').slice(0,2000);host.appendChild(d);fil.scrollTop=fil.scrollHeight;
   }
   else if(ev.type==='permission'){ setStatus('waiting for you', true); permissionCard(ev); }
-  else if(ev.type==='done'){ setStatus('ready', false); document.getElementById('st-bar').style.setProperty('--w','0%'); }
+  else if(ev.type==='question'){ setStatus('waiting for you', true); questionCard(ev); }
+  else if(ev.type==='status'){ setStatus(ev.text, true); }
+  else if(ev.type==='usage'){ usage(ev); }
+  else if(ev.type==='done'){ setStatus('ready', false); if(api())api().active_brain().then(badge); }
   else if(ev.type==='error'){ setStatus('error', false);
     add(`<div class="msg root"><div class="lisere" style="background:linear-gradient(#f87171,transparent)"></div><div class="corps" style="color:#f6b3a0">${esc(ev.text)}</div></div>`); }
+}
+function questionCard(ev){
+  const choix={};
+  const html=ev.questions.map((q,i)=>`<div data-q="${i}">${q.header?`<div class="h">${esc(q.header)}</div>`:''}<div class="q">${esc(q.question)}</div>
+    <div class="opts">${(q.options||[]).map((o,j)=>`<button class="opt" data-j="${j}">${esc(o.label)}${o.description?`<small>${esc(o.description)}</small>`:''}</button>`).join('')}</div></div>`).join('');
+  const n=add(`<div class="question">${html}<div class="row"><button class="oui">Send</button><button class="non">Skip</button></div></div>`);
+  n.querySelectorAll('[data-q]').forEach(bloc=>{
+    const q=ev.questions[+bloc.dataset.q]; choix[q.question]=new Set();
+    bloc.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+      const lab=q.options[+b.dataset.j].label, S=choix[q.question];
+      if(q.multiSelect){ S.has(lab)?S.delete(lab):S.add(lab); b.classList.toggle('on'); }
+      else { S.clear(); S.add(lab); bloc.querySelectorAll('.opt').forEach(x=>x.classList.toggle('on',x===b)); }
+    });
+  });
+  const fin=(answers,txt)=>{api().question_answer(ev.id,answers);n.querySelector('.row').outerHTML=`<div class="verdict" style="color:#6fd4b6">${esc(txt)}</div>`;setStatus('thinking',true);};
+  n.querySelector('.oui').onclick=()=>{
+    const answers={}; for(const [k,S] of Object.entries(choix)){ if(!S.size)return; answers[k]=[...S].join(', '); }
+    fin(answers,Object.values(answers).join(' · '));
+  };
+  n.querySelector('.non').onclick=()=>fin(null,'Skipped');
 }
 function permissionCard(ev){
   const n=add(`<div class="demande"><div class="q">The agent wants to: <b>${esc(ev.title)}</b></div>

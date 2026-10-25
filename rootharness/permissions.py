@@ -33,3 +33,21 @@ def ask(title: str, args: dict) -> bool:
         return bool(_asker(title, args))
     except Exception:
         return False
+
+
+# Questions: sometimes the agent asks you to choose (e.g. "which approach?").
+# The window shows the options as buttons and returns {question: chosen label},
+# or None if you dismiss it.
+_questioner: Callable[[list], dict | None] = lambda questions: None
+
+
+def set_questioner(fn: Callable[[list], dict | None]) -> None:
+    global _questioner
+    _questioner = fn
+
+
+def ask_question(questions: list) -> dict | None:
+    try:
+        return _questioner(questions)
+    except Exception:
+        return None
