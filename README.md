@@ -85,14 +85,27 @@ memory, skills, MCP servers, agents and every slash command (`/context`,
 - every conversation is kept, **sorted by agent**, and you can make **folders** and drag
   conversations into them; your terminal sessions are listed too, and continue here in a copy
 
+## Your account (local only)
+
+The first launch asks for a pseudo (any one) and a password. There is no server
+and no sign-up anywhere: the password locks your identity key on your machine
+(NIP-49: scrypt + XChaCha20-Poly1305). In Settings, **Stay signed in** keeps the
+unlocked key in the system keychain so root-harness opens without asking; off,
+the password is asked at each launch. A forgotten password cannot be recovered:
+you can start a new account, with a new ID.
+
+Note: the password protects your identity, not your agent conversations, which
+stay readable on disk by anyone using your computer account.
+
 ## Encrypted channels with other users
 
 Talk to other root-harness users in end-to-end encrypted channels (one-to-one
 or small groups), over [Nostr](https://nostr.com) private messages (NIP-17,
 NIP-44 encryption, NIP-59 gift wraps).
 
-- Your identity is a key made on your machine and kept in the system keychain.
-  No account, no email, no phone number. Give friends your ID (`npub1...`).
+- Your identity is the key of your local account, locked by your password.
+  No email, no phone number. Give friends your ID (`npub1...`); your pseudo
+  travels inside the sealed messages, never in public.
 - Each message is sealed separately for each member. Public relays only carry
   sealed blobs: they see neither the text, nor the sender, nor the channel's
   name or members.

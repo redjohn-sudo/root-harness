@@ -20,7 +20,7 @@ from pathlib import Path
 
 import webview
 
-from . import permissions, brains, conversations
+from . import permissions, brains, conversations, account
 
 UI = Path(__file__).parent / "ui" / "index.html"
 # Your settings live in your home folder, never in the repo.
@@ -52,6 +52,11 @@ class Api:
         self.log: dict = {"events": []}
         self._title = ""                # title to use when it gets saved
         self.channels = None            # encrypted channels, started when first opened
+        self.keys = None                # your identity, once unlocked
+        try:
+            self.keys = account.auto()  # "stay signed in": no password at launch
+        except Exception:
+            self.keys = None
         self.brain = brains.by_id(read_settings().get("brain", "")) or brains.by_id(brains.DEFAULT)
         self._new_session()
         permissions.set_asker(self._ask)
@@ -201,12 +206,63 @@ class Api:
             conversations.remove(ident)
         return True
 
+    # -- your account: pseudo + password, on this machine only (account.py) -----
+
+    def account_state(self):
+        return {**account.state(), "unlocked": self.keys is not None}
+
+    def account_create(self, pseudo: str, password: str, again: str):
+        keys, why = account.create(pseudo, password, again)
+        if keys is None:
+            return {"error": why}
+        self.keys = keys
+        return self.account_state()
+
+    def account_unlock(self, password: str):
+        keys = account.unlock(password)
+        if keys is None:
+            return {"error": "Wrong password."}
+        self.keys = keys
+        return self.account_state()
+
+    def account_set_stay(self, on: bool):
+        return account.set_stay(bool(on), self.keys) and self.account_state()
+
+    def account_change_password(self, old: str, new: str, again: str):
+        why = account.change_password(old, new, again)
+        return {"error": why} if why else self.account_state()
+
+    def account_set_pseudo(self, pseudo: str):
+        if not account.set_pseudo(pseudo):
+            return None
+        if self.channels:
+            self.channels.pseudo = account.state()["pseudo"]
+        return self.account_state()
+
+    def account_lock(self):
+        """Lock now: forget the unlocked key until the password is typed again."""
+        if self.channels:
+            self.channels.close()
+            self.channels = None
+        self.keys = None
+        return self.account_state()
+
+    def account_reset(self, confirm: str):
+        """Forgotten password: start a new account (type RESET to confirm)."""
+        if confirm.strip() != "RESET":
+            return None
+        self.account_lock()
+        account.reset()
+        return self.account_state()
+
     # -- encrypted channels between users (see channels.py) ---------------------
 
     def _ch(self):
+        if self.keys is None:
+            raise RuntimeError("Locked: type your password first.")
         if self.channels is None:
             from .channels import Channels
-            self.channels = Channels(self._emit)
+            self.channels = Channels(self._emit, self.keys, account.state().get("pseudo", ""))
         return self.channels
 
     def channels_start(self):

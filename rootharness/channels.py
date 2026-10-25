@@ -2,8 +2,8 @@
 Encrypted channels between root-harness users, over Nostr (NIP-17 private
 messages, NIP-44 encryption, NIP-59 gift wraps).
 
-  - Your identity is a key made on your machine, kept in the system keychain
-    (Keychain on macOS). No account, no email, no phone number.
+  - Your identity is a key made on your machine and locked with your password
+    (see account.py). No server account, no email, no phone number.
   - A message is sealed for each member separately. Public relays carry it but
     only see an encrypted blob from a throwaway key: not the text, not who sent
     it, not the channel's name or members.
@@ -12,7 +12,11 @@ messages, NIP-44 encryption, NIP-59 gift wraps).
 
 What relays still see: your IP address and when you connect, and that some
 blob is addressed to your public key. A stolen secret key would open past
-messages too (no forward secrecy), which is why it lives in the keychain.
+messages too (no forward secrecy), which is why it is locked by your password.
+
+Your pseudo travels inside the sealed message. Anyone can claim any pseudo, so
+the name you give a contact is the one shown; a stranger's pseudo is shown
+with their ID next to it.
 
 The agent never reads or sends in a channel by itself: sending is always a
 human click.
@@ -35,7 +39,6 @@ HOME = Path(os.environ.get("ROOT_HARNESS_HOME") or Path.home() / ".root-harness"
 STATE = HOME / "channels.json"
 LOGS = HOME / "channels"
 RELAYS = ["wss://relay.damus.io", "wss://nos.lol", "wss://relay.primal.net"]
-KEYCHAIN = ("root-harness", "nostr-secret-key")
 LOOKBACK = 3 * 86400        # gift wraps are back-dated up to 2 days (NIP-59)
 
 
@@ -46,19 +49,6 @@ async def _aw(x):
 def _n():
     import nostr_sdk
     return nostr_sdk
-
-
-# -- identity: a key in the keychain -----------------------------------------
-
-def _keys():
-    import keyring
-    n = _n()
-    secret = keyring.get_password(*KEYCHAIN)
-    if secret:
-        return n.Keys.parse(secret)
-    keys = n.Keys.generate()
-    keyring.set_password(*KEYCHAIN, keys.secret_key().to_bech32())
-    return keys
 
 
 def _hex_of(npub_or_hex: str) -> str | None:
@@ -88,6 +78,7 @@ def _load() -> dict:
     s.setdefault("channels", {})      # id -> {"name", "members": [hex, ...] (not you), "unread", "last", "request"}
     s.setdefault("relays", RELAYS)
     s.setdefault("seen", [])          # gift wrap ids already handled
+    s.setdefault("pseudos", {})       # hex -> the pseudo they announce (not trusted)
     return s
 
 
@@ -120,12 +111,12 @@ def _append(cid: str, msg: dict) -> bool:
 class Channels:
     """Runs the Nostr client on its own loop; calls on_event for the window."""
 
-    def __init__(self, on_event: Callable[[dict], None], keys=None):
+    def __init__(self, on_event: Callable[[dict], None], keys, pseudo: str = ""):
         self.on_event = on_event
-        self._given_keys = keys          # tests only; normally the keychain
+        self.keys = keys                  # unlocked by your password (account.py)
+        self.pseudo = pseudo
         self.lock = threading.Lock()
-        self.keys = None
-        self.me = ""
+        self.me = keys.public_key().to_hex()
         self.client = None
         self.loop = asyncio.new_event_loop()
         threading.Thread(target=self.loop.run_forever, daemon=True).start()
@@ -138,8 +129,6 @@ class Channels:
 
     async def _start(self) -> None:
         n = _n()
-        self.keys = self._given_keys or await asyncio.to_thread(_keys)
-        self.me = self.keys.public_key().to_hex()
         self.client = n.ClientBuilder().build()
         for r in _load()["relays"]:
             await _aw(self.client.add_relay(n.RelayUrl.parse(r)))
@@ -188,9 +177,12 @@ class Channels:
         members = {t.content() for t in tags if t.kind() == "p" and t.content()} | {sender, self.me}
         rid = next((t.content() for t in tags if t.kind() == "rh-id"), None) or wid
         subject = next((t.content() for t in tags if t.kind() == "subject"), None)
+        their = next((t.content() for t in tags if t.kind() == "rh-name"), None)
         cid = channel_id(members)
         with self.lock:
             s = _load()
+            if their and sender != self.me:
+                s["pseudos"][sender] = their[:32]
             ch = s["channels"].get(cid)
             if ch is None:
                 others = sorted(members - {self.me})
@@ -224,7 +216,11 @@ class Channels:
             return "You"
         s = s or _load()
         c = s["contacts"].get(hexkey)
-        return c["name"] if c else _npub(hexkey)[:14] + "..."
+        if c:
+            return c["name"]
+        short = _npub(hexkey)[:14] + "..."
+        p = s["pseudos"].get(hexkey)
+        return f"{p} ({short})" if p else short
 
     def _view(self, m: dict) -> dict:
         return {**m, "mine": m["from"] == self.me, "name": self._name(m["from"])}
@@ -249,7 +245,8 @@ class Channels:
             log = _read_log(cid)
             last = log[-1] if log else None
             chans.append({"id": cid, "name": ch["name"] or ", ".join(self._name(m, s) for m in ch["members"]),
-                          "members": [{"hex": m, "name": self._name(m, s), "npub": _npub(m)} for m in ch["members"]],
+                          "members": [{"hex": m, "name": self._name(m, s), "npub": _npub(m),
+                                       "pseudo": s["pseudos"].get(m, "")} for m in ch["members"]],
                           "unread": ch["unread"], "last": ch["last"], "request": ch.get("request", False),
                           "preview": (self._name(last["from"], s) + ": " + last["text"])[:80] if last else ""})
         chans.sort(key=lambda c: -c["last"])
@@ -327,6 +324,8 @@ class Channels:
         best = 0
         for receiver in everyone:
             tags = [n.Tag.custom("rh-id", [rid])]
+            if self.pseudo:
+                tags.append(n.Tag.custom("rh-name", [self.pseudo]))
             if ch["name"]:
                 tags.append(n.Tag.custom("subject", [ch["name"]]))
             tags += [n.Tag.public_key(n.PublicKey.parse(m)) for m in ch["members"] if m != receiver]
