@@ -10,6 +10,8 @@ from __future__ import annotations
 
 import asyncio
 import json
+import shutil
+import subprocess
 import threading
 from pathlib import Path
 
@@ -18,6 +20,23 @@ import webview
 from . import permissions, bridge_claude
 
 UI = Path(__file__).parent / "ui" / "index.html"
+# Your settings live in your home folder, never in the repo.
+SETTINGS = Path.home() / ".root-harness" / "settings.json"
+IMAGES = (".jpg", ".jpeg", ".png", ".webp", ".gif", ".heic", ".heif")
+
+
+def read_settings() -> dict:
+    try:
+        return json.loads(SETTINGS.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
+def write_settings(**changes) -> dict:
+    s = read_settings() | changes
+    SETTINGS.parent.mkdir(parents=True, exist_ok=True)
+    SETTINGS.write_text(json.dumps(s, indent=2), encoding="utf-8")
+    return s
 
 
 class Api:
@@ -42,6 +61,42 @@ class Api:
         if slot:
             slot["allow"] = bool(allow)
             slot["event"].set()
+
+    # -- settings: the background ------------------------------------------
+
+    def settings_get(self):
+        return read_settings()
+
+    def set_background(self, preset: str):
+        """One of the built-in looks (a gradient)."""
+        return write_settings(background=preset, image="")
+
+    def choose_background(self):
+        """Open the file picker and use any image as the background.
+        The image is copied next to the UI so the page can load it."""
+        mode = getattr(getattr(webview, "FileDialog", None), "OPEN", None)
+        picked = self._window.create_file_dialog(
+            mode or webview.OPEN_DIALOG, allow_multiple=False,
+            file_types=("Images (*.jpg;*.jpeg;*.png;*.webp;*.gif;*.heic;*.heif)",))
+        if not picked:
+            return None
+        src = Path(picked[0])
+        if src.suffix.lower() not in IMAGES:
+            return None
+        for old in UI.parent.glob("background.local.*"):
+            old.unlink(missing_ok=True)
+        ext = src.suffix.lower()
+        try:
+            if ext in (".heic", ".heif"):   # iPhone photos: browsers can't show them, convert (macOS)
+                dest = UI.parent / "background.local.jpg"
+                subprocess.run(["sips", "-s", "format", "jpeg", str(src), "--out", str(dest)],
+                               capture_output=True, timeout=30, check=True)
+            else:
+                dest = UI.parent / f"background.local{ext}"
+                shutil.copy(src, dest)
+        except (OSError, subprocess.SubprocessError):
+            return None
+        return write_settings(image=dest.name)
 
     # -- internals ---------------------------------------------------------
 
