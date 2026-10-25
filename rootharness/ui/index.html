@@ -50,8 +50,8 @@ body::before{content:"";position:fixed;inset:0;background:var(--givre) 0 0/200px
 
 /* ── Panneau réglages (glisse) ───────────────────────────────── */
 .panneau{position:fixed;left:var(--dock);top:0;bottom:0;width:300px;z-index:25;padding:18px;overflow-y:auto;
-  background:var(--givre) 0 0/200px,var(--verre-fort);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
-  border-right:1px solid var(--trait);transform:translateX(-112%);opacity:0;transition:transform .42s var(--ease-glisse),opacity .3s}
+  background:var(--givre) 0 0/200px,rgba(11,17,16,.9);backdrop-filter:blur(26px);-webkit-backdrop-filter:blur(26px);
+  border-right:1px solid var(--trait);box-shadow:18px 0 40px rgba(0,0,0,.35);transform:translateX(-112%);opacity:0;transition:transform .42s var(--ease-glisse),opacity .3s}
 .panneau.ouvert{transform:none;opacity:1}
 .panneau h3{font-size:15px;margin-bottom:4px}
 .panneau .sous{color:var(--encre-3);font-size:12.5px;margin-bottom:16px}
@@ -61,6 +61,29 @@ body::before{content:"";position:fixed;inset:0;background:var(--givre) 0 0/200px
 .swatch:hover{transform:translateY(-2px)}
 .swatch.sel{border-color:var(--vert-clair);box-shadow:0 0 0 2px rgba(111,212,182,.3)}
 .swatch span{position:absolute;left:8px;bottom:6px;font-size:11px;color:#fff;text-shadow:0 1px 3px #000}
+
+/* ── Panneau Cerveaux ── */
+.groupe{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--encre-3);margin:16px 0 8px}
+.cerveau{border:1px solid var(--trait);border-radius:14px;padding:11px 13px;margin-bottom:8px;cursor:pointer;position:relative;
+  background:rgba(255,255,255,.03);opacity:0;animation:monte .5s var(--ease-out) forwards;animation-delay:calc(var(--i)*35ms);
+  transition:transform .2s var(--ease),border-color .25s,background .25s}
+@keyframes monte{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.cerveau:hover{transform:translateX(3px);border-color:var(--trait-fort);background:rgba(255,255,255,.06)}
+.cerveau.actif{border-color:rgba(111,212,182,.55);background:rgba(63,157,132,.13);box-shadow:0 0 0 1px rgba(111,212,182,.15),0 0 24px rgba(111,212,182,.12)}
+.cerveau.off{cursor:default;opacity:.55}
+.cerveau .l1{display:flex;align-items:center;gap:8px;font-weight:600;font-size:13.5px}
+.cerveau .mod{font-weight:500;color:var(--encre-2)}
+.cerveau .pt{width:7px;height:7px;border-radius:50%;margin-left:auto;background:var(--vert-clair);box-shadow:0 0 8px var(--vert-clair)}
+.cerveau.off .pt{background:var(--encre-3);box-shadow:none}
+.cerveau .note{font-size:12px;color:var(--encre-3);margin-top:4px;line-height:1.45}
+.cerveau .pourquoi{font-size:11.5px;color:var(--ambre);margin-top:5px}
+.cle{display:flex;gap:6px;margin-top:8px}
+.cle input{flex:1;min-width:0;background:rgba(0,0,0,.25);border:1px solid var(--trait);border-radius:9px;padding:7px 9px;color:var(--encre);font:12px var(--mono);outline:0}
+.cle input:focus{border-color:rgba(111,212,182,.5)}
+.cle button{padding:7px 11px;border-radius:9px;font-size:12px;color:var(--vert-clair);border:1px solid rgba(111,212,182,.4);background:rgba(63,157,132,.14)}
+#statut .badge{transition:transform .35s var(--ease)} #statut .badge.change{animation:pop .5s var(--ease-out)}
+@keyframes pop{0%{transform:scale(.8);opacity:.3}60%{transform:scale(1.08)}100%{transform:none;opacity:1}}
+#statut .badge{cursor:pointer}
 
 /* ── Header ──────────────────────────────────────────────────── */
 header{position:relative;z-index:2;margin:14px 16px 0;padding:11px 14px;border-radius:var(--rayon);
@@ -136,11 +159,20 @@ body.reflechit #envoyer{animation:respire 1.2s ease-in-out infinite}
     <div class="logo">R</div>
     <button class="dicone" id="ic-chat" title="Chat" onclick="ouvrir(null)">
       <svg viewBox="0 0 24 24" fill="none"><path d="M21 12a8 8 0 01-11.5 7.2L4 20l1-4.6A8 8 0 1121 12z" stroke="currentColor" stroke-width="1.8"/></svg></button>
+    <button class="dicone" id="ic-cerveaux" title="Brains" onclick="ouvrir('cerveaux')">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 4.5a3 3 0 0 0-3 3v.3a3 3 0 0 0-1.5 5.2A3 3 0 0 0 9 17.6V19.5h1.5V4.5zM15 4.5a3 3 0 0 1 3 3v.3a3 3 0 0 1 1.5 5.2 3 3 0 0 1-4.5 4.6v1.9h-1.5V4.5z"/></svg></button>
     <div class="dock-bas">
       <button class="dicone" id="ic-reglages" title="Settings" onclick="ouvrir('reglages')">
         <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3.2" stroke="currentColor" stroke-width="1.8"/><path d="M19 12a7 7 0 00-.1-1.2l2-1.5-2-3.4-2.3 1a7 7 0 00-2-1.2L14 1h-4l-.6 2.5a7 7 0 00-2 1.2l-2.3-1-2 3.4 2 1.5A7 7 0 005 12c0 .4 0 .8.1 1.2l-2 1.5 2 3.4 2.3-1a7 7 0 002 1.2L10 23h4l.6-2.5a7 7 0 002-1.2l2.3 1 2-3.4-2-1.5c.1-.4.1-.8.1-1.2z" stroke="currentColor" stroke-width="1.5"/></svg></button>
     </div>
   </nav>
+
+  <!-- Panneau Cerveaux : qui pense pour l'agent -->
+  <aside class="panneau" id="cerveaux">
+    <h3>Brains</h3>
+    <div class="sous">Who thinks for your agent. Same tools, same Allow / Deny cards.</div>
+    <div id="liste-cerveaux"></div>
+  </aside>
 
   <!-- Panneau Reglages : changer le fond -->
   <aside class="panneau" id="reglages">
@@ -175,8 +207,8 @@ body.reflechit #envoyer{animation:respire 1.2s ease-in-out infinite}
 
   <!-- Barre de statut facon terminal : agent/modele choisis + statut live -->
   <div id="statut">
-    <span class="badge" id="st-modele">Claude</span>
-    <span class="sep">·</span><span id="st-agent">root-harness</span>
+    <span class="badge" id="st-modele" onclick="ouvrir('cerveaux')" title="Change brain">Claude</span>
+    <span class="sep">·</span><span id="st-agent">Sonnet</span>
     <span class="sep">·</span><span class="bar"><i id="st-bar"></i></span>
     <span class="sep">·</span><span class="live" id="st-live">ready</span>
   </div>
@@ -216,7 +248,7 @@ Object.entries(FONDS).forEach(([k,f])=>{
   s.innerHTML=`<span>${f.label}</span>`;s.onclick=()=>appliquerFond(k);grid.appendChild(s);
 });
 montrer({});
-window.addEventListener('pywebviewready',async()=>montrer(await api().settings_get()));
+window.addEventListener('pywebviewready',async()=>{montrer(await api().settings_get());badge(await api().active_brain());});
 // depth: the background follows the mouse a little (as in Root)
 addEventListener('mousemove',e=>{const r=document.documentElement.style;
   r.setProperty('--mx',(e.clientX/innerWidth-.5).toFixed(3));r.setProperty('--my',(e.clientY/innerHeight-.5).toFixed(3));});
@@ -225,7 +257,40 @@ addEventListener('mousemove',e=>{const r=document.documentElement.style;
 function ouvrir(nom){
   document.querySelectorAll('.panneau').forEach(p=>p.classList.toggle('ouvert',p.id===nom));
   document.querySelectorAll('.dicone').forEach(d=>d.classList.remove('on'));
-  if(nom==='reglages') document.getElementById('ic-reglages').classList.add('on');
+  if(nom) document.getElementById('ic-'+nom).classList.add('on');
+  if(nom==='cerveaux') rendreCerveaux();
+}
+
+// -- brains --
+function badge(b){
+  const el=document.getElementById('st-modele');
+  el.textContent=b.name; document.getElementById('st-agent').textContent=b.label||'';
+  el.classList.remove('change'); void el.offsetWidth; el.classList.add('change');
+}
+async function rendreCerveaux(){
+  if(!api())return;
+  const r=await api().brains_list(), L=document.getElementById('liste-cerveaux');
+  let html='', groupe='', i=0;
+  for(const b of r.brains){
+    if(b.group!==groupe){ groupe=b.group; html+=`<div class="groupe">${esc(groupe)}</div>`; }
+    const cle=(!b.ready&&b.key)?`<div class="cle"><input type="password" placeholder="${esc(b.key)}" data-k="${esc(b.key)}"><button data-k="${esc(b.key)}">Save</button></div>`:'';
+    html+=`<div class="cerveau${b.id===r.active?' actif':''}${b.ready?'':' off'}" data-id="${esc(b.id)}" style="--i:${i++}">
+      <div class="l1">${esc(b.name)} <span class="mod">${esc(b.label)}</span><span class="pt"></span></div>
+      <div class="note">${esc(b.note)}</div>${b.ready?'':`<div class="pourquoi">${esc(b.why)}</div>`}${cle}</div>`;
+  }
+  L.innerHTML=html;
+  L.querySelectorAll('.cerveau').forEach(el=>el.onclick=async e=>{
+    if(e.target.closest('.cle')||el.classList.contains('off'))return;
+    const b=await api().choose_brain(el.dataset.id);
+    if(!b)return;
+    L.querySelectorAll('.cerveau').forEach(c=>c.classList.toggle('actif',c===el));
+    badge(b);
+    add(`<div class="accueil" style="display:block">Now thinking with <b>${esc(b.name)} ${esc(b.label)}</b>. New conversation.</div>`);
+  });
+  L.querySelectorAll('.cle button').forEach(bt=>bt.onclick=async()=>{
+    const inp=bt.parentElement.querySelector('input');
+    if(inp.value.trim()&&await api().save_key(bt.dataset.k,inp.value)) rendreCerveaux();
+  });
 }
 
 // -- status --
@@ -280,7 +345,7 @@ function shareChat(){
 }
 // close panel on outside click
 document.addEventListener('click',e=>{
-  if(!e.target.closest('.panneau')&&!e.target.closest('#dock')) document.querySelectorAll('.panneau.ouvert').forEach(p=>{p.classList.remove('ouvert');document.getElementById('ic-reglages').classList.remove('on');});
+  if(!e.target.closest('.panneau')&&!e.target.closest('#dock')&&!e.target.closest('#st-modele')) document.querySelectorAll('.panneau.ouvert').forEach(p=>{p.classList.remove('ouvert');document.querySelectorAll('.dicone').forEach(d=>d.classList.remove('on'));});
 });
 </script>
 </body></html>

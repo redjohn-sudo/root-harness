@@ -8,7 +8,6 @@ tool waits here until the human clicks Allow or Deny.
 """
 from __future__ import annotations
 
-import asyncio
 import json
 import shutil
 import subprocess
@@ -17,7 +16,7 @@ from pathlib import Path
 
 import webview
 
-from . import permissions, bridge_claude
+from . import permissions, brains
 
 UI = Path(__file__).parent / "ui" / "index.html"
 # Your settings live in your home folder, never in the repo.
@@ -44,6 +43,9 @@ class Api:
         self._window = None
         self._pending = {}  # permission id -> threading.Event + answer
         self._next = 0
+        self._busy = threading.Lock()   # one turn at a time
+        self.brain = brains.by_id(read_settings().get("brain", "")) or brains.by_id(brains.DEFAULT)
+        self.session = brains.new_session(self.brain)
         permissions.set_asker(self._ask)
 
     def bind(self, window):
@@ -54,6 +56,29 @@ class Api:
     def send(self, prompt: str):
         """The human sent a message. Run one agent turn in the background."""
         threading.Thread(target=self._run, args=(prompt,), daemon=True).start()
+
+    # -- brains: which model thinks ------------------------------------------
+
+    def brains_list(self):
+        return {"active": self.brain["id"],
+                "brains": [brains.public(b) for b in brains.catalog()]}
+
+    def choose_brain(self, ident: str):
+        """Switch brain. The new one starts a fresh conversation."""
+        b = brains.by_id(ident)
+        if not b or not brains.status(b)["ready"] or self._busy.locked():
+            return None
+        self.session.close()
+        self.brain, self.session = b, brains.new_session(b)
+        write_settings(brain=ident)
+        return brains.public(b)
+
+    def active_brain(self):
+        return brains.public(self.brain)
+
+    def save_key(self, name: str, value: str):
+        """Store a key typed in the window, in ~/.root-harness/.env only."""
+        return brains.save_key(name, value)
 
     def permission_answer(self, pid: str, allow: bool):
         """The human clicked Allow or Deny on a permission card."""
@@ -113,10 +138,16 @@ class Api:
         return self._pending.pop(pid)["allow"]
 
     def _run(self, prompt: str):
+        if not self._busy.acquire(blocking=False):
+            self._emit({"type": "error", "text": "Still working on the last message."})
+            return
         try:
-            asyncio.run(bridge_claude.run_turn(prompt, self._emit))
+            self.session.run_turn(prompt, self._emit)
         except Exception as e:
             self._emit({"type": "error", "text": f"{type(e).__name__}: {e}"})
+            self._emit({"type": "done", "text": ""})
+        finally:
+            self._busy.release()
 
 
 def start():

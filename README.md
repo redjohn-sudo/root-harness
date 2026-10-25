@@ -46,8 +46,8 @@ command, you get an **Allow / Deny** card.
 
 Three small ideas, each in one readable file:
 
-- **The loop** lives in the Claude Agent SDK: Claude thinks, picks a tool, sees
-  the result, and continues. We just expose our tools to it. (`bridge_claude.py`)
+- **The brain** is yours to pick: Claude, Codex, or any API key. Same window,
+  same tools, same permission cards. (`brains.py`)
 - **The tools** are a short, safe list you can read in full: read a file, list a
   folder, write a file, run a command. (`tools.py`)
 - **The permission gate** sits in front of anything that changes your machine.
@@ -71,16 +71,25 @@ def weather(city: str) -> str:
 A read-only tool runs freely; a tool that changes something calls
 `permissions.ask(...)` first. See [examples/add_your_own_tool.py](examples/add_your_own_tool.py).
 
-## Plug a different model
+## Pick your brain
 
-v1 is centered on your Claude subscription. An **API-key path** (any
-OpenAI-compatible provider, or the Anthropic API) is in `models.py` and on the
-roadmap, so people with API credits or a local model (Ollama) can use it too.
+Click the brain icon on the left and choose who thinks for your agent:
+
+| Brain | What you need | How it runs |
+|---|---|---|
+| Claude (Sonnet, Opus, Haiku) | a Claude Pro/Max plan | Claude Agent SDK (`bridge_claude.py`) |
+| Codex | a ChatGPT plan or OpenAI key | Codex app server (`bridge_codex.py`) |
+| DeepSeek, Kimi, GLM, Claude API | an API key | our own short loop (`bridge_api.py`) |
+| Ollama | nothing, it runs on your machine | our own short loop (`bridge_api.py`) |
+
+Keys are typed once in the window and kept in `~/.root-harness/.env`, readable
+by you only. Any other OpenAI-compatible provider can be added in
+`~/.root-harness/brains.json`.
 
 ## Roadmap
 
 - [ ] Guided first-run setup (make step 2 painless)
-- [ ] API-key path (OpenAI-compatible, Anthropic) and local models (Ollama)
+- [x] Pick your brain: Claude, Codex, API keys, local models (Ollama)
 - [ ] Richer "share" (a reusable agent setup a friend opens in one click)
 - [ ] App icon and a one-file install
 - [ ] Docs and examples for École 42
