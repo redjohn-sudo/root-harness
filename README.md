@@ -143,6 +143,24 @@ the phone talks to it through sealed messages, so there is no port to open
 and nothing readable on the relays. Permission cards show on the phone too.
 Off by default, and per computer. See [mobile/](mobile/).
 
+## Vibe code from your phone, computer off: Claude on GitHub
+
+Claude Code can also work in one of your repositories on **GitHub's machines**,
+with your Claude Pro/Max plan, so no computer has to stay on.
+
+1. On the computer, **Settings, Claude on GitHub**: pick a repository and
+   install the workflow (one commit). Then add your Claude token yourself:
+   `claude setup-token`, then `gh secret set CLAUDE_CODE_OAUTH_TOKEN -R <repo>`.
+2. On the phone, the **GitHub** tab: paste a fine-grained GitHub token for that
+   repository (Issues read/write, Contents read, Actions read), pick the repo,
+   and describe what to build.
+
+Each conversation is an issue; Claude answers in a progress comment and gives
+you the branch it worked on, with a link to open a pull request. Only the
+repository owner can start it, so nobody else spends your plan. It is not live
+like the computer (each request starts a machine, about a minute), and you
+review the branch before anything is merged.
+
 ## Commands
 
 Type `/` in the message box. Arrows to move, Enter or Tab to pick. With Claude,

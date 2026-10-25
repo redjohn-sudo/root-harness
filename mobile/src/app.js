@@ -7,6 +7,7 @@ import { getPublicKey, finalizeEvent, generateSecretKey, verifyEvent } from 'nos
 import * as nip44 from 'nostr-tools/nip44'
 import * as nip49 from 'nostr-tools/nip49'
 import { SimplePool } from 'nostr-tools/pool'
+import { makeGitHub } from './github.js'
 
 const RELAYS = ['wss://relay.damus.io', 'wss://nos.lol', 'wss://relay.primal.net']
 const LOGIN_LABEL = 'root-harness-login'
@@ -17,6 +18,24 @@ const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<
 const ck = (sk, pub) => nip44.v2.utils.getConversationKey(sk, pub)
 
 let pool = null, sk = null, me = '', since = 0, lastState = 0
+let mode = 'computer', enTete = ''          // which tab, and the computer's brain line
+// the GitHub token is kept sealed with your identity, like everything else here
+const seal = (t) => nip44.v2.encrypt(t, ck(sk, me))
+const open = (t) => nip44.v2.decrypt(t, ck(sk, me))
+const github = makeGitHub({
+  $: (s) => document.querySelector(s === '#fil' ? '#fil-gh' : s),
+  ajouter: (html) => { const f = document.querySelector('#fil-gh'), w = document.createElement('div'); w.innerHTML = html
+    const n = w.firstElementChild; f.appendChild(n); f.scrollTop = f.scrollHeight; return n },
+  riche: (t) => riche(t), esc, etat: (t, k) => { if (mode === 'github') etat(t, k, 'github') }, seal, open,
+})
+function onglet(m) {
+  mode = m
+  document.querySelectorAll('#modes button').forEach((b) => b.classList.toggle('on', b.dataset.m === m))
+  document.body.classList.toggle('gh', m === 'github')
+  $('#entree').placeholder = m === 'github' ? 'Describe what to build...' : 'Ask your agent...'
+  if (m === 'github') github.enter()
+  else { github.leave(); $('#modele').textContent = enTete; mode = 'computer'; etat(Date.now() - lastState < 60000 ? 'connected' : 'Calling your computer...', Date.now() - lastState < 60000 ? 'ok' : 'attente'); if (Date.now() - lastState > 60000) order('hello') }
+}
 const seen = new Set()
 
 // -- account: sign in with pseudo + password, or unlock with the password -----
@@ -136,7 +155,8 @@ function recu(m) {
   if (m.op === 'state') {
     lastState = Date.now()
     const s = m.state
-    $('#modele').textContent = [s.brain, s.model, s.effort && 'effort ' + s.effort].filter(Boolean).join(' · ')
+    enTete = [s.brain, s.model, s.effort && 'effort ' + s.effort].filter(Boolean).join(' · ')
+    if (mode === 'computer') $('#modele').textContent = enTete
     $('#fil').innerHTML = ''; outils = {}
     for (const e of s.events || []) montrer(e, true)
     $$('.outil').forEach((o) => o.classList.add('fait'))
@@ -205,7 +225,8 @@ function carteQuestion(e) {
   n.querySelector('.non').onclick = () => { order('answer', { pid: e.id, answers: null }); n.querySelector('.row').outerHTML = '<div class="verdict r">Skipped</div>' }
 }
 
-function etat(t, kind) {
+function etat(t, kind, from = 'computer') {
+  if (mode === 'github' && from !== 'github') return     // each tab keeps its own status line
   $('#etat').textContent = t; $('#point').className = 'point ' + kind
   document.body.classList.toggle('travail', kind === 'travail')
 }
@@ -215,6 +236,7 @@ function riche(texte) {
   const blocs = []
   texte = (texte || '').replace(/```[\w-]*\n?([\s\S]*?)```/g, (_, c) => `\u0000${blocs.push(c) - 1}\u0000`)
   const ligne = (x) => esc(x).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\[([^\]]+)\]\((https:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
   return texte.split(/\n{2,}/).map((par) => {
     const m = par.match(/^\u0000(\d+)\u0000$/); if (m) return `<pre>${esc(blocs[+m[1]])}</pre>`
     return '<p>' + par.split('\n').map((l) => {
@@ -229,16 +251,18 @@ function riche(texte) {
 async function envoyer() {
   const t = $('#entree').value.trim(); if (!t || !sk) return
   $('#entree').value = ''; ajuster()
+  if (mode === 'github') { if (github.ready()) github.send(t); return }
   envoyes.push(t); ajouter(`<div class="msg toi">${esc(t)}</div>`); etat('sending...', 'travail')
   if (!(await order('send', { text: t }))) etat('Not sent: check your connection.', 'off')
 }
 function ajuster() { const e = $('#entree'); e.style.height = 'auto'; e.style.height = Math.min(e.scrollHeight, 140) + 'px' }
 
 window.addEventListener('DOMContentLoaded', () => {
-  $('#envoyer').onclick = () => document.body.classList.contains('travail') ? order('stop') : envoyer()
+  $('#envoyer').onclick = () => document.body.classList.contains('travail') && mode === 'computer' ? order('stop') : envoyer()
+  document.querySelectorAll('#modes button').forEach((b) => b.onclick = () => onglet(b.dataset.m))
   $('#entree').addEventListener('input', ajuster)
   $('#entree').addEventListener('keydown', (e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) envoyer() })
-  $('#nouveau').onclick = () => { order('new'); $('#fil').innerHTML = '' }
+  $('#nouveau').onclick = () => { if (mode === 'github') return github.fresh(); order('new'); $('#fil').innerHTML = '' }
   $('#verrou').onclick = () => { sk = null; me = ''; location.reload() }
   const acc = stored(); acc ? unlock(acc) : signIn()
 })

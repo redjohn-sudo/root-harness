@@ -392,6 +392,36 @@ class Api:
             self._stop_remote()
         return self.remote_state()
 
+    # -- Claude on GitHub: vibe coding with no computer on (github/) --------------
+
+    def github_overview(self):
+        from . import github
+        if not github.available():
+            return {"available": False}
+        try:
+            return {"available": True, "repos": github.repos(), "chosen": read_settings().get("github_repos", [])}
+        except Exception as e:
+            return {"available": True, "repos": [], "error": str(e)[:200]}
+
+    def github_status(self, repo: str):
+        from . import github
+        try:
+            return github.status(repo)
+        except Exception as e:
+            return {"repo": repo, "error": str(e)[:200]}
+
+    def github_install(self, repo: str):
+        """Put the workflow in this repository (your click is the go-ahead)."""
+        from . import github
+        try:
+            st = github.install(repo)
+        except Exception as e:
+            return {"repo": repo, "error": str(e)[:200]}
+        chosen = read_settings().get("github_repos", [])
+        if repo not in chosen:
+            write_settings(github_repos=chosen + [repo])
+        return st
+
     def sync_status(self):
         return self.sync.status() if self.sync else {}
 
