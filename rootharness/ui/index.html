@@ -9,81 +9,137 @@
   --trait:rgba(255,255,255,.10); --trait-fort:rgba(255,255,255,.24);
   --verre:rgba(14,22,20,.46); --verre-fort:rgba(14,22,20,.64); --toi:rgba(63,157,132,.26);
   --givre:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  --ease:cubic-bezier(.22,.8,.24,1); --ease-out:cubic-bezier(.16,1,.3,1);
+  --ease:cubic-bezier(.22,.8,.24,1); --ease-out:cubic-bezier(.16,1,.3,1); --ease-glisse:cubic-bezier(.65,0,.15,1);
   --rayon:20px; --police:-apple-system,"SF Pro Text",system-ui,sans-serif; --mono:ui-monospace,"SF Mono",Menlo,monospace;
+  --dock:60px;
+  --fond:radial-gradient(900px 500px at 20% -10%,#123a30,rgba(18,58,48,0) 55%),radial-gradient(700px 500px at 110% 120%,#10261f,rgba(16,38,31,0) 50%),#0b0f0e;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 html,body{height:100%}
-body{background:
-    radial-gradient(900px 500px at 20% -10%, #123a30 0%, rgba(18,58,48,0) 55%),
-    radial-gradient(700px 500px at 110% 120%, #10261f 0%, rgba(16,38,31,0) 50%),
-    #0b0f0e;
-  color:var(--encre);font-family:var(--police);display:flex;flex-direction:column;overflow:hidden}
+body{background:var(--fond);color:var(--encre);font-family:var(--police);display:flex;flex-direction:column;overflow:hidden;
+  padding-left:var(--dock);transition:background 1.1s var(--ease)}
 body::before{content:"";position:fixed;inset:0;background:var(--givre) 0 0/200px;opacity:.5;pointer-events:none;z-index:0}
 
-/* Header */
+/* ── Dock gauche ─────────────────────────────────────────────── */
+#dock{position:fixed;left:0;top:0;bottom:0;width:var(--dock);z-index:30;display:flex;flex-direction:column;align-items:center;
+  padding:14px 0;gap:8px;background:var(--givre) 0 0/200px,var(--verre-fort);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border-right:1px solid var(--trait)}
+#dock .logo{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;font-weight:800;color:#06130f;
+  background:linear-gradient(135deg,var(--vert-clair),#0ea5e9);box-shadow:0 0 22px var(--lueur);margin-bottom:8px}
+.dicone{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:var(--encre-3);
+  transition:transform .25s var(--ease),background .3s,color .3s}
+.dicone svg{width:21px;height:21px}
+.dicone:hover{color:var(--encre);background:rgba(255,255,255,.07);transform:scale(1.12)}
+.dicone:active{transform:scale(.92)}
+.dicone.on{color:var(--vert-clair);background:rgba(63,157,132,.16)}
+.dock-bas{margin-top:auto;display:flex;flex-direction:column;gap:8px}
+
+/* ── Panneau réglages (glisse) ───────────────────────────────── */
+.panneau{position:fixed;left:var(--dock);top:0;bottom:0;width:300px;z-index:25;padding:18px;overflow-y:auto;
+  background:var(--givre) 0 0/200px,var(--verre-fort);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
+  border-right:1px solid var(--trait);transform:translateX(-112%);opacity:0;transition:transform .42s var(--ease-glisse),opacity .3s}
+.panneau.ouvert{transform:none;opacity:1}
+.panneau h3{font-size:15px;margin-bottom:4px}
+.panneau .sous{color:var(--encre-3);font-size:12.5px;margin-bottom:16px}
+.panneau h4{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--encre-3);margin:16px 0 10px}
+.fonds{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.swatch{height:60px;border-radius:12px;border:1px solid var(--trait);cursor:pointer;position:relative;transition:transform .2s var(--ease),border-color .2s}
+.swatch:hover{transform:translateY(-2px)}
+.swatch.sel{border-color:var(--vert-clair);box-shadow:0 0 0 2px rgba(111,212,182,.3)}
+.swatch span{position:absolute;left:8px;bottom:6px;font-size:11px;color:#fff;text-shadow:0 1px 3px #000}
+
+/* ── Header ──────────────────────────────────────────────────── */
 header{position:relative;z-index:2;margin:14px 16px 0;padding:11px 14px;border-radius:var(--rayon);
   background:var(--givre) 0 0/200px,var(--verre);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
   border:1px solid var(--trait);display:flex;align-items:center;gap:12px}
 .avatar{width:42px;height:42px;border-radius:13px;flex:none;display:grid;place-items:center;
   background:linear-gradient(135deg,var(--vert-clair),#0ea5e9);box-shadow:0 0 26px var(--lueur);font-weight:800;color:#06130f}
 .id{flex:1;min-width:0}
-.id .nom{font-weight:700;font-size:16px;display:flex;align-items:center;gap:8px}
-.id .pill{font-size:11.5px;font-weight:600;color:var(--vert-clair);border:1px solid rgba(111,212,182,.35);background:rgba(63,157,132,.12);border-radius:999px;padding:2px 8px}
+.id .nom{font-weight:700;font-size:16px}
 #etat{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--encre-2);margin-top:3px}
 #etat .point{width:8px;height:8px;border-radius:50%;background:var(--vert-clair);box-shadow:0 0 10px var(--vert-clair);animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
-.partage{font-size:12.5px;color:var(--encre-2);border:1px solid var(--trait);border-radius:10px;padding:6px 11px}
-.partage:hover{color:var(--encre);border-color:var(--trait-fort)}
+body.reflechit #etat .point{background:var(--ambre);box-shadow:0 0 10px var(--ambre)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.partage{font-size:12.5px;color:var(--encre-2);border:1px solid var(--trait);border-radius:10px;padding:6px 11px;transition:.2s}
+.partage:hover{color:var(--encre);border-color:var(--trait-fort);transform:translateY(-1px)}
 
-/* Fil */
+/* ── Fil ─────────────────────────────────────────────────────── */
 #fil{position:relative;z-index:1;flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:11px}
 .accueil{align-self:center;max-width:380px;text-align:center;color:var(--encre-3);font-size:13.5px;line-height:1.6;padding:24px 10px}
 .msg{max-width:84%;font-size:14.5px;line-height:1.6;animation:arrive .5s var(--ease-out)}
-@keyframes arrive{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes arrive{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
 .msg.toi{align-self:flex-end;padding:11px 15px;border:1px solid var(--trait);background:var(--givre) 0 0/200px,var(--toi);
   border-radius:var(--rayon) var(--rayon) 6px var(--rayon);white-space:pre-wrap;word-break:break-word}
 .msg.root{align-self:flex-start;display:flex;border:1px solid var(--trait);background:var(--givre) 0 0/200px,var(--verre);
   border-radius:6px var(--rayon) var(--rayon) var(--rayon);overflow:hidden}
 .msg.root .lisere{width:3px;flex:none;background:linear-gradient(var(--vert-clair),var(--vert) 60%,transparent)}
 .msg.root .corps{padding:11px 16px;white-space:pre-wrap;word-break:break-word}
-
-/* Carte outil */
-.outil{align-self:flex-start;max-width:84%;border:1px solid var(--trait);border-radius:14px;overflow:hidden;
+.outil{align-self:flex-start;max-width:84%;border:1px solid var(--trait);border-radius:14px;overflow:hidden;animation:arrive .5s var(--ease-out);
   background:var(--givre) 0 0/200px,var(--verre);font-size:13px}
 .outil .tete{display:flex;align-items:center;gap:9px;padding:9px 13px}
-.outil .rond{width:13px;height:13px;flex:none;border-radius:50%;background:var(--vert-clair);box-shadow:0 0 10px var(--lueur)}
+.outil .rond{width:13px;height:13px;flex:none;border-radius:50%;border:2px solid var(--trait-fort);border-top-color:var(--vert-clair);animation:tourne .8s linear infinite}
+.outil.fait .rond{border:0;animation:none;background:var(--vert-clair);box-shadow:0 0 10px var(--lueur)}
+@keyframes tourne{to{transform:rotate(360deg)}}
 .outil .nom{font-family:var(--mono);color:var(--encre)}
 .outil .args{font-family:var(--mono);color:var(--encre-3);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .outil .detail{padding:0 13px 11px 35px;font-family:var(--mono);font-size:11.5px;color:var(--encre-2);white-space:pre-wrap;word-break:break-word}
-
-/* Demande de permission */
 .demande{align-self:stretch;border:1px solid rgba(240,179,90,.4);background:var(--givre) 0 0/200px,rgba(40,30,12,.5);
-  border-radius:var(--rayon);padding:13px 16px}
+  border-radius:var(--rayon);padding:13px 16px;animation:arrive .45s var(--ease-out)}
 .demande .q{font-size:14.5px;margin-bottom:6px}.demande .q b{color:var(--ambre)}
 .demande .a{font-family:var(--mono);font-size:12px;color:var(--encre-3);margin-bottom:11px;white-space:pre-wrap;word-break:break-word}
 .demande .row{display:flex;gap:10px}
-.demande button{flex:1;padding:9px;border-radius:11px;border:1px solid var(--trait);font-weight:600}
+.demande button{flex:1;padding:9px;border-radius:11px;border:1px solid var(--trait);font-weight:600;transition:transform .15s,filter .2s}
+.demande button:active{transform:scale(.96)}
 .oui{background:rgba(63,157,132,.18);border-color:rgba(111,212,182,.4);color:var(--vert-clair)}
 .non{background:rgba(248,113,113,.12);border-color:rgba(248,113,113,.35);color:#f87171}
 .verdict{font-weight:600;font-size:13.5px}
 
-/* Composer */
-footer{position:relative;z-index:2;margin:0 16px 14px;padding:8px 8px 8px 16px;display:flex;align-items:center;gap:8px;
+/* ── Composer ────────────────────────────────────────────────── */
+footer{position:relative;z-index:2;margin:0 16px 8px;padding:8px 8px 8px 16px;display:flex;align-items:center;gap:8px;
   border-radius:var(--rayon);background:var(--givre) 0 0/200px,var(--verre-fort);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--trait)}
 #entree{flex:1;background:none;border:0;outline:0;color:var(--encre);font:15px var(--police);resize:none;height:26px;line-height:26px;max-height:120px}
 #entree::placeholder{color:var(--encre-3)}
 #envoyer{width:32px;height:32px;flex:none;border-radius:50%;display:grid;place-items:center;color:#06120e;
   background:var(--vert-clair);box-shadow:0 0 20px var(--lueur);transition:transform .15s,filter .2s}
 #envoyer:hover{filter:brightness(1.1)} #envoyer:active{transform:scale(.9)}
+body.reflechit #envoyer{animation:respire 1.2s ease-in-out infinite}
+@keyframes respire{0%,100%{transform:scale(1)}50%{transform:scale(1.12);filter:brightness(1.15)}}
+
+/* ── Barre de statut (facon terminal) ────────────────────────── */
+#statut{position:relative;z-index:2;margin:0 16px 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  font-size:12.5px;font-family:var(--mono);color:var(--encre-2)}
+#statut .badge{font-weight:700;color:#06130f;background:var(--vert-clair);border-radius:7px;padding:2px 9px;box-shadow:0 0 14px var(--lueur)}
+#statut .sep{color:var(--encre-3)}
+#statut .bar{width:70px;height:9px;border-radius:5px;background:rgba(255,255,255,.08);overflow:hidden}
+#statut .bar i{display:block;height:100%;width:var(--w,0%);background:var(--vert-clair);transition:width .6s var(--ease)}
+#statut .live{color:var(--vert-clair)} body.reflechit #statut .live{color:var(--ambre)}
 </style></head>
-<body>
+<body data-bg="vert">
+  <!-- Dock gauche : on ajoutera les icones au fil des idees -->
+  <nav id="dock" aria-label="Pilotage">
+    <div class="logo">R</div>
+    <button class="dicone" id="ic-chat" title="Chat" onclick="ouvrir(null)">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M21 12a8 8 0 01-11.5 7.2L4 20l1-4.6A8 8 0 1121 12z" stroke="currentColor" stroke-width="1.8"/></svg></button>
+    <div class="dock-bas">
+      <button class="dicone" id="ic-reglages" title="Settings" onclick="ouvrir('reglages')">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3.2" stroke="currentColor" stroke-width="1.8"/><path d="M19 12a7 7 0 00-.1-1.2l2-1.5-2-3.4-2.3 1a7 7 0 00-2-1.2L14 1h-4l-.6 2.5a7 7 0 00-2 1.2l-2.3-1-2 3.4 2 1.5A7 7 0 005 12c0 .4 0 .8.1 1.2l-2 1.5 2 3.4 2.3-1a7 7 0 002 1.2L10 23h4l.6-2.5a7 7 0 002-1.2l2.3 1 2-3.4-2-1.5c.1-.4.1-.8.1-1.2z" stroke="currentColor" stroke-width="1.5"/></svg></button>
+    </div>
+  </nav>
+
+  <!-- Panneau Reglages : changer le fond -->
+  <aside class="panneau" id="reglages">
+    <h3>Settings</h3>
+    <div class="sous">Make root-harness yours.</div>
+    <h4>Background</h4>
+    <div class="fonds" id="fonds"></div>
+  </aside>
+
   <header>
     <div class="avatar">R</div>
     <div class="id">
-      <div class="nom">root-harness <span class="pill">Claude</span></div>
-      <div id="etat"><span class="point"></span>ready, and showing what it does</div>
+      <div class="nom">root-harness</div>
+      <div id="etat"><span class="point"></span><span id="etat-txt">ready, and showing what it does</span></div>
     </div>
     <button class="partage" onclick="shareChat()">Share</button>
   </header>
@@ -99,17 +155,65 @@ footer{position:relative;z-index:2;margin:0 16px 14px;padding:8px 8px 8px 16px;d
     </button>
   </footer>
 
+  <!-- Barre de statut facon terminal : agent/modele choisis + statut live -->
+  <div id="statut">
+    <span class="badge" id="st-modele">Claude</span>
+    <span class="sep">·</span><span id="st-agent">root-harness</span>
+    <span class="sep">·</span><span class="bar"><i id="st-bar"></i></span>
+    <span class="sep">·</span><span class="live" id="st-live">ready</span>
+  </div>
+
 <script>
 const fil=document.getElementById('fil');
 function esc(s){return (s??'').toString().replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
 function add(html){const w=document.createElement('div');w.innerHTML=html;const n=w.firstElementChild;fil.appendChild(n);fil.scrollTop=fil.scrollHeight;return n;}
 const hint=document.querySelector('.accueil');
-function clearHint(){if(hint)hint.style.display='none';}
+
+// -- backgrounds (changeable, remembered) --
+const FONDS={
+  vert:  {label:"Forest",   css:"radial-gradient(900px 500px at 20% -10%,#123a30,rgba(18,58,48,0) 55%),radial-gradient(700px 500px at 110% 120%,#10261f,rgba(16,38,31,0) 50%),#0b0f0e"},
+  nuit:  {label:"Midnight", css:"radial-gradient(900px 500px at 20% -10%,#17233f,rgba(23,35,63,0) 55%),radial-gradient(700px 500px at 110% 120%,#0f1830,rgba(15,24,48,0) 50%),#090d16"},
+  prune: {label:"Plum",     css:"radial-gradient(900px 500px at 20% -10%,#2a1740,rgba(42,23,64,0) 55%),radial-gradient(700px 500px at 110% 120%,#1a1030,rgba(26,16,48,0) 50%),#0c0912"},
+  ardoise:{label:"Slate",   css:"#0e1116"},
+  braise:{label:"Ember",    css:"radial-gradient(900px 500px at 20% -10%,#3a1f12,rgba(58,31,18,0) 55%),radial-gradient(700px 500px at 110% 120%,#2a1410,rgba(42,20,16,0) 50%),#100a08"},
+  aurore:{label:"Aurora",   css:"radial-gradient(800px 500px at 15% -10%,#123a30,rgba(18,58,48,0) 55%),radial-gradient(700px 500px at 110% 120%,#231747,rgba(35,23,71,0) 55%),#0a0d14"},
+};
+const grid=document.getElementById('fonds');
+function appliquerFond(key){
+  const f=FONDS[key]||FONDS.vert;
+  document.documentElement.style.setProperty('--fond',f.css);
+  document.body.dataset.bg=key;
+  try{localStorage.setItem('rh-bg',key);}catch(e){}
+  grid.querySelectorAll('.swatch').forEach(s=>s.classList.toggle('sel',s.dataset.k===key));
+}
+Object.entries(FONDS).forEach(([k,f])=>{
+  const s=document.createElement('div');s.className='swatch';s.dataset.k=k;s.style.background=f.css;
+  s.innerHTML=`<span>${f.label}</span>`;s.onclick=()=>appliquerFond(k);grid.appendChild(s);
+});
+let bg0='vert';try{bg0=localStorage.getItem('rh-bg')||'vert';}catch(e){}
+appliquerFond(bg0);
+
+// -- panels --
+function ouvrir(nom){
+  document.querySelectorAll('.panneau').forEach(p=>p.classList.toggle('ouvert',p.id===nom));
+  document.querySelectorAll('.dicone').forEach(d=>d.classList.remove('on'));
+  if(nom==='reglages') document.getElementById('ic-reglages').classList.add('on');
+}
+
+// -- status --
+function setStatus(txt, thinking){
+  document.getElementById('etat-txt').textContent = thinking ? txt : "ready, and showing what it does";
+  document.getElementById('st-live').textContent = txt;
+  document.body.classList.toggle('reflechit', !!thinking);
+}
+let steps=0;
+function bump(){ steps++; document.getElementById('st-bar').style.setProperty('--w', Math.min(95, 20+steps*12)+'%'); }
 
 function send(){
   const t=document.getElementById('entree');const text=t.value.trim();if(!text)return;
-  clearHint(); add(`<div class="msg toi">${esc(text)}</div>`); t.value='';
-  document.body.classList.add('reflechit');
+  if(hint)hint.style.display='none';
+  add(`<div class="msg toi">${esc(text)}</div>`); t.value='';
+  steps=0; bump(); setStatus('thinking', true);
   window.pywebview.api.send(text);
 }
 const ta=document.getElementById('entree');
@@ -117,25 +221,27 @@ ta.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefa
 
 let lastTool=null;
 function onEvent(ev){
-  if(ev.type==='text'){ document.body.classList.remove('reflechit');
+  if(ev.type==='text'){ setStatus('ready', false);
     add(`<div class="msg root"><div class="lisere"></div><div class="corps">${esc(ev.text)}</div></div>`); }
-  else if(ev.type==='tool'){
+  else if(ev.type==='tool'){ bump(); setStatus('using a tool', true);
     lastTool=add(`<div class="outil"><div class="tete"><span class="rond"></span><span class="nom">${esc(ev.name)}</span><span class="args">${esc(JSON.stringify(ev.args))}</span></div></div>`);
   }
   else if(ev.type==='result'){
-    const host=lastTool||add(`<div class="outil"><div class="tete"><span class="rond"></span><span class="nom">result</span></div></div>`);
+    if(lastTool){lastTool.classList.add('fait');}
+    const host=lastTool||add(`<div class="outil fait"><div class="tete"><span class="rond"></span><span class="nom">result</span></div></div>`);
     const d=document.createElement('div');d.className='detail';d.textContent=(ev.text||'').slice(0,2000);host.appendChild(d);fil.scrollTop=fil.scrollHeight;
   }
-  else if(ev.type==='permission') permissionCard(ev);
-  else if(ev.type==='error'){ document.body.classList.remove('reflechit');
-    add(`<div class="msg root alerte"><div class="lisere" style="background:linear-gradient(var(--ambre),transparent)"></div><div class="corps" style="color:#f6b3a0">${esc(ev.text)}</div></div>`); }
+  else if(ev.type==='permission'){ setStatus('waiting for you', true); permissionCard(ev); }
+  else if(ev.type==='done'){ setStatus('ready', false); document.getElementById('st-bar').style.setProperty('--w','0%'); }
+  else if(ev.type==='error'){ setStatus('error', false);
+    add(`<div class="msg root"><div class="lisere" style="background:linear-gradient(#f87171,transparent)"></div><div class="corps" style="color:#f6b3a0">${esc(ev.text)}</div></div>`); }
 }
 function permissionCard(ev){
   const n=add(`<div class="demande"><div class="q">The agent wants to: <b>${esc(ev.title)}</b></div>
     <div class="a">${esc(JSON.stringify(ev.args,null,2))}</div>
     <div class="row"><button class="oui">Allow</button><button class="non">Deny</button></div></div>`);
-  n.querySelector('.oui').onclick=()=>{window.pywebview.api.permission_answer(ev.id,true);n.querySelector('.row').outerHTML='<div class="verdict" style="color:#6fd4b6">Allowed</div>';};
-  n.querySelector('.non').onclick=()=>{window.pywebview.api.permission_answer(ev.id,false);n.querySelector('.row').outerHTML='<div class="verdict" style="color:#f87171">Denied</div>';};
+  n.querySelector('.oui').onclick=()=>{window.pywebview.api.permission_answer(ev.id,true);n.querySelector('.row').outerHTML='<div class="verdict" style="color:#6fd4b6">Allowed</div>';setStatus('thinking',true);};
+  n.querySelector('.non').onclick=()=>{window.pywebview.api.permission_answer(ev.id,false);n.querySelector('.row').outerHTML='<div class="verdict" style="color:#f87171">Denied</div>';setStatus('thinking',true);};
 }
 function shareChat(){
   const page=`<!doctype html><meta charset=utf-8><title>root-harness session</title>`+
@@ -144,5 +250,9 @@ function shareChat(){
   const a=document.createElement('a');a.href='data:text/html;charset=utf-8,'+encodeURIComponent(page);
   a.download='root-harness-session.html';a.click();
 }
+// close panel on outside click
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.panneau')&&!e.target.closest('#dock')) document.querySelectorAll('.panneau.ouvert').forEach(p=>{p.classList.remove('ouvert');document.getElementById('ic-reglages').classList.remove('on');});
+});
 </script>
 </body></html>
