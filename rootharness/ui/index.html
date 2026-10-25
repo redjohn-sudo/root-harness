@@ -370,6 +370,8 @@ body.reflechit #envoyer svg.fleche{display:none} #envoyer svg.stop{display:none}
     <div class="sous">Make root-harness yours.</div>
     <h4>Account</h4>
     <div id="reglage-compte"></div>
+    <h4>Phone</h4>
+    <div id="reglage-tel"></div>
     <h4>Background</h4>
     <button class="btn-p vert" onclick="choisirImage()">Choose an image...</button>
     <button class="btn-p" id="sans-image" onclick="appliquerFond(courant.background||'vert')" style="display:none">Remove image</button>
@@ -556,6 +558,19 @@ function formMdp(){
   document.getElementById('rm-ok').onclick=async()=>{const r=await api().account_change_password(val('rm-a'),val('rm-n'),val('rm-n2'));
     if(r.error){document.getElementById('rm-err').textContent=r.error;return;} z.innerHTML='<div class="compte-info" style="color:var(--vert-clair)">Password changed.</div>';};
 }
+async function rendreTel(){
+  const z=document.getElementById('reglage-tel'); if(!api())return;
+  if(!COMPTE.unlocked){z.innerHTML='<div class="compte-info">Unlock your account first.</div>';return;}
+  const r=await api().remote_state();
+  z.innerHTML=`<div class="reglage-l">Use from my phone<span class="interrupteur${r.on?' on':''}" id="rg-tel"></span></div>
+    ${r.on?`<div class="compte-info">On your phone, on the same Wi-Fi, open in Safari:<br><b style="font-family:var(--mono)">${esc(r.url||'starting...')}</b>
+      <button class="btn-p" id="rg-tel-copie" style="margin-top:8px">Copy the address</button>
+      <br>Sign in with your pseudo and password, then Share, Add to Home Screen.
+      ${r.phone_seen?`<br><span style="color:var(--vert-clair)">Your phone talked to this computer ${quand(r.phone_seen*1000)} ago.</span>`.replace('now ago','just now'):''}</div>`
+    :'<div class="compte-info" style="color:var(--encre-3)">Your phone becomes a remote for this computer, through sealed messages. Permission cards still ask, on either side.</div>'}`;
+  document.getElementById('rg-tel').onclick=async()=>{await api().remote_set(!r.on);rendreTel();};
+  const c=document.getElementById('rg-tel-copie'); if(c)c.onclick=async()=>{if(await api().copy_text(r.url)){c.textContent='Copied';}};
+}
 async function verrouiller(){ if(CANAL)retourAgent(); ouvrir(null); IDENT={}; porte(await api().account_lock()); }
 // depth: the background follows the mouse a little (as in Root)
 addEventListener('mousemove',e=>{const r=document.documentElement.style;
@@ -569,7 +584,7 @@ function ouvrir(nom){
   if(nom==='cerveaux') rendreCerveaux();
   if(nom==='discussions'){MENU=null;chargerDiscussions();}
   if(nom==='canaux'){chargerCanaux();}
-  if(nom==='reglages'){rendreReglageCompte();}
+  if(nom==='reglages'){rendreReglageCompte();rendreTel();}
 }
 
 // -- brains --
@@ -1057,6 +1072,7 @@ function onEvent(ev){
     if(document.getElementById('canaux').classList.contains('ouvert')) api().channels_overview().then(r=>{CANAUX=r;rendreCanaux();});
   }
   else if(ev.type==='channels_ready'){}
+  else if(ev.type==='remote_user'){ if(hint)hint.style.display='none'; bulleToi('📱 '+ev.text); setStatus('thinking', true); }
   else if(ev.type==='synced'&&ev.changed){
     api().settings_get().then(montrer); api().active_brain().then(badge);
     if(document.getElementById('discussions').classList.contains('ouvert')) chargerDiscussions();

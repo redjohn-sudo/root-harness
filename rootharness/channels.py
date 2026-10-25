@@ -119,6 +119,8 @@ class Channels:
         self.on_event = on_event
         self.keys = keys                  # unlocked by your password (account.py)
         self.pseudo = pseudo
+        self.on_remote = None             # remote.py: orders from your phone
+        self.last_refused: dict = {}
         self.lock = threading.Lock()
         self.me = keys.public_key().to_hex()
         self.client = None
@@ -178,6 +180,16 @@ class Channels:
         if rumor.kind().as_u16() != 14:
             return
         tags = rumor.tags()
+        if any(t.kind() == "rh-remote" for t in tags):
+            # your phone talking to this computer: not a channel message
+            if self.on_remote and sender == self.me:
+                try:
+                    order = json.loads(rumor.content())
+                except (ValueError, TypeError):
+                    return
+                # handled off this loop: answering needs the loop to send
+                threading.Thread(target=self.on_remote, args=(order, sender, self.me), daemon=True).start()
+            return
         members = {t.content() for t in tags if t.kind() == "p" and t.content()} | {sender, self.me}
         rid = next((t.content() for t in tags if t.kind() == "rh-id"), None) or wid
         subject = next((t.content() for t in tags if t.kind() == "subject"), None)
@@ -339,6 +351,21 @@ class Channels:
             if receiver != self.me:
                 best = max(best, len(out.success))
         return best
+
+    def send_self(self, payload: dict) -> int:
+        """A sealed message to yourself (your phone reads it), gone after a day."""
+        if not self.ready():
+            return 0
+        n = _n()
+
+        async def go():
+            wrap = await _aw(n.nip17_make_private_msg(
+                self.keys, self.keys.public_key(), json.dumps(payload, ensure_ascii=False),
+                expiration=timedelta(days=1), rumor_extra_tags=[n.Tag.custom("rh-remote", ["1"])]))
+            out = await _aw(self.client.send_event(wrap))
+            self.last_refused = {str(k): v for k, v in out.failed.items()}
+            return len(out.success)
+        return self._do(go(), 30)
 
     def close(self) -> None:
         try:

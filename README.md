@@ -133,6 +133,16 @@ NIP-44 encryption, NIP-59 gift wraps).
   would open past messages (no forward secrecy), hence the keychain.
 - Your agent never reads or writes in a channel by itself.
 
+## Use root-harness from your phone
+
+Your phone becomes a remote for the root-harness running on your computer:
+turn on **Settings, Phone, Use from my phone**, open the address it shows in
+Safari, sign in with your pseudo and password, then *Add to Home Screen*.
+The agent keeps running on your computer (Claude Code cannot run on a phone);
+the phone talks to it through sealed messages, so there is no port to open
+and nothing readable on the relays. Permission cards show on the phone too.
+Off by default, and per computer. See [mobile/](mobile/).
+
 ## Commands
 
 Type `/` in the message box. Arrows to move, Enter or Tab to pick. With Claude,

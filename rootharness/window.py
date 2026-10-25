@@ -60,11 +60,14 @@ class Api:
         self.channels = None            # encrypted channels, started when first opened
         self.keys = None                # your identity, once unlocked
         self.sync = None                # your account's memory on every machine
+        self.remote = None              # your phone as a remote (remote.py)
+        self._web = None                # the phone app, served on your Wi-Fi
         try:
             self.keys = account.auto()  # "stay signed in": no password at launch
         except Exception:
             self.keys = None
         self._start_sync()
+        self._start_remote()
         self.brain = brains.by_id(read_settings().get("brain", "")) or brains.by_id(brains.DEFAULT)
         self._new_session()
         permissions.set_asker(self._ask)
@@ -75,9 +78,11 @@ class Api:
 
     # -- called from JavaScript --------------------------------------------
 
-    def send(self, prompt: str, images=None):
+    def send(self, prompt: str, images=None, origin: str = "computer"):
         """The human sent a message (maybe with pasted or dropped pictures).
         Run one agent turn in the background."""
+        if self.remote and origin == "computer":    # the phone shows it too
+            self.remote.forward({"type": "remote_user", "text": prompt, "from": "computer"})
         images = [self._keep_image(i) for i in (images or []) if i.get("data")]
         self.log["events"].append({"type": "user", "text": prompt,
                                    "thumbs": [i["thumb"] for i in images if i.get("thumb")]})
@@ -245,6 +250,7 @@ class Api:
         self.keys = keys
         self._publish_login(pseudo, password)
         self._start_sync()
+        self._start_remote()
         return self.account_state()
 
     def account_restore(self, pseudo: str, password: str):
@@ -261,6 +267,7 @@ class Api:
             return {"error": "No account with this pseudo and password."}
         self.keys = keys
         self._start_sync()
+        self._start_remote()
         return self.account_state()
 
     def account_unlock(self, password: str):
@@ -269,6 +276,7 @@ class Api:
             return {"error": "Wrong password."}
         self.keys = keys
         self._start_sync()
+        self._start_remote()
         if len(password) >= account.MIN_PASSWORD:
             self._publish_login(account.state()["pseudo"], password)   # keeps the vault fresh on the relays
             return self.account_state()
@@ -314,6 +322,76 @@ class Api:
             self._stop_sync()
         return self.account_state()
 
+    # -- your phone as a remote (remote.py, mobile/) ------------------------------
+
+    REMOTE_FILE = "remote.json"     # this computer only: never synced
+
+    def _remote_on(self) -> bool:
+        try:
+            return json.loads((SETTINGS.parent / self.REMOTE_FILE).read_text()).get("on", False)
+        except (OSError, ValueError):
+            return False
+
+    def _start_remote(self):
+        if self.keys is None or self.remote is not None or not self._remote_on():
+            return
+        from .remote import Remote
+        self.remote = Remote(self)
+        self._ch().on_remote = self.remote.on_message
+        self._serve_phone_app()
+
+    def _stop_remote(self):
+        if self.channels:
+            self.channels.on_remote = None
+        self.remote = None
+        if self._web:
+            self._web.shutdown()
+            self._web = None
+
+    def _serve_phone_app(self):
+        """The phone app is plain files: serve them on your Wi-Fi so your phone
+        can install it (Safari: Share, Add to Home Screen)."""
+        import functools
+        from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
+        dist = Path(__file__).parent.parent / "mobile" / "dist"
+        if self._web or not (dist / "index.html").exists():
+            return
+
+        class Quiet(SimpleHTTPRequestHandler):
+            def log_message(self, *a):
+                pass
+        try:
+            self._web = ThreadingHTTPServer(("0.0.0.0", 8765), functools.partial(Quiet, directory=str(dist)))
+        except OSError:
+            self._web = None
+            return
+        threading.Thread(target=self._web.serve_forever, daemon=True).start()
+
+    @staticmethod
+    def _lan_ip() -> str:
+        import socket
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            s.connect(("192.0.2.1", 9))     # picks the Wi-Fi interface; nothing is sent
+            return s.getsockname()[0]
+        except OSError:
+            return "localhost"
+        finally:
+            s.close()
+
+    def remote_state(self):
+        return {"on": self._remote_on(), "running": self.remote is not None,
+                "url": f"http://{self._lan_ip()}:8765" if self._web else "",
+                "phone_seen": self.remote.phone_seen if self.remote else 0}
+
+    def remote_set(self, on: bool):
+        (SETTINGS.parent / self.REMOTE_FILE).write_text(json.dumps({"on": bool(on)}))
+        if on:
+            self._start_remote()
+        else:
+            self._stop_remote()
+        return self.remote_state()
+
     def sync_status(self):
         return self.sync.status() if self.sync else {}
 
@@ -342,6 +420,7 @@ class Api:
     def account_lock(self):
         """Lock now: forget the unlocked key until the password is typed again."""
         self._stop_sync()
+        self._stop_remote()
         if self.channels:
             self.channels.close()
             self.channels = None
@@ -604,6 +683,8 @@ class Api:
     def _emit(self, event: dict):
         if event.get("type") in ("text", "tool", "result", "error"):
             self.log["events"].append(event)      # to show it again later
+        if self.remote:
+            self.remote.forward(event)
         if self._window:
             self._window.evaluate_js(f"onEvent({json.dumps(event)})")
 
