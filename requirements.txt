@@ -1,4 +1,5 @@
 pywebview>=5.0
-claude-agent-sdk>=0.1.0
-# Optional, only for the API-key path (OpenAI-compatible providers):
-# requests>=2.31
+claude-agent-sdk>=0.2.174
+# encrypted channels between users (Nostr) and the key in the system keychain
+nostr-sdk>=0.45,<0.46
+keyring>=25

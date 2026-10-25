@@ -160,6 +160,40 @@ body.depose #depot{opacity:1} body.depose #depot div{transform:none}
 .menu-disc .rouge{color:#f87171}
 .vide-disc{color:var(--encre-3);font-size:12.5px;padding:8px 6px}
 
+/* ── Canaux chiffrés ── */
+#fil-canal{display:none}#fil-canal>*{flex-shrink:0}
+body.canal #fil{display:none} body.canal #fil-canal{display:flex}
+body.canal #statut{display:none} #statut-canal{display:none} body.canal #statut-canal{display:flex}
+#statut-canal{position:relative;z-index:2;margin:0 16px 12px;align-items:center;gap:8px;font:12.5px var(--mono);color:var(--encre-2)}
+#statut-canal .cadenas{color:var(--vert-clair)}
+body.canal .avatar{background:linear-gradient(135deg,#8fb8ff,var(--vert-clair))}
+.msg.autre{align-self:flex-start;padding:9px 14px;border:1px solid var(--trait);background:var(--givre) 0 0/200px,var(--verre);
+  border-radius:6px var(--rayon) var(--rayon) var(--rayon);white-space:pre-wrap;word-break:break-word}
+.msg .qui{display:block;font-size:11.5px;color:var(--vert-clair);font-weight:600;margin-bottom:2px}
+.msg .heure{display:block;font-size:10.5px;color:var(--encre-3);margin-top:3px;text-align:right}
+.ident{border:1px solid var(--trait);border-radius:14px;padding:11px 12px;margin-bottom:10px;background:rgba(255,255,255,.03)}
+.ident .l{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--encre-3)}
+.ident .npub{font:12px var(--mono);color:var(--encre);word-break:break-all;margin:5px 0 8px}
+.ident .r{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--encre-3)}
+.ident button{margin-left:auto;padding:5px 10px;border-radius:8px;font-size:12px;color:var(--vert-clair);border:1px solid rgba(111,212,182,.4);background:rgba(63,157,132,.14)}
+.form-c{border:1px solid rgba(111,212,182,.35);border-radius:14px;padding:10px;margin:6px 0 10px;animation:arrive .3s var(--ease-out)}
+.form-c input{width:100%;background:rgba(0,0,0,.25);border:1px solid var(--trait);border-radius:9px;padding:7px 9px;color:var(--encre);font:12.5px var(--police);outline:0;margin-bottom:7px}
+.form-c input:focus{border-color:rgba(111,212,182,.5)}
+.form-c label{display:flex;align-items:center;gap:8px;font-size:13px;padding:4px 2px;color:var(--encre-2)}
+.form-c .row{display:flex;gap:8px;margin-top:4px}.form-c .row button{flex:1;padding:7px;border-radius:9px;font-size:12.5px;border:1px solid var(--trait)}
+.form-c .row .ok{color:var(--vert-clair);border-color:rgba(111,212,182,.4);background:rgba(63,157,132,.14)}
+.form-c .err{color:#f6b3a0;font-size:12px;margin:2px 0 6px}
+.canal-l{position:relative;padding:9px 10px;border-radius:12px;cursor:pointer;margin-bottom:4px;border:1px solid transparent;
+  opacity:0;animation:monte .4s var(--ease-out) forwards;animation-delay:calc(var(--i)*20ms);transition:background .2s,transform .2s var(--ease)}
+.canal-l:hover{background:rgba(255,255,255,.05);transform:translateX(2px)}
+.canal-l.ouvert{border-color:rgba(111,212,182,.45);background:rgba(63,157,132,.12)}
+.canal-l .t{font-size:13.5px;font-weight:600;display:flex;gap:6px;align-items:center}
+.canal-l .p{font-size:12px;color:var(--encre-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.canal-l .nb{margin-left:auto;min-width:18px;height:18px;border-radius:9px;background:var(--vert-clair);color:#06130f;font-size:11px;font-weight:700;display:grid;place-items:center;padding:0 5px;animation:pop .4s var(--ease-out)}
+.canal-l.demande-l .t{color:var(--ambre)}
+.dicone .pastille{position:absolute;top:7px;right:7px;width:8px;height:8px;border-radius:50%;background:var(--vert-clair);box-shadow:0 0 10px var(--vert-clair);animation:pop .4s var(--ease-out)}
+.dicone{position:relative}
+
 /* ── Header ──────────────────────────────────────────────────── */
 header{position:relative;z-index:2;margin:14px 16px 0;padding:11px 14px;border-radius:var(--rayon);
   background:var(--givre) 0 0/200px,var(--verre);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
@@ -176,7 +210,7 @@ body.reflechit #etat .point{background:var(--ambre);box-shadow:0 0 10px var(--am
 .partage:hover{color:var(--encre);border-color:var(--trait-fort);transform:translateY(-1px)}
 
 /* ── Fil ─────────────────────────────────────────────────────── */
-#fil{position:relative;z-index:1;flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:11px}
+#fil,#fil-canal{position:relative;z-index:1;flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:11px}
 #fil>*{flex-shrink:0}   /* never squeeze a message: the thread scrolls instead */
 .accueil{align-self:center;max-width:380px;margin-top:18px;text-align:center;color:var(--encre-2);font-size:13.5px;line-height:1.6;padding:16px 18px;
   border-radius:var(--rayon);border:1px solid var(--trait);background:var(--givre) 0 0/200px,var(--verre);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);animation:arrive .6s var(--ease-out)}
@@ -257,10 +291,12 @@ body.reflechit #envoyer svg.fleche{display:none} #envoyer svg.stop{display:none}
   <!-- Dock gauche : on ajoutera les icones au fil des idees -->
   <nav id="dock" aria-label="Pilotage">
     <div class="logo">R</div>
-    <button class="dicone" id="ic-chat" title="Chat" onclick="ouvrir(null)">
+    <button class="dicone" id="ic-chat" title="Your agent" onclick="ouvrir(null);if(CANAL)retourAgent()">
       <svg viewBox="0 0 24 24" fill="none"><path d="M21 12a8 8 0 01-11.5 7.2L4 20l1-4.6A8 8 0 1121 12z" stroke="currentColor" stroke-width="1.8"/></svg></button>
     <button class="dicone" id="ic-discussions" title="Conversations" onclick="ouvrir('discussions')">
       <svg viewBox="0 0 24 24" fill="none"><path d="M3.5 7.5a2 2 0 012-2h4l2 2h7a2 2 0 012 2v8a2 2 0 01-2 2h-13a2 2 0 01-2-2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 12.5h8M8 15.5h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+    <button class="dicone" id="ic-canaux" title="Encrypted channels" onclick="ouvrir('canaux')">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M4 6.5A2.5 2.5 0 016.5 4h8A2.5 2.5 0 0117 6.5v5a2.5 2.5 0 01-2.5 2.5H9l-3.5 3v-3h0A2.5 2.5 0 014 11.5z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><rect x="13.5" y="13.5" width="7" height="6" rx="1.4" fill="currentColor"/><path d="M15 13.5v-1.3a2 2 0 014 0v1.3" stroke="currentColor" stroke-width="1.5"/></svg></button>
     <button class="dicone" id="ic-cerveaux" title="Brains" onclick="ouvrir('cerveaux')">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 4.5a3 3 0 0 0-3 3v.3a3 3 0 0 0-1.5 5.2A3 3 0 0 0 9 17.6V19.5h1.5V4.5zM15 4.5a3 3 0 0 1 3 3v.3a3 3 0 0 1 1.5 5.2 3 3 0 0 1-4.5 4.6v1.9h-1.5V4.5z"/></svg></button>
     <div class="dock-bas">
@@ -279,6 +315,16 @@ body.reflechit #envoyer svg.fleche{display:none} #envoyer svg.stop{display:none}
     <div id="liste-disc"></div>
   </aside>
   <div id="depot"><div>Drop your image here</div></div>
+
+  <!-- Panneau Canaux : chiffrés de bout en bout, entre utilisateurs -->
+  <aside class="panneau" id="canaux">
+    <h3>Encrypted channels</h3>
+    <div class="sous">End-to-end encrypted. Relays only carry sealed messages: not the text, not who talks to whom.</div>
+    <div id="ident"></div>
+    <div class="disc-haut"><button onclick="formContact()">+ Contact</button><button class="vert" onclick="formCanal()">+ Channel</button></div>
+    <div id="form-canaux"></div>
+    <div id="liste-canaux"></div>
+  </aside>
 
   <!-- Panneau Cerveaux : qui pense pour l'agent -->
   <aside class="panneau" id="cerveaux">
@@ -301,12 +347,13 @@ body.reflechit #envoyer svg.fleche{display:none} #envoyer svg.stop{display:none}
   <header>
     <div class="avatar">R</div>
     <div class="id">
-      <div class="nom">root-harness</div>
+      <div class="nom" id="nom-haut">root-harness</div>
       <div id="etat"><span class="point"></span><span id="etat-txt">ready, and showing what it does</span></div>
     </div>
-    <button class="partage" onclick="shareChat()">Share</button>
+    <button class="partage" id="bouton-haut" onclick="CANAL?retourAgent():shareChat()">Share</button>
   </header>
 
+  <div id="fil-canal"></div>
   <div id="fil">
     <div class="accueil">Talk to your agent below. It can read files, list folders, write files and run commands, and it asks you before anything that changes your machine.</div>
   </div>
@@ -321,6 +368,7 @@ body.reflechit #envoyer svg.fleche{display:none} #envoyer svg.stop{display:none}
     </button>
   </footer>
 
+  <div id="statut-canal"><span class="cadenas">🔒</span><span id="st-canal">end-to-end encrypted</span></div>
   <!-- Barre de statut facon terminal : agent/modele choisis + statut live -->
   <div id="statut">
     <div class="rang">
@@ -382,6 +430,7 @@ function ouvrir(nom){
   if(nom) document.getElementById('ic-'+nom).classList.add('on');
   if(nom==='cerveaux') rendreCerveaux();
   if(nom==='discussions'){MENU=null;chargerDiscussions();}
+  if(nom==='canaux'){chargerCanaux();}
 }
 
 // -- brains --
@@ -473,7 +522,9 @@ async function stopper(){ if(api()&&await api().interrupt()) sys('Stopped.'); }
 const OUTILS={};
 
 function send(){
-  const t=document.getElementById('entree');const text=t.value.trim();if(!text&&!PIECES.length)return;
+  const t=document.getElementById('entree');const text=t.value.trim();
+  if(CANAL){ if(text){t.value='';envoyerCanal(text);} return; }
+  if(!text&&!PIECES.length)return;
   t.value=''; envoyer(text);
 }
 function bulleToi(text,thumbs){
@@ -501,6 +552,7 @@ function redimensionner(img,max,type,q){
 }
 function ajouterImage(file){
   if(!file||!file.type.startsWith('image/'))return;
+  if(CANAL){ const w=document.createElement('div');w.className='sys';w.textContent="Images can't go in channels yet.";document.getElementById('fil-canal').appendChild(w);return; }
   const r=new FileReader();
   r.onload=()=>{const img=new Image();img.onload=()=>{
     const type=file.type==='image/png'?'image/png':'image/jpeg';
@@ -622,6 +674,100 @@ async function ouvrirDiscussion(id){
   r.notes.forEach(n=>sys(esc(n)));
   DISTANTES=null; badge(r.brain); setStatus('ready',false); ouvrir(null);
 }
+// -- encrypted channels: talk to other root-harness users --
+let CANAL=null, CANAUX={channels:[],contacts:[]}, IDENT={};
+async function chargerCanaux(){
+  if(!api())return;
+  const z=document.getElementById('ident');
+  if(!IDENT.npub){ z.innerHTML='<div class="ident"><div class="l">Your ID</div><div class="npub">Creating your key in the keychain and connecting...</div></div>'; }
+  IDENT=await api().channels_start()||{};
+  CANAUX=await api().channels_overview();
+  rendreCanaux();
+}
+function rendreCanaux(){
+  document.getElementById('ident').innerHTML=IDENT.npub?`<div class="ident"><div class="l">Your ID, to give to friends</div>
+    <div class="npub">${esc(IDENT.npub)}</div><div class="r">${IDENT.connected}/${IDENT.relays} relays connected<button onclick="copierID(this)">Copy</button></div></div>`
+    :'<div class="ident"><div class="npub">Could not connect. Check your internet.</div></div>';
+  const dem=CANAUX.channels.filter(c=>c.request), ok=CANAUX.channels.filter(c=>!c.request);
+  let html='', i=0;
+  const ligne=(c,req)=>`<div class="canal-l${req?' demande-l':''}${c.id===CANAL?' ouvert':''}" data-id="${esc(c.id)}" style="--i:${i++}">
+    <div class="t">${req?'Unknown: ':''}${esc(c.name)}${c.unread?`<span class="nb">${c.unread}</span>`:''}</div>
+    <div class="p">${esc(c.preview||'No message yet')}</div></div>`;
+  if(dem.length) html+='<div class="groupe">Requests from people you have not added</div>'+dem.map(c=>ligne(c,true)).join('');
+  html+='<div class="groupe">Channels</div>'+(ok.length?ok.map(c=>ligne(c,false)).join(''):'<div class="vide-disc">No channel yet. Add a contact with their ID, then create a channel.</div>');
+  const L=document.getElementById('liste-canaux'); L.innerHTML=html;
+  L.querySelectorAll('.canal-l').forEach(el=>el.onclick=()=>ouvrirCanal(el.dataset.id));
+  const non=CANAUX.channels.reduce((n,c)=>n+c.unread,0);
+  pastille(non>0);
+}
+function pastille(on){
+  const ic=document.getElementById('ic-canaux'); let p=ic.querySelector('.pastille');
+  if(on&&!p){p=document.createElement('span');p.className='pastille';ic.appendChild(p);} else if(!on&&p)p.remove();
+}
+async function copierID(b){ if(await api().copy_text(IDENT.npub)){b.textContent='Copied';setTimeout(()=>b.textContent='Copy',1500);} }
+function formContact(npub){
+  const z=document.getElementById('form-canaux');
+  z.innerHTML=`<div class="form-c"><input id="fc-npub" placeholder="Their ID (npub1...)" value="${esc(npub||'')}"><input id="fc-nom" placeholder="Name you give them">
+    <div class="err" id="fc-err"></div><div class="row"><button onclick="document.getElementById('form-canaux').innerHTML=''">Cancel</button><button class="ok" id="fc-ok">Add</button></div></div>`;
+  document.getElementById(npub?'fc-nom':'fc-npub').focus();
+  document.getElementById('fc-ok').onclick=async()=>{
+    const r=await api().channel_add_contact(document.getElementById('fc-npub').value,document.getElementById('fc-nom').value);
+    if(!r){document.getElementById('fc-err').textContent='Check the ID (npub1...) and give a name.';return;}
+    z.innerHTML=''; chargerCanaux();
+  };
+}
+function formCanal(){
+  const z=document.getElementById('form-canaux');
+  if(!CANAUX.contacts.length){formContact();document.getElementById('fc-err').textContent='First add a contact: ask them for their ID.';return;}
+  z.innerHTML=`<div class="form-c"><input id="fk-nom" placeholder="Channel name (sent encrypted)">
+    ${CANAUX.contacts.map(c=>`<label><input type="checkbox" value="${esc(c.hex)}" style="width:auto;margin:0"> ${esc(c.name)}</label>`).join('')}
+    <div class="err" id="fk-err"></div><div class="row"><button onclick="document.getElementById('form-canaux').innerHTML=''">Cancel</button><button class="ok" id="fk-ok">Create</button></div></div>`;
+  document.getElementById('fk-nom').focus();
+  document.getElementById('fk-ok').onclick=async()=>{
+    const membres=[...z.querySelectorAll('input[type=checkbox]:checked')].map(x=>x.value);
+    if(!membres.length){document.getElementById('fk-err').textContent='Pick at least one person.';return;}
+    const cid=await api().channel_create(document.getElementById('fk-nom').value,membres);
+    if(!cid){document.getElementById('fk-err').textContent='Could not create it (are you connected?).';return;}
+    z.innerHTML=''; await chargerCanaux(); ouvrirCanal(cid);
+  };
+}
+function heure(s){return new Date(s*1000).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});}
+function bulleCanal(m){
+  const f=document.getElementById('fil-canal'), w=document.createElement('div');
+  w.innerHTML=m.mine?`<div class="msg toi">${esc(m.text)}<span class="heure">${heure(m.at)}</span></div>`
+    :`<div class="msg autre"><span class="qui">${esc(m.name)}</span>${esc(m.text)}<span class="heure">${heure(m.at)}</span></div>`;
+  f.appendChild(w.firstElementChild); f.scrollTop=f.scrollHeight;
+}
+async function ouvrirCanal(cid){
+  const c=CANAUX.channels.find(x=>x.id===cid); if(!c)return;
+  if(c.request){ formContact(c.members[0]&&c.members[0].npub); document.getElementById('fc-err').textContent='Unknown sender. Add them to read and answer, or ignore.'; return; }
+  CANAL=cid; document.body.classList.add('canal');
+  document.getElementById('nom-haut').textContent=c.name;
+  document.querySelector('header .avatar').textContent=(c.name||'?').trim().charAt(0).toUpperCase();
+  document.getElementById('etat-txt').textContent='🔒 '+c.members.map(m=>m.name).join(', ');
+  document.getElementById('bouton-haut').textContent='Back to agent';
+  document.getElementById('st-canal').textContent=`end-to-end encrypted · ${c.members.length+1} people · ${IDENT.connected||0}/${IDENT.relays||0} relays`;
+  ta.placeholder=`Message ${c.name}, encrypted`;
+  const f=document.getElementById('fil-canal'); f.innerHTML='';
+  (await api().channel_messages(cid)).forEach(bulleCanal);
+  if(!f.children.length) f.innerHTML='<div class="accueil">Only the people in this channel can read what you write here.</div>';
+  ouvrir(null); CANAUX=await api().channels_overview(); rendreCanaux(); ta.focus();
+}
+function retourAgent(){
+  CANAL=null; document.body.classList.remove('canal');
+  document.getElementById('nom-haut').textContent='root-harness';
+  document.querySelector('header .avatar').textContent='R';
+  document.getElementById('bouton-haut').textContent='Share';
+  ta.placeholder='Ask your agent something, or type / for commands';
+  setStatus(document.body.classList.contains('reflechit')?'thinking':'ready', document.body.classList.contains('reflechit'));
+}
+async function envoyerCanal(text){
+  const f=document.getElementById('fil-canal'); f.querySelectorAll('.accueil').forEach(n=>n.remove());
+  const m=await api().channel_send(CANAL,text);
+  if(!m){ const w=document.createElement('div');w.className='sys';w.textContent='Not sent: are you connected?';f.appendChild(w);return; }
+  bulleCanal(m);
+  if(!m.relays_ok){ const w=document.createElement('div'); w.className='sys'; w.textContent='No relay took it yet: it may not arrive.'; f.appendChild(w); }
+}
 async function nouvelleDiscussion(){
   const r=await api().new_conversation(); if(!r){sys('Wait for the current answer to finish.');return;}
   viderFil(); if(hint)hint.style.display=''; badge(r); ouvrir(null);
@@ -641,7 +787,7 @@ ta.addEventListener('keydown',e=>{
   }
   if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();
     const v=ta.value.trim();
-    if(v.startsWith('/')){const m=v.match(/^(\/\S+)\s*(.*)$/s);executer(m[1].toLowerCase(),m[2].trim());}
+    if(!CANAL&&v.startsWith('/')){const m=v.match(/^(\/\S+)\s*(.*)$/s);executer(m[1].toLowerCase(),m[2].trim());}
     else send();}
 });
 ta.addEventListener('input',majSlash);
@@ -672,7 +818,7 @@ function choisir(i){
 }
 async function majSlash(){
   const v=ta.value;
-  if(!v.startsWith('/')||v.includes('\n')){fermerSlash();return;}
+  if(CANAL||!v.startsWith('/')||v.includes('\n')){fermerSlash();return;}
   const jeton=++SL.jeton;
   const m=v.match(/^(\/\S*)(\s+(.*))?$/s); const cmd=m[1].toLowerCase(), espace=m[2]!==undefined, arg=(m[3]||'').toLowerCase();
   let titre='Commands', items=[];
@@ -766,6 +912,12 @@ function onEvent(ev){
   else if(ev.type==='question'){ setStatus('waiting for you', true); questionCard(ev); }
   else if(ev.type==='status'){ setStatus(ev.text, true); }
   else if(ev.type==='usage'){ usage(ev); }
+  else if(ev.type==='channel_message'){
+    if(ev.channel===CANAL){ bulleCanal(ev.message); api().channel_messages(CANAL); }
+    else { pastille(true); }
+    if(document.getElementById('canaux').classList.contains('ouvert')) api().channels_overview().then(r=>{CANAUX=r;rendreCanaux();});
+  }
+  else if(ev.type==='channels_ready'){}
   else if(ev.type==='done'){ setStatus('ready', false); if(api())api().active_brain().then(badge); }
   else if(ev.type==='error'){ setStatus('error', false);
     add(`<div class="msg root"><div class="lisere" style="background:linear-gradient(#f87171,transparent)"></div><div class="corps" style="color:#f6b3a0">${esc(ev.text)}</div></div>`); }

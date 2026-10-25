@@ -85,6 +85,22 @@ memory, skills, MCP servers, agents and every slash command (`/context`,
 - every conversation is kept, **sorted by agent**, and you can make **folders** and drag
   conversations into them; your terminal sessions are listed too, and continue here in a copy
 
+## Encrypted channels with other users
+
+Talk to other root-harness users in end-to-end encrypted channels (one-to-one
+or small groups), over [Nostr](https://nostr.com) private messages (NIP-17,
+NIP-44 encryption, NIP-59 gift wraps).
+
+- Your identity is a key made on your machine and kept in the system keychain.
+  No account, no email, no phone number. Give friends your ID (`npub1...`).
+- Each message is sealed separately for each member. Public relays only carry
+  sealed blobs: they see neither the text, nor the sender, nor the channel's
+  name or members.
+- Messages from people you have not added wait in **Requests**.
+- Honest limits: relays see your IP address and when you connect; a stolen key
+  would open past messages (no forward secrecy), hence the keychain.
+- Your agent never reads or writes in a channel by itself.
+
 ## Commands
 
 Type `/` in the message box. Arrows to move, Enter or Tab to pick. With Claude,

@@ -51,6 +51,7 @@ class Api:
         self.conv: str | None = None    # the conversation on screen (None: not saved yet)
         self.log: dict = {"events": []}
         self._title = ""                # title to use when it gets saved
+        self.channels = None            # encrypted channels, started when first opened
         self.brain = brains.by_id(read_settings().get("brain", "")) or brains.by_id(brains.DEFAULT)
         self._new_session()
         permissions.set_asker(self._ask)
@@ -199,6 +200,42 @@ class Api:
                 self._fresh()
             conversations.remove(ident)
         return True
+
+    # -- encrypted channels between users (see channels.py) ---------------------
+
+    def _ch(self):
+        if self.channels is None:
+            from .channels import Channels
+            self.channels = Channels(self._emit)
+        return self.channels
+
+    def channels_start(self):
+        """Your identity and relay status (creates your key on first use)."""
+        return self._ch().identity()
+
+    def channels_overview(self):
+        return self._ch().overview()
+
+    def channel_messages(self, cid: str):
+        return self._ch().messages(cid)
+
+    def channel_send(self, cid: str, text: str):
+        return self._ch().send(cid, text)
+
+    def channel_add_contact(self, npub: str, name: str):
+        return self._ch().add_contact(npub, name)
+
+    def channel_create(self, name: str, members: list):
+        return self._ch().create_channel(name, members)
+
+    def copy_text(self, text: str):
+        """Put text on the clipboard (your public ID, to give to a friend)."""
+        cmd = {"darwin": ["pbcopy"], "win32": ["clip"]}.get(sys.platform, ["xclip", "-selection", "clipboard"])
+        try:
+            subprocess.run(cmd, input=text.encode(), check=True, timeout=5)
+            return True
+        except (OSError, subprocess.SubprocessError):
+            return False
 
     def create_folder(self, name: str):
         return conversations.folder_create(name)
