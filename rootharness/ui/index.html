@@ -3,83 +3,146 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>root-harness</title>
 <style>
-  :root{--bg:#0d1117;--panel:#161b22;--line:#30363d;--ink:#e6edf3;--mute:#8b949e;--acc:#3f9d84;--acc2:#5fd6a6;--amb:#e3b341}
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{background:var(--bg);color:var(--ink);font-family:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;height:100vh;display:flex;flex-direction:column}
-  header{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
-  header .t{font-weight:700;display:flex;align-items:center;gap:8px}
-  header .dot{width:16px;height:16px;border-radius:5px;background:linear-gradient(135deg,var(--acc2),#0ea5e9)}
-  header .sub{color:var(--mute);font-size:12px;font-weight:400}
-  header button{background:transparent;border:1px solid var(--line);color:var(--mute);border-radius:8px;padding:5px 10px;font-size:13px;cursor:pointer}
-  #feed{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
-  .msg{max-width:88%;padding:10px 13px;border-radius:12px;font-size:15px;line-height:1.45;white-space:pre-wrap;word-break:break-word}
-  .me{align-self:flex-end;background:#1f6feb33;border:1px solid #1f6feb55}
-  .ai{align-self:flex-start;background:var(--panel);border:1px solid var(--line)}
-  .card{align-self:flex-start;max-width:88%;border:1px solid var(--line);border-radius:12px;background:#0f1620;overflow:hidden;font-size:14px}
-  .card .h{padding:8px 12px;border-bottom:1px solid var(--line);color:var(--mute);display:flex;align-items:center;gap:8px}
-  .card .b{padding:10px 12px;font-family:"SF Mono",Menlo,monospace;font-size:13px;color:#c9d1d9;white-space:pre-wrap;word-break:break-word}
-  .tool .h{color:var(--acc2)} .result .h{color:var(--mute)}
-  .perm{align-self:stretch;border:1px solid #3a2f12;background:#1c160a;border-radius:12px;padding:12px 14px}
-  .perm .q{font-size:15px;margin-bottom:6px}.perm .q b{color:var(--amb)}
-  .perm .args{font-family:"SF Mono",Menlo,monospace;font-size:12px;color:var(--mute);margin-bottom:10px;white-space:pre-wrap}
-  .perm .row{display:flex;gap:10px}
-  .perm button{flex:1;padding:8px;border-radius:8px;border:1px solid var(--line);cursor:pointer;font-weight:600}
-  .allow{background:#19392e;border-color:#2f6b52;color:var(--acc2)}
-  .deny{background:#2a1512;border-color:#5a2b26;color:#f87171}
-  footer{border-top:1px solid var(--line);padding:12px;display:flex;gap:8px}
-  #in{flex:1;background:var(--panel);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:10px 12px;font-size:15px;resize:none;height:44px}
-  #send{background:var(--acc);border:none;color:#06130f;border-radius:10px;padding:0 16px;font-weight:700;cursor:pointer}
-  .hint{color:var(--mute);font-size:13px;align-self:center;text-align:center;padding:20px;max-width:360px}
+:root{
+  --vert:#3f9d84; --vert-clair:#6fd4b6; --lueur:rgba(111,212,182,.38); --ambre:#f0b35a;
+  --encre:#eef3f1; --encre-2:rgba(238,243,241,.68); --encre-3:rgba(238,243,241,.42);
+  --trait:rgba(255,255,255,.10); --trait-fort:rgba(255,255,255,.24);
+  --verre:rgba(14,22,20,.46); --verre-fort:rgba(14,22,20,.64); --toi:rgba(63,157,132,.26);
+  --givre:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --ease:cubic-bezier(.22,.8,.24,1); --ease-out:cubic-bezier(.16,1,.3,1);
+  --rayon:20px; --police:-apple-system,"SF Pro Text",system-ui,sans-serif; --mono:ui-monospace,"SF Mono",Menlo,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+html,body{height:100%}
+body{background:
+    radial-gradient(900px 500px at 20% -10%, #123a30 0%, rgba(18,58,48,0) 55%),
+    radial-gradient(700px 500px at 110% 120%, #10261f 0%, rgba(16,38,31,0) 50%),
+    #0b0f0e;
+  color:var(--encre);font-family:var(--police);display:flex;flex-direction:column;overflow:hidden}
+body::before{content:"";position:fixed;inset:0;background:var(--givre) 0 0/200px;opacity:.5;pointer-events:none;z-index:0}
+
+/* Header */
+header{position:relative;z-index:2;margin:14px 16px 0;padding:11px 14px;border-radius:var(--rayon);
+  background:var(--givre) 0 0/200px,var(--verre);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border:1px solid var(--trait);display:flex;align-items:center;gap:12px}
+.avatar{width:42px;height:42px;border-radius:13px;flex:none;display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--vert-clair),#0ea5e9);box-shadow:0 0 26px var(--lueur);font-weight:800;color:#06130f}
+.id{flex:1;min-width:0}
+.id .nom{font-weight:700;font-size:16px;display:flex;align-items:center;gap:8px}
+.id .pill{font-size:11.5px;font-weight:600;color:var(--vert-clair);border:1px solid rgba(111,212,182,.35);background:rgba(63,157,132,.12);border-radius:999px;padding:2px 8px}
+#etat{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--encre-2);margin-top:3px}
+#etat .point{width:8px;height:8px;border-radius:50%;background:var(--vert-clair);box-shadow:0 0 10px var(--vert-clair);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.partage{font-size:12.5px;color:var(--encre-2);border:1px solid var(--trait);border-radius:10px;padding:6px 11px}
+.partage:hover{color:var(--encre);border-color:var(--trait-fort)}
+
+/* Fil */
+#fil{position:relative;z-index:1;flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:11px}
+.accueil{align-self:center;max-width:380px;text-align:center;color:var(--encre-3);font-size:13.5px;line-height:1.6;padding:24px 10px}
+.msg{max-width:84%;font-size:14.5px;line-height:1.6;animation:arrive .5s var(--ease-out)}
+@keyframes arrive{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.msg.toi{align-self:flex-end;padding:11px 15px;border:1px solid var(--trait);background:var(--givre) 0 0/200px,var(--toi);
+  border-radius:var(--rayon) var(--rayon) 6px var(--rayon);white-space:pre-wrap;word-break:break-word}
+.msg.root{align-self:flex-start;display:flex;border:1px solid var(--trait);background:var(--givre) 0 0/200px,var(--verre);
+  border-radius:6px var(--rayon) var(--rayon) var(--rayon);overflow:hidden}
+.msg.root .lisere{width:3px;flex:none;background:linear-gradient(var(--vert-clair),var(--vert) 60%,transparent)}
+.msg.root .corps{padding:11px 16px;white-space:pre-wrap;word-break:break-word}
+
+/* Carte outil */
+.outil{align-self:flex-start;max-width:84%;border:1px solid var(--trait);border-radius:14px;overflow:hidden;
+  background:var(--givre) 0 0/200px,var(--verre);font-size:13px}
+.outil .tete{display:flex;align-items:center;gap:9px;padding:9px 13px}
+.outil .rond{width:13px;height:13px;flex:none;border-radius:50%;background:var(--vert-clair);box-shadow:0 0 10px var(--lueur)}
+.outil .nom{font-family:var(--mono);color:var(--encre)}
+.outil .args{font-family:var(--mono);color:var(--encre-3);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.outil .detail{padding:0 13px 11px 35px;font-family:var(--mono);font-size:11.5px;color:var(--encre-2);white-space:pre-wrap;word-break:break-word}
+
+/* Demande de permission */
+.demande{align-self:stretch;border:1px solid rgba(240,179,90,.4);background:var(--givre) 0 0/200px,rgba(40,30,12,.5);
+  border-radius:var(--rayon);padding:13px 16px}
+.demande .q{font-size:14.5px;margin-bottom:6px}.demande .q b{color:var(--ambre)}
+.demande .a{font-family:var(--mono);font-size:12px;color:var(--encre-3);margin-bottom:11px;white-space:pre-wrap;word-break:break-word}
+.demande .row{display:flex;gap:10px}
+.demande button{flex:1;padding:9px;border-radius:11px;border:1px solid var(--trait);font-weight:600}
+.oui{background:rgba(63,157,132,.18);border-color:rgba(111,212,182,.4);color:var(--vert-clair)}
+.non{background:rgba(248,113,113,.12);border-color:rgba(248,113,113,.35);color:#f87171}
+.verdict{font-weight:600;font-size:13.5px}
+
+/* Composer */
+footer{position:relative;z-index:2;margin:0 16px 14px;padding:8px 8px 8px 16px;display:flex;align-items:center;gap:8px;
+  border-radius:var(--rayon);background:var(--givre) 0 0/200px,var(--verre-fort);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--trait)}
+#entree{flex:1;background:none;border:0;outline:0;color:var(--encre);font:15px var(--police);resize:none;height:26px;line-height:26px;max-height:120px}
+#entree::placeholder{color:var(--encre-3)}
+#envoyer{width:32px;height:32px;flex:none;border-radius:50%;display:grid;place-items:center;color:#06120e;
+  background:var(--vert-clair);box-shadow:0 0 20px var(--lueur);transition:transform .15s,filter .2s}
+#envoyer:hover{filter:brightness(1.1)} #envoyer:active{transform:scale(.9)}
 </style></head>
 <body>
   <header>
-    <div class="t"><span class="dot"></span>root-harness <span class="sub">your agent, and what it does</span></div>
-    <button onclick="shareChat()">Share</button>
+    <div class="avatar">R</div>
+    <div class="id">
+      <div class="nom">root-harness <span class="pill">Claude</span></div>
+      <div id="etat"><span class="point"></span>ready, and showing what it does</div>
+    </div>
+    <button class="partage" onclick="shareChat()">Share</button>
   </header>
-  <div id="feed">
-    <div class="hint">Talk to your agent below. It can read files, list folders, write files and run commands, and it will ask you before anything that changes your machine.</div>
+
+  <div id="fil">
+    <div class="accueil">Talk to your agent below. It can read files, list folders, write files and run commands, and it asks you before anything that changes your machine.</div>
   </div>
+
   <footer>
-    <textarea id="in" placeholder="Ask your agent something..."></textarea>
-    <button id="send" onclick="send()">Send</button>
+    <textarea id="entree" placeholder="Ask your agent something..." rows="1"></textarea>
+    <button id="envoyer" onclick="send()" title="Send">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
   </footer>
+
 <script>
-const feed = document.getElementById('feed');
-function el(cls, html){ const d=document.createElement('div'); d.className=cls; d.innerHTML=html; feed.appendChild(d); feed.scrollTop=feed.scrollHeight; return d; }
-function esc(s){ return (s??'').toString().replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+const fil=document.getElementById('fil');
+function esc(s){return (s??'').toString().replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+function add(html){const w=document.createElement('div');w.innerHTML=html;const n=w.firstElementChild;fil.appendChild(n);fil.scrollTop=fil.scrollHeight;return n;}
+const hint=document.querySelector('.accueil');
+function clearHint(){if(hint)hint.style.display='none';}
 
 function send(){
-  const t=document.getElementById('in'); const text=t.value.trim(); if(!text) return;
-  el('msg me', esc(text)); t.value='';
+  const t=document.getElementById('entree');const text=t.value.trim();if(!text)return;
+  clearHint(); add(`<div class="msg toi">${esc(text)}</div>`); t.value='';
+  document.body.classList.add('reflechit');
   window.pywebview.api.send(text);
 }
-document.getElementById('in').addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}});
+const ta=document.getElementById('entree');
+ta.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}});
 
-// Python pushes every step here so you can SEE what the agent is doing.
+let lastTool=null;
 function onEvent(ev){
-  if(ev.type==='text')    el('msg ai', esc(ev.text));
-  else if(ev.type==='tool')   el('card tool', `<div class="h">uses tool: ${esc(ev.name)}</div><div class="b">${esc(JSON.stringify(ev.args,null,2))}</div>`);
-  else if(ev.type==='result') el('card result', `<div class="h">result</div><div class="b">${esc(ev.text).slice(0,2000)}</div>`);
+  if(ev.type==='text'){ document.body.classList.remove('reflechit');
+    add(`<div class="msg root"><div class="lisere"></div><div class="corps">${esc(ev.text)}</div></div>`); }
+  else if(ev.type==='tool'){
+    lastTool=add(`<div class="outil"><div class="tete"><span class="rond"></span><span class="nom">${esc(ev.name)}</span><span class="args">${esc(JSON.stringify(ev.args))}</span></div></div>`);
+  }
+  else if(ev.type==='result'){
+    const host=lastTool||add(`<div class="outil"><div class="tete"><span class="rond"></span><span class="nom">result</span></div></div>`);
+    const d=document.createElement('div');d.className='detail';d.textContent=(ev.text||'').slice(0,2000);host.appendChild(d);fil.scrollTop=fil.scrollHeight;
+  }
   else if(ev.type==='permission') permissionCard(ev);
-  else if(ev.type==='error') el('card result', `<div class="h" style="color:#f87171">error</div><div class="b">${esc(ev.text)}</div>`);
-  // 'done' needs no card
+  else if(ev.type==='error'){ document.body.classList.remove('reflechit');
+    add(`<div class="msg root alerte"><div class="lisere" style="background:linear-gradient(var(--ambre),transparent)"></div><div class="corps" style="color:#f6b3a0">${esc(ev.text)}</div></div>`); }
 }
 function permissionCard(ev){
-  const d=el('perm', `<div class="q">The agent wants to: <b>${esc(ev.title)}</b></div>
-    <div class="args">${esc(JSON.stringify(ev.args,null,2))}</div>
-    <div class="row"><button class="allow">Allow</button><button class="deny">Deny</button></div>`);
-  d.querySelector('.allow').onclick=()=>{ window.pywebview.api.permission_answer(ev.id,true); d.querySelector('.row').innerHTML='<span style="color:#5fd6a6">Allowed</span>'; };
-  d.querySelector('.deny').onclick =()=>{ window.pywebview.api.permission_answer(ev.id,false); d.querySelector('.row').innerHTML='<span style="color:#f87171">Denied</span>'; };
+  const n=add(`<div class="demande"><div class="q">The agent wants to: <b>${esc(ev.title)}</b></div>
+    <div class="a">${esc(JSON.stringify(ev.args,null,2))}</div>
+    <div class="row"><button class="oui">Allow</button><button class="non">Deny</button></div></div>`);
+  n.querySelector('.oui').onclick=()=>{window.pywebview.api.permission_answer(ev.id,true);n.querySelector('.row').outerHTML='<div class="verdict" style="color:#6fd4b6">Allowed</div>';};
+  n.querySelector('.non').onclick=()=>{window.pywebview.api.permission_answer(ev.id,false);n.querySelector('.row').outerHTML='<div class="verdict" style="color:#f87171">Denied</div>';};
 }
-
-// Share: save the whole conversation as a standalone HTML page to send a friend.
 function shareChat(){
-  const page = `<!doctype html><meta charset=utf-8><title>root-harness session</title>`+
-    `<body style="background:#0d1117;color:#e6edf3;font-family:sans-serif;max-width:720px;margin:auto;padding:24px">`+
-    `<h2>A session with my agent</h2>`+feed.innerHTML+`</body>`;
-  const a=document.createElement('a');
-  a.href='data:text/html;charset=utf-8,'+encodeURIComponent(page);
-  a.download='root-harness-session.html'; a.click();
+  const page=`<!doctype html><meta charset=utf-8><title>root-harness session</title>`+
+    `<body style="background:#0b0f0e;color:#eef3f1;font-family:sans-serif;max-width:720px;margin:auto;padding:24px">`+
+    `<h2>A session with my agent</h2>${fil.innerHTML}</body>`;
+  const a=document.createElement('a');a.href='data:text/html;charset=utf-8,'+encodeURIComponent(page);
+  a.download='root-harness-session.html';a.click();
 }
 </script>
 </body></html>
