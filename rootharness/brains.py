@@ -30,39 +30,43 @@ HOME = Path.home() / ".root-harness"
 ENV_FILE = HOME / ".env"
 USER_BRAINS = HOME / "brains.json"
 
+# One entry per provider. The model and the effort are picked inside it, with
+# /model and /effort (or the brain panel). "models" empty = asked live.
 CATALOG: list[dict] = [
     # -- subscriptions: no key --------------------------------------------
-    {"id": "claude-sonnet", "name": "Claude", "model": "sonnet", "label": "Sonnet",
-     "kind": "claude", "group": "Subscriptions", "note": "Your Claude Pro/Max plan. Fast and strong."},
-    {"id": "claude-opus", "name": "Claude", "model": "opus", "label": "Opus",
-     "kind": "claude", "group": "Subscriptions", "note": "The most capable Claude. Uses more of your plan."},
-    {"id": "claude-haiku", "name": "Claude", "model": "haiku", "label": "Haiku",
-     "kind": "claude", "group": "Subscriptions", "note": "The quickest Claude, light on your plan."},
-    {"id": "codex", "name": "Codex", "model": "", "label": "",
-     "kind": "codex", "group": "Subscriptions", "note": "OpenAI's agent, with your ChatGPT plan or OpenAI key."},
+    {"id": "claude", "name": "Claude", "kind": "claude", "group": "Subscriptions",
+     "note": "Your Claude Pro/Max plan, no key.",
+     "models": [{"id": "sonnet", "label": "Sonnet"}, {"id": "opus", "label": "Opus"},
+                {"id": "haiku", "label": "Haiku"}],
+     "efforts": ["low", "medium", "high", "xhigh", "max"]},
+    {"id": "codex", "name": "Codex", "kind": "codex", "group": "Subscriptions",
+     "note": "OpenAI's agent, with your ChatGPT plan or OpenAI key.", "models": []},
     # -- API keys ------------------------------------------------------------
-    {"id": "deepseek-flash", "name": "DeepSeek", "model": "deepseek-flash", "label": "V4.1 Flash",
-     "kind": "api", "group": "API keys", "url": "https://api.deepseek.com", "key": "DEEPSEEK_API_KEY",
-     "note": "Cheap and quick."},
-    {"id": "deepseek-pro", "name": "DeepSeek", "model": "deepseek-v4-pro", "label": "V4 Pro",
-     "kind": "api", "group": "API keys", "url": "https://api.deepseek.com", "key": "DEEPSEEK_API_KEY",
-     "note": "Thinks before it answers."},
-    {"id": "kimi-k3", "name": "Kimi", "model": "moonshotai/Kimi-K3", "label": "K3",
-     "kind": "api", "group": "API keys", "url": "https://api.studio.nebius.com/v1", "key": "NEBIUS_API_KEY",
-     "effort": "medium", "note": "Deep reasoning, through Nebius."},
-    {"id": "glm-flash", "name": "GLM", "model": "zai-org/GLM-5.3-Flash", "label": "5.3 Flash",
-     "kind": "api", "group": "API keys", "url": "https://api.studio.nebius.com/v1", "key": "NEBIUS_API_KEY",
-     "effort": "medium", "note": "Very cheap, through Nebius."},
-    {"id": "claude-api", "name": "Claude API", "model": "claude-sonnet-5-5", "label": "Sonnet 5.5",
-     "kind": "api", "group": "API keys", "url": "https://api.anthropic.com/v1", "key": "ANTHROPIC_API_KEY",
-     "note": "Claude with a Console key, paid per use."},
+    {"id": "deepseek", "name": "DeepSeek", "kind": "api", "group": "API keys",
+     "url": "https://api.deepseek.com", "key": "DEEPSEEK_API_KEY", "note": "Cheap and quick.",
+     "models": [{"id": "deepseek-flash", "label": "V4.1 Flash"}, {"id": "deepseek-v4-pro", "label": "V4 Pro"}]},
+    {"id": "nebius", "name": "Nebius", "kind": "api", "group": "API keys",
+     "url": "https://api.studio.nebius.com/v1", "key": "NEBIUS_API_KEY",
+     "note": "Open models: Kimi, GLM, Qwen, gpt-oss.",
+     "models": [{"id": "moonshotai/Kimi-K3", "label": "Kimi K3"},
+                {"id": "zai-org/GLM-5.3-Flash", "label": "GLM-5.3 Flash"},
+                {"id": "zai-org/GLM-5.3", "label": "GLM-5.3"},
+                {"id": "Qwen/Qwen3.8-27B", "label": "Qwen3.8 27B"},
+                {"id": "openai/gpt-oss-120b", "label": "gpt-oss 120B"}],
+     # without an effort, some of these spend the whole answer thinking
+     "efforts": ["low", "medium", "high"], "effort": "medium"},
+    {"id": "claude-api", "name": "Claude API", "kind": "api", "group": "API keys",
+     "url": "https://api.anthropic.com/v1", "key": "ANTHROPIC_API_KEY",
+     "note": "Claude with a Console key, paid per use.",
+     "models": [{"id": "claude-sonnet-5-5", "label": "Sonnet 5.5"}, {"id": "claude-opus-5-5", "label": "Opus 5.5"},
+                {"id": "claude-haiku-5-5", "label": "Haiku 5.5"}]},
     # -- local: free, on your machine ---------------------------------------
-    {"id": "ollama", "name": "Ollama", "model": "", "label": "local",
-     "kind": "api", "group": "On your machine", "url": "http://localhost:11434/v1", "key": "",
+    {"id": "ollama", "name": "Ollama", "kind": "api", "group": "On your machine",
+     "url": "http://localhost:11434/v1", "key": "", "models": [],
      "note": "Any model you pulled with Ollama. Free, offline."},
 ]
 
-DEFAULT = "claude-sonnet"
+DEFAULT = "claude"
 _codex_ok: bool | None = None   # `codex login status` is slow, ask once
 
 
@@ -145,12 +149,14 @@ def status(b: dict) -> dict:
     return {"ready": True} if _local_models(b["url"]) else {"ready": False, "why": "Not running"}
 
 
-def resolve_model(b: dict) -> str:
-    """Local servers: use the first model they serve when none is set."""
-    if b.get("model") or b["kind"] != "api":
-        return b.get("model", "")
-    models = _local_models(b["url"])
-    return models[0] if models else ""
+def models(b: dict) -> list[dict]:
+    """The models this brain offers: its list, or what a local server serves."""
+    if b.get("models"):
+        return b["models"]
+    if b["kind"] == "api":
+        # embedding models cannot chat, leave them out
+        return [{"id": m, "label": m} for m in _local_models(b["url"]) if "embed" not in m.lower()]
+    return []
 
 
 def codex_default_model() -> str:
@@ -165,10 +171,7 @@ def codex_default_model() -> str:
 
 def public(b: dict) -> dict:
     """What the window may see (no key values, ever)."""
-    label = b.get("label") or ""
-    if b["kind"] == "codex" and not label:
-        label = codex_default_model() or "default model"
-    return {"id": b["id"], "name": b["name"], "label": label, "group": b.get("group", "Custom"),
+    return {"id": b["id"], "name": b["name"], "group": b.get("group", "Custom"),
             "note": b.get("note", ""), "kind": b["kind"], **status(b)}
 
 

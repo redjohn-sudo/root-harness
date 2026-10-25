@@ -85,6 +85,29 @@ body::before{content:"";position:fixed;inset:0;background:var(--givre) 0 0/200px
 @keyframes pop{0%{transform:scale(.8);opacity:.3}60%{transform:scale(1.08)}100%{transform:none;opacity:1}}
 #statut .badge{cursor:pointer}
 
+/* ── Menu des commandes / ── */
+.slash{position:absolute;left:0;right:0;bottom:calc(100% + 8px);border-radius:16px;padding:6px;border:1px solid var(--trait);
+  background:var(--givre) 0 0/200px,rgba(11,17,16,.93);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
+  box-shadow:0 -12px 40px rgba(0,0,0,.35);max-height:310px;overflow-y:auto;
+  opacity:0;transform:translateY(10px) scale(.98);transform-origin:bottom;pointer-events:none;transition:opacity .18s,transform .3s var(--ease-out)}
+.slash.on{opacity:1;transform:none;pointer-events:auto}
+.slash .titre{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--encre-3);padding:6px 11px 5px}
+.slash .it{display:flex;gap:12px;align-items:baseline;padding:8px 11px;border-radius:10px;cursor:pointer;
+  opacity:0;animation:monte .32s var(--ease-out) forwards;animation-delay:calc(var(--i)*16ms);transition:background .15s}
+.slash .it .c{font-family:var(--mono);font-size:13px;color:var(--vert-clair);min-width:96px}
+.slash .it .d{color:var(--encre-3);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.slash .it .ok{margin-left:auto;color:var(--vert-clair);font-size:12px}
+.slash .it.sel{background:rgba(63,157,132,.2)}
+.slash .it.off{opacity:.45!important}
+.slash .vide{padding:10px 11px;color:var(--encre-3);font-size:12.5px}
+.sys{align-self:center;font-size:12.5px;color:var(--encre-2);padding:6px 13px;border-radius:999px;border:1px solid var(--trait);
+  background:var(--givre) 0 0/200px,var(--verre);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);animation:arrive .45s var(--ease-out)}
+.sys b{color:var(--vert-clair);font-weight:600}
+.info{align-self:stretch;border:1px solid var(--trait);border-radius:var(--rayon);padding:12px 15px;font-size:13px;
+  background:var(--givre) 0 0/200px,var(--verre);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);animation:arrive .45s var(--ease-out)}
+.info .ligne{display:flex;gap:12px;padding:4px 0}.info .ligne .c{font-family:var(--mono);color:var(--vert-clair);min-width:110px}
+.info .ligne .d{color:var(--encre-2)}
+
 /* ── Header ──────────────────────────────────────────────────── */
 header{position:relative;z-index:2;margin:14px 16px 0;padding:11px 14px;border-radius:var(--rayon);
   background:var(--givre) 0 0/200px,var(--verre);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
@@ -199,7 +222,8 @@ body.reflechit #envoyer{animation:respire 1.2s ease-in-out infinite}
   </div>
 
   <footer>
-    <textarea id="entree" placeholder="Ask your agent something..." rows="1"></textarea>
+    <div class="slash" id="slash"></div>
+    <textarea id="entree" placeholder="Ask your agent something, or type / for commands" rows="1"></textarea>
     <button id="envoyer" onclick="send()" title="Send">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
@@ -209,6 +233,7 @@ body.reflechit #envoyer{animation:respire 1.2s ease-in-out infinite}
   <div id="statut">
     <span class="badge" id="st-modele" onclick="ouvrir('cerveaux')" title="Change brain">Claude</span>
     <span class="sep">·</span><span id="st-agent">Sonnet</span>
+    <span class="sep" id="st-effort-sep" style="display:none">·</span><span id="st-effort"></span>
     <span class="sep">·</span><span class="bar"><i id="st-bar"></i></span>
     <span class="sep">·</span><span class="live" id="st-live">ready</span>
   </div>
@@ -262,20 +287,25 @@ function ouvrir(nom){
 }
 
 // -- brains --
-function badge(b){
+let ACTIF={};
+function sys(html){ if(hint)hint.style.display='none'; add(`<div class="sys">${html}</div>`); }
+function badge(b){ ACTIF=b;
   const el=document.getElementById('st-modele');
   el.textContent=b.name; document.getElementById('st-agent').textContent=b.label||'';
+  document.getElementById('st-effort').textContent=b.effort?('effort '+b.effort):'';
+  document.getElementById('st-effort-sep').style.display=b.effort?'':'none';
   el.classList.remove('change'); void el.offsetWidth; el.classList.add('change');
 }
 async function rendreCerveaux(){
   if(!api())return;
   const r=await api().brains_list(), L=document.getElementById('liste-cerveaux');
+  ACTIF=await api().active_brain();
   let html='', groupe='', i=0;
   for(const b of r.brains){
     if(b.group!==groupe){ groupe=b.group; html+=`<div class="groupe">${esc(groupe)}</div>`; }
     const cle=(!b.ready&&b.key)?`<div class="cle"><input type="password" placeholder="${esc(b.key)}" data-k="${esc(b.key)}"><button data-k="${esc(b.key)}">Save</button></div>`:'';
     html+=`<div class="cerveau${b.id===r.active?' actif':''}${b.ready?'':' off'}" data-id="${esc(b.id)}" style="--i:${i++}">
-      <div class="l1">${esc(b.name)} <span class="mod">${esc(b.label)}</span><span class="pt"></span></div>
+      <div class="l1">${esc(b.name)} <span class="mod">${b.id===r.active?esc(ACTIF.label||''):''}</span><span class="pt"></span></div>
       <div class="note">${esc(b.note)}</div>${b.ready?'':`<div class="pourquoi">${esc(b.why)}</div>`}${cle}</div>`;
   }
   L.innerHTML=html;
@@ -283,9 +313,8 @@ async function rendreCerveaux(){
     if(e.target.closest('.cle')||el.classList.contains('off'))return;
     const b=await api().choose_brain(el.dataset.id);
     if(!b)return;
-    L.querySelectorAll('.cerveau').forEach(c=>c.classList.toggle('actif',c===el));
-    badge(b);
-    add(`<div class="accueil" style="display:block">Now thinking with <b>${esc(b.name)} ${esc(b.label)}</b>. New conversation.</div>`);
+    ACTIF=b; badge(b); rendreCerveaux();
+    sys(`Now thinking with <b>${esc(b.name)} ${esc(b.label)}</b>. New conversation.`);
   });
   L.querySelectorAll('.cle button').forEach(bt=>bt.onclick=async()=>{
     const inp=bt.parentElement.querySelector('input');
@@ -310,7 +339,108 @@ function send(){
   window.pywebview.api.send(text);
 }
 const ta=document.getElementById('entree');
-ta.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}});
+ta.addEventListener('keydown',e=>{
+  if(SL.on){
+    if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();choisir(SL.sel+(e.key==='ArrowDown'?1:-1));return;}
+    if(e.key==='Escape'){e.preventDefault();fermerSlash();return;}
+    if((e.key==='Enter'&&!e.shiftKey)||e.key==='Tab'){
+      const it=SL.items[SL.sel];
+      if(it&&!it.off){e.preventDefault();it.faire();return;}
+      if(e.key==='Tab'){e.preventDefault();return;}
+    }
+  }
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();
+    const v=ta.value.trim();
+    if(v.startsWith('/')){const m=v.match(/^(\/\S+)\s*(.*)$/s);executer(m[1].toLowerCase(),m[2].trim());}
+    else send();}
+});
+ta.addEventListener('input',majSlash);
+
+// -- slash commands: everything without leaving the keyboard --
+const COMMANDES=[
+  {c:'/model',d:'Change the model',arg:true},
+  {c:'/effort',d:'How hard it thinks',arg:true},
+  {c:'/brain',d:'Change the brain (Claude, Codex, DeepSeek...)',arg:true},
+  {c:'/clear',d:'Start a new conversation'},
+  {c:'/tools',d:'What your agent can do'},
+  {c:'/status',d:'Brain, model and effort right now'},
+  {c:'/background',d:'Change the background'},
+  {c:'/export',d:'Save this conversation as a page'},
+  {c:'/help',d:'All commands'},
+];
+const SL={on:false,items:[],sel:0,jeton:0};
+const slash=document.getElementById('slash');
+function fermerSlash(){SL.on=false;slash.classList.remove('on');}
+function choisir(i){
+  if(!SL.items.length)return;
+  SL.sel=(i+SL.items.length)%SL.items.length;
+  slash.querySelectorAll('.it').forEach((el,k)=>el.classList.toggle('sel',k===SL.sel));
+  const el=slash.querySelectorAll('.it')[SL.sel]; if(el)el.scrollIntoView({block:'nearest'});
+}
+async function majSlash(){
+  const v=ta.value;
+  if(!v.startsWith('/')||v.includes('\n')){fermerSlash();return;}
+  const jeton=++SL.jeton;
+  const m=v.match(/^(\/\S*)(\s+(.*))?$/s); const cmd=m[1].toLowerCase(), espace=m[2]!==undefined, arg=(m[3]||'').toLowerCase();
+  let titre='Commands', items=[];
+  if(!espace){
+    items=COMMANDES.filter(x=>x.c.startsWith(cmd)).map(x=>({c:x.c,d:x.d,faire:()=>{
+      if(x.arg){ta.value=x.c+' ';majSlash();} else executer(x.c,'');}}));
+  } else if(cmd==='/model'&&api()){
+    const r=await api().models(); titre='Models · '+(ACTIF.name||'');
+    items=r.models.filter(x=>(x.label+' '+x.id).toLowerCase().includes(arg))
+      .map(x=>({c:x.label,d:x.id!==x.label?x.id:'',ok:x.id===r.current,faire:()=>executer('/model',x.id)}));
+  } else if(cmd==='/effort'&&api()){
+    const r=await api().efforts(); titre='Effort · '+(ACTIF.label||'');
+    items=r.efforts.filter(x=>x.includes(arg)).map(x=>({c:x,d:'',ok:x===r.current,faire:()=>executer('/effort',x)}));
+  } else if(cmd==='/brain'&&api()){
+    const r=await api().brains_list(); titre='Brains';
+    items=r.brains.filter(x=>x.name.toLowerCase().includes(arg))
+      .map(x=>({c:x.name,d:x.ready?x.note:x.why,ok:x.id===r.active,off:!x.ready,faire:()=>executer('/brain',x.id)}));
+  } else { fermerSlash(); return; }
+  if(jeton!==SL.jeton)return;   // the text changed meanwhile
+  SL.items=items; SL.sel=Math.max(0,items.findIndex(x=>x.ok&&espace)); SL.on=true;
+  let html=`<div class="titre">${esc(titre)}</div>`;
+  if(!items.length) html+=`<div class="vide">${cmd==='/effort'&&espace?'This model has no effort setting.':'Nothing matches.'}</div>`;
+  items.forEach((x,i)=>{html+=`<div class="it${i===SL.sel?' sel':''}${x.off?' off':''}" style="--i:${i}"><span class="c">${esc(x.c)}</span><span class="d">${esc(x.d)}</span>${x.ok?'<span class="ok">current</span>':''}</div>`;});
+  slash.innerHTML=html; slash.classList.add('on');
+  slash.querySelectorAll('.it').forEach((el,i)=>{el.onmouseenter=()=>choisir(i);el.onmousedown=e=>{e.preventDefault();if(!items[i].off)items[i].faire();};});
+}
+const OCCUPE='Wait for the current answer to finish.';
+async function executer(cmd,arg){
+  ta.value=''; fermerSlash();
+  if(!api()){return;}
+  if(cmd==='/model'){
+    if(!arg){ta.value='/model ';return majSlash();}
+    const r=await api().set_model(arg);
+    if(r){badge(r);sys(`Model: <b>${esc(r.label)}</b>`);} else sys(document.body.classList.contains('reflechit')?OCCUPE:`No model "${esc(arg)}" here. Type /model to see them.`);
+  } else if(cmd==='/effort'){
+    if(!arg){ta.value='/effort ';return majSlash();}
+    const r=await api().set_effort(arg.toLowerCase());
+    if(r){badge(r);sys(`Effort: <b>${esc(r.effort)}</b>`);} else sys(document.body.classList.contains('reflechit')?OCCUPE:`No effort "${esc(arg)}" for this model. Type /effort to see them.`);
+  } else if(cmd==='/brain'){
+    if(!arg){ouvrir('cerveaux');return;}
+    const r=await api().choose_brain(arg);
+    if(r){badge(r);sys(`Now thinking with <b>${esc(r.name)} ${esc(r.label)}</b>. New conversation.`);} else sys(`Can't switch to "${esc(arg)}". Type /brain to see them.`);
+  } else if(cmd==='/clear'){
+    const r=await api().clear(); if(!r){sys(OCCUPE);return;}
+    fil.querySelectorAll(':scope > :not(.accueil)').forEach(n=>n.remove());
+    sys(`New conversation with <b>${esc(r.name)} ${esc(r.label)}</b>.`);
+  } else if(cmd==='/tools'){
+    const t=await api().tools_list();
+    infos(t.map(x=>[x.name,x.desc+(x.asks?' Asks you first.':'')]));
+  } else if(cmd==='/status'){
+    const b=await api().active_brain();
+    infos([['brain',b.name],['model',b.label+(b.model&&b.model!==b.label?' ('+b.model+')':'')],['effort',b.effort||'default']]);
+  } else if(cmd==='/background'){ ouvrir('reglages');
+  } else if(cmd==='/export'){ shareChat(); sys('Saved this conversation as a page.');
+  } else if(cmd==='/help'){ infos(COMMANDES.map(x=>[x.c,x.d]));
+  } else sys(`Unknown command ${esc(cmd)}. Type / to see them all.`);
+}
+function infos(lignes){
+  if(hint)hint.style.display='none';
+  add(`<div class="info">${lignes.map(([c,d])=>`<div class="ligne"><span class="c">${esc(c)}</span><span class="d">${esc(d)}</span></div>`).join('')}</div>`);
+}
 
 let lastTool=null;
 function onEvent(ev){

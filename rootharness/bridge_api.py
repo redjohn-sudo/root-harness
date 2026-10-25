@@ -36,7 +36,8 @@ def tool_specs() -> list[dict]:
 class Session:
     def __init__(self, brain: dict):
         self.brain = brain
-        self.model = brains.resolve_model(brain)
+        self.model: str | None = None     # set by the window (/model)
+        self.effort: str | None = None    # set by the window (/effort)
         self.messages: list[dict] = [{"role": "system", "content": SYSTEM}]
 
     def close(self) -> None:
@@ -46,8 +47,8 @@ class Session:
         b = self.brain
         body = {"model": self.model, "messages": self.messages,
                 "tools": tool_specs(), "tool_choice": "auto", "max_tokens": 4000}
-        if b.get("effort"):
-            body["reasoning_effort"] = b["effort"]   # otherwise some models spend everything thinking
+        if self.effort:
+            body["reasoning_effort"] = self.effort
         headers = {"Content-Type": "application/json"}
         if b.get("key"):
             headers["Authorization"] = "Bearer " + brains.key(b["key"])

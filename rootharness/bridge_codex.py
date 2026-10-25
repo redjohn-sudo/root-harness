@@ -23,7 +23,8 @@ from . import permissions
 
 class Session:
     def __init__(self, brain: dict):
-        self.model = brain.get("model") or None   # None: Codex's own default
+        self.model: str | None = None     # set by the window (/model); None = Codex's default
+        self.effort: str | None = None    # set by the window (/effort)
         self.proc: subprocess.Popen | None = None
         self.thread: str | None = None
         self._ids = itertools.count(1)
@@ -66,8 +67,25 @@ class Session:
             "cwd": str(Path.home()),
             # Codex may read freely; anything else comes back to us to approve.
             "sandbox": "read-only", "approvalPolicy": "on-request",
-            "model": self.model, "ephemeral": True})
+            "ephemeral": True})
         self.thread = started["thread"]["id"]
+
+    def _ensure(self) -> None:
+        if self.proc is None or self.proc.poll() is not None:
+            self._start()
+
+    def list_models(self) -> list[dict]:
+        """The models Codex offers, with the efforts each one supports."""
+        self._ensure()
+        out = []
+        for m in self._request("model/list", {}).get("data", []):
+            if m.get("hidden"):
+                continue
+            efforts = [e.get("reasoningEffort") if isinstance(e, dict) else e
+                       for e in m.get("supportedReasoningEfforts") or []]
+            out.append({"id": m["id"], "label": m.get("displayName") or m["id"],
+                        "efforts": efforts, "default": bool(m.get("isDefault"))})
+        return out
 
     def close(self) -> None:
         if self.proc and self.proc.poll() is None:
@@ -76,10 +94,13 @@ class Session:
     # -- one turn ----------------------------------------------------------------
 
     def run_turn(self, prompt: str, on_event: Callable[[dict], None]) -> None:
-        if self.proc is None or self.proc.poll() is not None:
-            self._start()
-        self._send({"id": next(self._ids), "method": "turn/start", "params": {
-            "threadId": self.thread, "input": [{"type": "text", "text": prompt}]}})
+        self._ensure()
+        params = {"threadId": self.thread, "input": [{"type": "text", "text": prompt}]}
+        if self.model:
+            params["model"] = self.model
+        if self.effort:
+            params["effort"] = self.effort
+        self._send({"id": next(self._ids), "method": "turn/start", "params": params})
         while True:
             msg = self._read()
             method = msg.get("method")

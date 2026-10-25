@@ -52,7 +52,8 @@ class Session:
     resume the same session id each turn so Claude remembers what was said."""
 
     def __init__(self, brain: dict):
-        self.model = brain.get("model") or None
+        self.model: str | None = None     # set by the window (/model)
+        self.effort: str | None = None    # set by the window (/effort)
         self.session_id: str | None = None
 
     def run_turn(self, prompt: str, on_event: Callable[[dict], None]) -> None:
@@ -83,6 +84,7 @@ class Session:
             # add a second prompt. Only our MCP tools are reachable (allowed_tools).
             permission_mode="bypassPermissions",
             model=self.model,
+            effort=self.effort,
             resume=self.session_id,
         )
         AssistantMessage, ResultMessage = sdk["AssistantMessage"], sdk["ResultMessage"]

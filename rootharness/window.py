@@ -45,7 +45,7 @@ class Api:
         self._next = 0
         self._busy = threading.Lock()   # one turn at a time
         self.brain = brains.by_id(read_settings().get("brain", "")) or brains.by_id(brains.DEFAULT)
-        self.session = brains.new_session(self.brain)
+        self._new_session()
         permissions.set_asker(self._ask)
 
     def bind(self, window):
@@ -59,6 +59,31 @@ class Api:
 
     # -- brains: which model thinks ------------------------------------------
 
+    def _new_session(self):
+        """A fresh conversation with the current brain, model and effort."""
+        self.session = brains.new_session(self.brain)
+        st = read_settings()
+        self.session.model = st.get("models", {}).get(self.brain["id"]) or None
+        self.session.effort = st.get("efforts", {}).get(self.brain["id"]) or self.brain.get("effort")
+        if not self.session.model:
+            first = self._models()
+            default = next((m for m in first if m.get("default")), first[0] if first else None)
+            self.session.model = default["id"] if default else None
+
+    def _models(self) -> list[dict]:
+        if hasattr(self.session, "list_models"):
+            try:
+                return self.session.list_models()
+            except Exception:
+                return []
+        return brains.models(self.brain)
+
+    def _efforts(self) -> list[str]:
+        if self.brain["kind"] == "codex":
+            m = next((m for m in self._models() if m["id"] == self.session.model), None)
+            return m["efforts"] if m else []
+        return self.brain.get("efforts", [])
+
     def brains_list(self):
         return {"active": self.brain["id"],
                 "brains": [brains.public(b) for b in brains.catalog()]}
@@ -69,12 +94,55 @@ class Api:
         if not b or not brains.status(b)["ready"] or self._busy.locked():
             return None
         self.session.close()
-        self.brain, self.session = b, brains.new_session(b)
+        self.brain = b
+        self._new_session()
         write_settings(brain=ident)
-        return brains.public(b)
+        return self.active_brain()
 
     def active_brain(self):
-        return brains.public(self.brain)
+        """Brain, model and effort, for the status bar."""
+        label = next((m["label"] for m in self._models() if m["id"] == self.session.model),
+                     self.session.model or "")
+        return {**brains.public(self.brain), "model": self.session.model,
+                "label": label, "effort": self.session.effort or ""}
+
+    def models(self):
+        return {"current": self.session.model, "models": self._models()}
+
+    def set_model(self, ident: str):
+        """Change the model; the conversation goes on."""
+        if self._busy.locked() or ident not in [m["id"] for m in self._models()]:
+            return None
+        self.session.model = ident
+        st = read_settings()
+        write_settings(models={**st.get("models", {}), self.brain["id"]: ident})
+        if self.session.effort and self.session.effort not in self._efforts():
+            self.session.effort = None
+        return self.active_brain()
+
+    def efforts(self):
+        return {"current": self.session.effort, "efforts": self._efforts()}
+
+    def set_effort(self, level: str):
+        if self._busy.locked() or level not in self._efforts():
+            return None
+        self.session.effort = level
+        st = read_settings()
+        write_settings(efforts={**st.get("efforts", {}), self.brain["id"]: level})
+        return self.active_brain()
+
+    def clear(self):
+        """/clear: forget the conversation, keep brain, model and effort."""
+        if self._busy.locked():
+            return None
+        self.session.close()
+        self._new_session()
+        return self.active_brain()
+
+    def tools_list(self):
+        from . import tools
+        return [{"name": n, "desc": t["desc"], "asks": t["kind"] != permissions.READ_ONLY}
+                for n, t in tools.REGISTRY.items()]
 
     def save_key(self, name: str, value: str):
         """Store a key typed in the window, in ~/.root-harness/.env only."""

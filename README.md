@@ -71,9 +71,26 @@ def weather(city: str) -> str:
 A read-only tool runs freely; a tool that changes something calls
 `permissions.ask(...)` first. See [examples/add_your_own_tool.py](examples/add_your_own_tool.py).
 
+## Commands
+
+Type `/` in the message box. Arrows to move, Enter or Tab to pick.
+
+| Command | What it does |
+|---|---|
+| `/model` | change the model (Sonnet, Opus, GPT, Kimi...), the conversation goes on |
+| `/effort` | how hard it thinks (low to max, when the model supports it) |
+| `/brain` | change the brain, starts a new conversation |
+| `/clear` | new conversation, same brain |
+| `/tools` | what your agent can do, and what asks you first |
+| `/status` | brain, model and effort right now |
+| `/background` | change the background |
+| `/export` | save the conversation as a page |
+| `/help` | all commands |
+
 ## Pick your brain
 
-Click the brain icon on the left and choose who thinks for your agent:
+Click the brain icon on the left (or type `/brain`) and choose who thinks for
+your agent. One brain per provider; pick its model with `/model`:
 
 | Brain | What you need | How it runs |
 |---|---|---|
