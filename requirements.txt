@@ -1,0 +1,4 @@
+pywebview>=5.0
+claude-agent-sdk>=0.1.0
+# Optional, only for the API-key path (OpenAI-compatible providers):
+# requests>=2.31
