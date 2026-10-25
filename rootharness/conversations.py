@@ -13,11 +13,12 @@ written to.
 from __future__ import annotations
 
 import json
+import os
 import time
 import uuid
 from pathlib import Path
 
-HOME = Path.home() / ".root-harness"
+HOME = Path(os.environ.get("ROOT_HARNESS_HOME") or Path.home() / ".root-harness")
 INDEX = HOME / "index.json"
 FOLDER = HOME / "conversations"
 
@@ -30,7 +31,11 @@ def _load() -> dict:
     data.setdefault("folders", [])
     data.setdefault("conversations", {})
     data.setdefault("hidden", [])           # terminal sessions you removed from the list
+    data.setdefault("deleted", [])          # ids removed here, so another machine does not bring them back
     return data
+
+
+on_change = lambda: None     # the window points this at the sync
 
 
 def _save(data: dict) -> None:
@@ -38,6 +43,7 @@ def _save(data: dict) -> None:
     tmp = INDEX.with_suffix(".tmp")
     tmp.write_text(json.dumps(data, indent=1, ensure_ascii=False), encoding="utf-8")
     tmp.replace(INDEX)
+    on_change()
 
 
 def now() -> int:
@@ -101,6 +107,7 @@ def remove(cid: str) -> None:
     """Remove from root-harness. A terminal session stays in Claude Code, only hidden here."""
     data = _load()
     c = data["conversations"].pop(cid, None)
+    data["deleted"].append(cid)
     if c and c.get("terminal"):
         data["hidden"].append(c["terminal"])
     _save(data)
@@ -125,6 +132,7 @@ def read_log(cid: str) -> dict:
 def write_log(cid: str, log: dict) -> None:
     FOLDER.mkdir(parents=True, exist_ok=True)
     (FOLDER / f"{cid}.json").write_text(json.dumps(log, ensure_ascii=False), encoding="utf-8")
+    on_change()
 
 
 # -- folders ------------------------------------------------------------------
@@ -151,7 +159,26 @@ def folder_delete(fid: str) -> None:
     """The folder goes; its conversations go back under their agent."""
     data = _load()
     data["folders"] = [f for f in data["folders"] if f["id"] != fid]
+    data["deleted"].append(fid)
     for c in data["conversations"].values():
         if c.get("folder") == fid:
             c["folder"] = None
+    _save(data)
+
+
+def merge_index(remote: dict) -> None:
+    """Another machine's list joins this one: newest version of each
+    conversation wins, and what was deleted anywhere stays deleted."""
+    data = _load()
+    gone = set(data["deleted"]) | set(remote.get("deleted", []))
+    convs = dict(data["conversations"])
+    for cid, c in (remote.get("conversations") or {}).items():
+        if cid not in convs or c.get("updated", 0) > convs[cid].get("updated", 0):
+            convs[cid] = c
+    folders = {f["id"]: f for f in remote.get("folders", [])}
+    folders.update({f["id"]: f for f in data["folders"]})
+    data["conversations"] = {k: v for k, v in convs.items() if k not in gone}
+    data["folders"] = [f for f in folders.values() if f["id"] not in gone]
+    data["hidden"] = sorted(set(data["hidden"]) | set(remote.get("hidden", [])))
+    data["deleted"] = sorted(gone)
     _save(data)

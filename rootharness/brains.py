@@ -26,7 +26,7 @@ import subprocess
 import urllib.request
 from pathlib import Path
 
-HOME = Path.home() / ".root-harness"
+HOME = Path(os.environ.get("ROOT_HARNESS_HOME") or Path.home() / ".root-harness")
 ENV_FILE = HOME / ".env"
 USER_BRAINS = HOME / "brains.json"
 

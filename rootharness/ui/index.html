@@ -464,25 +464,44 @@ function porte(st){
     c.innerHTML=`<div class="logo">R</div><h2>Welcome to root-harness</h2>
       <p>Pick a pseudo (any one) and a password. Everything stays on this Mac: no server, no email.</p>
       <input id="cp-pseudo" placeholder="Your pseudo" maxlength="32" autocomplete="off">
-      <input id="cp-mdp" type="password" placeholder="Password (8+ characters)">
+      <input id="cp-mdp" type="password" placeholder="Password (10+ characters)">
       <input id="cp-mdp2" type="password" placeholder="Same password again">
       <div class="err" id="cp-err"></div><button class="go" id="cp-go">Create my account</button>
-      <div class="petit">Your password locks your identity, the key of your encrypted channels. It cannot be recovered: keep it somewhere safe.</div>`;
+      <div class="petit">Your password locks your account. Its memory (conversations, folders, settings, channels) follows you, sealed, to your other machines. The password cannot be recovered: keep it somewhere safe.</div>
+      <div class="lien" id="cp-deja">I already have an account</div>`;
     const go=async()=>{const r=await api().account_create(val('cp-pseudo'),val('cp-mdp'),val('cp-mdp2'));
       if(r.error){erreurCompte('cp-err',r.error);return;} porte(r); sys(`Welcome, <b>${esc(r.pseudo)}</b>.`);};
     document.getElementById('cp-go').onclick=go; entree(['cp-pseudo','cp-mdp','cp-mdp2'],go);
+    document.getElementById('cp-deja').onclick=retrouver;
     document.getElementById('cp-pseudo').focus();
   } else {
     c.innerHTML=`<div class="logo">R</div><h2>Welcome back, ${esc(st.pseudo)}</h2><p>Type your password to unlock root-harness.</p>
       <input id="cp-mdp" type="password" placeholder="Password"><div class="err" id="cp-err"></div>
       <button class="go" id="cp-go">Unlock</button><div class="lien" id="cp-oubli">Forgot your password?</div>`;
     const go=async()=>{const r=await api().account_unlock(val('cp-mdp'));
-      if(r.error){erreurCompte('cp-err',r.error);document.getElementById('cp-mdp').select();return;} porte(r);};
+      if(r.error){erreurCompte('cp-err',r.error);document.getElementById('cp-mdp').select();return;} porte(r);
+      if(r.weak) sys('Your password is short: change it to 10+ characters (Settings, Account) to sign in from your other machines.');};
     document.getElementById('cp-go').onclick=go; entree(['cp-mdp'],go);
     document.getElementById('cp-oubli').onclick=oubli;
     document.getElementById('cp-mdp').focus();
   }
   o.classList.add('on');
+}
+function retrouver(){
+  const c=document.getElementById('carte-compte');
+  c.innerHTML=`<div class="logo">R</div><h2>Sign in</h2><p>Your pseudo and password from your other machine. Your memory comes with them.</p>
+    <input id="cp-pseudo" placeholder="Your pseudo" autocomplete="off"><input id="cp-mdp" type="password" placeholder="Password">
+    <div class="err" id="cp-err"></div><button class="go" id="cp-go">Sign in</button><div class="lien" id="cp-retour">Create a new account instead</div>`;
+  const go=async()=>{
+    const b=document.getElementById('cp-go'); b.disabled=true; b.textContent='Looking for your account...';
+    const r=await api().account_restore(val('cp-pseudo'),val('cp-mdp'));
+    b.disabled=false; b.textContent='Sign in';
+    if(r.error){erreurCompte('cp-err',r.error);return;}
+    porte(r); sys(`Welcome back, <b>${esc(r.pseudo)}</b>. Bringing your memory from the relays...`);
+  };
+  document.getElementById('cp-go').onclick=go; entree(['cp-pseudo','cp-mdp'],go);
+  document.getElementById('cp-retour').onclick=async()=>porte(await api().account_state());
+  document.getElementById('cp-pseudo').focus();
 }
 function val(id){return document.getElementById(id).value;}
 function entree(ids,go){ids.forEach(i=>document.getElementById(i).onkeydown=e=>{if(e.key==='Enter')go();});}
@@ -509,16 +528,26 @@ function rendreReglageCompte(){
   const z=document.getElementById('reglage-compte'); if(!COMPTE.exists){z.innerHTML='';return;}
   z.innerHTML=`<div class="compte-info"><b>${esc(COMPTE.pseudo)}</b><br><code>${esc(COMPTE.npub)}</code></div>
     <div class="reglage-l">Stay signed in (no password at launch)<span class="interrupteur${COMPTE.stay?' on':''}" id="rg-stay"></span></div>
+    <div class="reglage-l">Sync between my machines (sealed)<span class="interrupteur${COMPTE.sync?' on':''}" id="rg-sync"></span></div>
+    <div class="compte-info" id="rg-sync-etat" style="color:var(--encre-3);font-size:12px"></div>
     <button class="btn-p" onclick="formPseudo()">Change pseudo</button>
     <button class="btn-p" onclick="formMdp()">Change password</button>
     <button class="btn-p" onclick="verrouiller()">Lock now</button>
     <div id="rg-compte-form"></div>`;
   document.getElementById('rg-stay').onclick=async()=>{const r=await api().account_set_stay(!COMPTE.stay); if(r){COMPTE=r;rendreReglageCompte();}};
+  document.getElementById('rg-sync').onclick=async()=>{const r=await api().account_set_sync(!COMPTE.sync); if(r){COMPTE=r;rendreReglageCompte();}};
+  if(COMPTE.sync) api().sync_status().then(st=>{
+    const e=document.getElementById('rg-sync-etat'); if(!e)return;
+    const t=st.pushed||st.pulled;
+    e.textContent=st.error?'Sync paused: '+st.error.slice(0,80):t?`Synced ${quand(t*1000)} ago${st.relays?' · '+st.relays+' relays':''}`.replace('now ago','just now'):'Syncing...';
+  });
 }
 function formPseudo(){
   const z=document.getElementById('rg-compte-form');
-  z.innerHTML=`<div class="form-c"><input id="rp-p" value="${esc(COMPTE.pseudo)}" maxlength="32"><div class="row"><button onclick="this.closest('.form-c').remove()">Cancel</button><button class="ok" id="rp-ok">Save</button></div></div>`;
-  document.getElementById('rp-ok').onclick=async()=>{const r=await api().account_set_pseudo(val('rp-p')); if(r){COMPTE=r;montrerPseudo();rendreReglageCompte();}};
+  z.innerHTML=`<div class="form-c"><input id="rp-p" value="${esc(COMPTE.pseudo)}" maxlength="32"><input id="rp-m" type="password" placeholder="Your password">
+    <div class="err" id="rp-err"></div><div class="row"><button onclick="this.closest('.form-c').remove()">Cancel</button><button class="ok" id="rp-ok">Save</button></div></div>`;
+  document.getElementById('rp-ok').onclick=async()=>{const r=await api().account_set_pseudo(val('rp-p'),val('rp-m'));
+    if(!r||r.error){document.getElementById('rp-err').textContent=(r&&r.error)||'Not saved.';return;} COMPTE=r;montrerPseudo();rendreReglageCompte();};
 }
 function formMdp(){
   const z=document.getElementById('rg-compte-form');
@@ -540,6 +569,7 @@ function ouvrir(nom){
   if(nom==='cerveaux') rendreCerveaux();
   if(nom==='discussions'){MENU=null;chargerDiscussions();}
   if(nom==='canaux'){chargerCanaux();}
+  if(nom==='reglages'){rendreReglageCompte();}
 }
 
 // -- brains --
@@ -1027,6 +1057,12 @@ function onEvent(ev){
     if(document.getElementById('canaux').classList.contains('ouvert')) api().channels_overview().then(r=>{CANAUX=r;rendreCanaux();});
   }
   else if(ev.type==='channels_ready'){}
+  else if(ev.type==='synced'&&ev.changed){
+    api().settings_get().then(montrer); api().active_brain().then(badge);
+    if(document.getElementById('discussions').classList.contains('ouvert')) chargerDiscussions();
+    if(document.getElementById('canaux').classList.contains('ouvert')) chargerCanaux();
+    sys('Your memory is up to date with your other machines.');
+  }
   else if(ev.type==='done'){ setStatus('ready', false); if(api())api().active_brain().then(badge); }
   else if(ev.type==='error'){ setStatus('error', false);
     add(`<div class="msg root"><div class="lisere" style="background:linear-gradient(#f87171,transparent)"></div><div class="corps" style="color:#f6b3a0">${esc(ev.text)}</div></div>`); }

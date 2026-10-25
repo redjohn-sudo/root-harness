@@ -97,6 +97,25 @@ you can start a new account, with a new ID.
 Note: the password protects your identity, not your agent conversations, which
 stay readable on disk by anyone using your computer account.
 
+### The same account on every machine
+
+On another machine, choose **I already have an account** and type your pseudo
+and password: the whole memory of the account comes back (conversations and
+folders, settings and background, brains, models and efforts, contacts and
+channels, API keys). There is still no server of ours:
+
+- your pseudo and password go through a slow function (scrypt, 256 MB) that
+  gives a *login key*; your locked identity is published under it, sealed to
+  it, so relays never see your pseudo, your password, or which ID it belongs to;
+- the memory is cut into pieces sealed to yourself (NIP-44), stored as app
+  data (NIP-78) under random-looking labels, on several relays, and republished
+  when it changes; deletions travel too.
+
+Honest limits: free relays promise no storage and may rate-limit or drop data;
+they see that your ID stores sealed pieces and when. Claude Code sessions stay
+on the machine that ran them; elsewhere Claude continues with the conversation
+given as context.
+
 ## Encrypted channels with other users
 
 Talk to other root-harness users in end-to-end encrypted channels (one-to-one

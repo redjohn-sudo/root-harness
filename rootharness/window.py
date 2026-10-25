@@ -8,8 +8,10 @@ tool waits here until the human clicks Allow or Deny.
 """
 from __future__ import annotations
 
+import asyncio
 import base64
 import json
+import os
 import shutil
 import time
 import uuid
@@ -24,7 +26,7 @@ from . import permissions, brains, conversations, account
 
 UI = Path(__file__).parent / "ui" / "index.html"
 # Your settings live in your home folder, never in the repo.
-SETTINGS = Path.home() / ".root-harness" / "settings.json"
+SETTINGS = Path(os.environ.get("ROOT_HARNESS_HOME") or Path.home() / ".root-harness") / "settings.json"
 IMAGES = (".jpg", ".jpeg", ".png", ".webp", ".gif", ".heic", ".heif")
 
 
@@ -35,10 +37,14 @@ def read_settings() -> dict:
         return {}
 
 
+on_change = lambda: None     # the window points this at the sync
+
+
 def write_settings(**changes) -> dict:
     s = read_settings() | changes
     SETTINGS.parent.mkdir(parents=True, exist_ok=True)
     SETTINGS.write_text(json.dumps(s, indent=2), encoding="utf-8")
+    on_change()
     return s
 
 
@@ -53,10 +59,12 @@ class Api:
         self._title = ""                # title to use when it gets saved
         self.channels = None            # encrypted channels, started when first opened
         self.keys = None                # your identity, once unlocked
+        self.sync = None                # your account's memory on every machine
         try:
             self.keys = account.auto()  # "stay signed in": no password at launch
         except Exception:
             self.keys = None
+        self._start_sync()
         self.brain = brains.by_id(read_settings().get("brain", "")) or brains.by_id(brains.DEFAULT)
         self._new_session()
         permissions.set_asker(self._ask)
@@ -145,6 +153,11 @@ class Api:
             return None
         if fork and not events:
             events, notes = self._terminal_events(sid)
+        preamble = ""
+        if sid and brain["kind"] == "claude" and not any((Path.home() / ".claude" / "projects").glob(f"*/{sid}.jsonl")):
+            # the Claude session lives on the machine that ran it: carry the history instead
+            sid, fork, preamble = None, False, self._as_context(events)
+            notes.append("Synced from another machine: Claude continues with this history as context.")
         self.session.close()
         self.brain = brain
         write_settings(brain=brain["id"])
@@ -152,6 +165,8 @@ class Api:
                           messages=conversations.read_log(ident).get("api_messages") if entry else None)
         if entry and brain["kind"] == "codex":
             notes.append("Codex starts a new thread here: it sees this history only on screen.")
+        if preamble:
+            self.session.preamble = preamble
         self.conv = entry["id"] if entry and not entry.get("terminal") else None
         self._title = entry["title"] if entry else next(
             (x["title"] for x in self.conversations_list()["conversations"] if x["id"] == ident), "")
@@ -159,6 +174,18 @@ class Api:
         if entry and entry.get("terminal"):       # keep its folder once continued
             self.conv = entry["id"]
         return {"brain": self.active_brain(), "events": events, "notes": notes, "title": self._title}
+
+    @staticmethod
+    def _as_context(events: list, limit: int = 15000) -> str:
+        lines = []
+        for e in events:
+            if e.get("type") == "user":
+                lines.append("Me: " + e.get("text", ""))
+            elif e.get("type") == "text":
+                lines.append("You: " + e.get("text", ""))
+        text = "\n\n".join(lines)[-limit:]
+        return ("Here is our earlier conversation, from another machine, so you know where we are:\n\n"
+                + text + "\n\n(End of the earlier conversation.)\n\n") if text else ""
 
     def _terminal_events(self, sid: str):
         """The end of a terminal session, as window events (long ones stay in the terminal)."""
@@ -216,6 +243,24 @@ class Api:
         if keys is None:
             return {"error": why}
         self.keys = keys
+        self._publish_login(pseudo, password)
+        self._start_sync()
+        return self.account_state()
+
+    def account_restore(self, pseudo: str, password: str):
+        """Signing in on this machine with an account made on another one."""
+        from . import sync
+        try:
+            found = asyncio.run(sync.fetch_login(pseudo, password))
+        except Exception:
+            return {"error": "Could not reach the relays. Check your internet."}
+        if not found:
+            return {"error": "No account with this pseudo and password."}
+        keys = account.restore(found.get("pseudo") or pseudo, found["locked_key"], password)
+        if keys is None:
+            return {"error": "No account with this pseudo and password."}
+        self.keys = keys
+        self._start_sync()
         return self.account_state()
 
     def account_unlock(self, password: str):
@@ -223,24 +268,80 @@ class Api:
         if keys is None:
             return {"error": "Wrong password."}
         self.keys = keys
+        self._start_sync()
+        if len(password) >= account.MIN_PASSWORD:
+            self._publish_login(account.state()["pseudo"], password)   # keeps the vault fresh on the relays
+            return self.account_state()
+        return {**self.account_state(), "weak": True}
+
+    def _publish_login(self, pseudo: str, password: str, forget=None):
+        """Let other machines find this account; `forget` = (old pseudo, old
+        password) whose vault gets emptied."""
+        from . import sync
+        locked = account.locked_key()
+
+        def work():
+            try:
+                if forget:
+                    asyncio.run(sync.publish_login(forget[0], forget[1], ""))
+                asyncio.run(sync.publish_login(pseudo, password, locked))
+            except Exception:
+                pass
+        if account.state().get("sync"):
+            threading.Thread(target=work, daemon=True).start()
+
+    def _start_sync(self):
+        if self.keys is None or self.sync is not None or not account.state().get("sync"):
+            return
+        from . import sync
+        self.sync = sync.Sync(self.keys, self._emit)
+        hook = self.sync.dirty
+        conversations.on_change = hook
+        sys.modules[__name__].on_change = hook
+        from . import channels as ch_mod
+        ch_mod.on_change = hook
+
+    def _stop_sync(self):
+        if self.sync:
+            self.sync.close()
+            self.sync = None
+
+    def account_set_sync(self, on: bool):
+        account.set_sync(bool(on))
+        if on:
+            self._start_sync()
+        else:
+            self._stop_sync()
         return self.account_state()
+
+    def sync_status(self):
+        return self.sync.status() if self.sync else {}
 
     def account_set_stay(self, on: bool):
         return account.set_stay(bool(on), self.keys) and self.account_state()
 
     def account_change_password(self, old: str, new: str, again: str):
         why = account.change_password(old, new, again)
-        return {"error": why} if why else self.account_state()
+        if why:
+            return {"error": why}
+        p = account.state()["pseudo"]
+        self._publish_login(p, new, forget=(p, old))
+        return self.account_state()
 
-    def account_set_pseudo(self, pseudo: str):
+    def account_set_pseudo(self, pseudo: str, password: str = ""):
+        if account.unlock(password) is None:
+            return {"error": "Type your password to change your pseudo."}
+        old = account.state()["pseudo"]
         if not account.set_pseudo(pseudo):
-            return None
+            return {"error": "Choose a pseudo."}
+        self._publish_login(account.state()["pseudo"], password, forget=(old, password))
         if self.channels:
             self.channels.pseudo = account.state()["pseudo"]
         return self.account_state()
 
     def account_lock(self):
         """Lock now: forget the unlocked key until the password is typed again."""
+        self._stop_sync()
         if self.channels:
             self.channels.close()
             self.channels = None

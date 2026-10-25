@@ -13,9 +13,17 @@ type your password.
 
 A forgotten password cannot be recovered (that is the point of it). You can
 start a new account; your contacts will then need your new ID.
+
+Signing in on another machine (see sync.py): your pseudo and password, through
+a slow function (scrypt, 256 MB, ~0.4 s), give a "login key". The locked
+identity key is published on relays under that login key, sealed to it. So
+the new machine finds it with nothing but your pseudo and password, nobody
+can link it to your public ID, and each password guess costs an attacker two
+slow functions and the right pseudo.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -23,7 +31,7 @@ from pathlib import Path
 HOME = Path(os.environ.get("ROOT_HARNESS_HOME") or Path.home() / ".root-harness")
 ACCOUNT = HOME / "account.json"
 KEYCHAIN = ("root-harness", "nostr-secret-key")
-MIN_PASSWORD = 8
+MIN_PASSWORD = 10     # the locked key is published for sync: no short passwords
 
 
 def _n():
@@ -55,14 +63,52 @@ def _clean_pseudo(pseudo: str) -> str:
     return " ".join((pseudo or "").split())[:32]
 
 
+def norm_pseudo(pseudo: str) -> str:
+    return _clean_pseudo(pseudo).lower()
+
+
+def login_keys(pseudo: str, password: str):
+    """The same pseudo + password always give the same login key."""
+    seed = hashlib.scrypt(password.encode(), salt=b"root-harness/login/v1/" + norm_pseudo(pseudo).encode(),
+                          n=2 ** 18, r=8, p=1, maxmem=600 * 1024 * 1024, dklen=32)
+    n = _n()
+    return n.Keys.parse(n.SecretKey.from_bytes(seed).to_hex())
+
+
+def locked_key() -> str | None:
+    acc = _load()
+    return acc["locked_key"] if acc else None
+
+
+def restore(pseudo: str, locked: str, password: str):
+    """Signing in on a new machine: keep the identity found on the relays."""
+    n = _n()
+    try:
+        secret = n.EncryptedSecretKey.from_bech32(locked).decrypt(password)
+    except Exception:
+        return None
+    keys = n.Keys.parse(secret.to_bech32())
+    _save({"pseudo": _clean_pseudo(pseudo), "npub": keys.public_key().to_bech32(),
+           "locked_key": locked, "stay": False, "sync": True})
+    return keys
+
+
 def state() -> dict:
     acc = _load()
     if not acc:
         return {"exists": False}
-    return {"exists": True, "pseudo": acc["pseudo"], "npub": acc["npub"], "stay": acc.get("stay", False)}
+    return {"exists": True, "pseudo": acc["pseudo"], "npub": acc["npub"], "stay": acc.get("stay", False),
+            "sync": acc.get("sync", True)}
 
 
-def create(pseudo: str, password: str, again: str):
+def set_sync(on: bool) -> None:
+    acc = _load()
+    if acc:
+        acc["sync"] = bool(on)
+        _save(acc)
+
+
+def create(pseudo: str, password: str, again: str, sync: bool = True):
     """Returns (keys, None) or (None, reason)."""
     n = _n()
     pseudo = _clean_pseudo(pseudo)
@@ -76,7 +122,7 @@ def create(pseudo: str, password: str, again: str):
     old = _keyring().get_password(*KEYCHAIN)
     keys = n.Keys.parse(old) if old else n.Keys.generate()
     _save({"pseudo": pseudo, "npub": keys.public_key().to_bech32(),
-           "locked_key": keys.secret_key().encrypt(password).to_bech32(), "stay": False})
+           "locked_key": keys.secret_key().encrypt(password).to_bech32(), "stay": False, "sync": bool(sync)})
     _forget_in_keychain()          # off by default: you choose in Settings
     return keys, None
 

@@ -53,6 +53,7 @@ class Session:
         self.resume_id: str | None = None   # continue this Claude Code session
         self.fork = False                     # True: continue in a copy (terminal sessions)
         self.session_id: str | None = None    # the session this window writes to
+        self.preamble = ""                    # history from another machine, sent once
         self.client = None
         self.info: dict | None = None
         self.tools: list[str] = []
@@ -111,6 +112,8 @@ class Session:
 
     def run_turn(self, prompt: str, on_event: Callable[[dict], None], images=None) -> None:
         self.wait_ready()
+        if self.preamble:
+            prompt, self.preamble = self.preamble + prompt, ""
         self._do(self._turn(prompt, on_event, images or []))
 
     async def _turn(self, prompt: str, on_event, images: list) -> None:

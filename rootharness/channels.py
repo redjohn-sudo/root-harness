@@ -82,12 +82,16 @@ def _load() -> dict:
     return s
 
 
+on_change = lambda: None     # the window points this at the sync
+
+
 def _save(s: dict) -> None:
     HOME.mkdir(parents=True, exist_ok=True)
     s["seen"] = s["seen"][-3000:]
     tmp = STATE.with_suffix(".tmp")
     tmp.write_text(json.dumps(s, indent=1, ensure_ascii=False), encoding="utf-8")
     tmp.replace(STATE)
+    on_change()
 
 
 def _read_log(cid: str) -> list:
