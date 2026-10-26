@@ -705,7 +705,8 @@ async function vueReglages() {
       <div class="boutons"><button class="bouton" id="r-lock">Lock</button>${H.kind === 'computer' ? '<button class="bouton" id="r-mdp">Change password</button><button class="bouton" id="r-kit">My recovery kit</button>' : '<button class="bouton danger" id="r-sortir">Sign out of this phone</button>'}</div></div>
     <div class="section">background<span class="ligne"></span></div><div class="verre carte"><div class="boutons">${H.kind === 'computer' ? '<button class="bouton vert" id="r-image">Choose a picture</button>' : ''}<button class="bouton" id="r-sans">Plain night</button></div>
       <div class="d" style="color:var(--encre-3);font-size:12.5px;margin-top:8px">${H.kind === 'phone' ? 'Your phone uses the picture of your computer.' : 'Your picture goes to your phone too, never to anyone else.'}</div></div>
-    <div id="r-plus"></div></div></div>`
+    <div id="r-plus"></div>
+    <div class="d" style="color:var(--encre-4);font-size:12px;text-align:center;margin:34px 0 0">root-harness · free software under the AGPL-3.0 · <a href="https://github.com/redjohn-sudo/root-harness" target="_blank" rel="noopener">source code</a></div></div></div>`
   $('#r-stay') && ($('#r-stay').onclick = async () => { await H.account.setStay(!st.stay); vueReglages() })
   $('#r-sync') && ($('#r-sync').onclick = async () => { await H.account.setSync(!st.sync); vueReglages() })
   $('#r-trouve') && ($('#r-trouve').onclick = async () => { await H.account.setFindable(st.findable === false); vueReglages() })

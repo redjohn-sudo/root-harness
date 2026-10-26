@@ -6,8 +6,8 @@
 the same on your computer and on your phone. Talk to them, let them work, vibe code on GitHub from anywhere, and share
 what they did with your friends, sealed end to end.
 
-Open source (MIT). No server of ours: your account, your memory and your
-messages live on your devices, and travel sealed.
+Free and open source (AGPL-3.0). No server of ours: your account, your memory
+and your messages live on your devices, and travel sealed.
 
 ## What you can do
 
@@ -75,3 +75,12 @@ your IP and when you connect. A stolen identity key would open past messages.
 Claude Code sessions stay on the computer that ran them. Vibe code is not live
 (a GitHub machine starts in about a minute) and uses your GitHub Actions minutes
 and your Claude plan.
+
+## License
+
+root-harness is free software under the [GNU AGPL v3](LICENSE). Use it, study
+it, change it, share it. If you change it and offer it to others (even as an
+online service), you share your changes under the same license: nobody can lock
+it up. The name root-harness and Root's pixel head are the author's own work.
+
+Copyright (C) 2026 Vincent Roumane
