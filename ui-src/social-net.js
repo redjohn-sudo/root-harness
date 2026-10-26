@@ -7,7 +7,7 @@ import { getToken } from 'nostr-tools/nip98'
 import { handle } from './ident.js'
 
 export const TAG = 'root-harness', EXTRAS = 'rh-profile', MEDIA_HOST = 'https://nostr.build/api/v2/nip96/upload', MEDIA_MAX = 20 * 1024 * 1024
-const K = { profil: 0, post: 1, suppr: 5, repost: 6, reaction: 7, award: 8, epingles: 30008, badge: 30009, commu: 34550, extras: 30078, auth: 27235 }
+const K = { profil: 0, post: 1, suivis: 3, suppr: 5, repost: 6, reaction: 7, award: 8, epingles: 30008, badge: 30009, commu: 34550, extras: 30078, auth: 27235 }
 const ETATS = ['etudie', 'travaille', 'cherche'], MONTRER = ['pseudo', 'name', 'both']
 const now = () => Math.floor(Date.now() / 1000)
 export const slug = (t) => (t || '').toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40)
@@ -139,8 +139,60 @@ export function reseau({ pool, relays, sk, me, pseudo, store, activite, expire =
     return posts
   }
 
+  // -- following (kind 3, the list every Nostr app shares) -------------------------------
+  async function listeDe(hex) { const L = await lire([{ kinds: [K.suivis], authors: [hex], limit: 1 }]); return L.sort((a, b) => b.created_at - a.created_at)[0] || null }
+  async function suivisDe(hex) { const ev = await listeDe(hex); return ev ? [...new Set(ev.tags.filter((t) => t[0] === 'p' && hexOk(t[1]) && t[1] !== hex).map((t) => t[1]))] : [] }
+  async function abonnesDe(hex) {
+    const latest = new Map()
+    for (const ev of await lire([{ kinds: [K.suivis], '#p': [hex], limit: 500 }])) if (ev.pubkey !== hex && (!latest.has(ev.pubkey) || ev.created_at > latest.get(ev.pubkey).created_at)) latest.set(ev.pubkey, ev)
+    return [...latest.values()].filter((ev) => ev.tags.some((t) => t[0] === 'p' && t[1] === hex)).map((ev) => ev.pubkey)
+  }
+  const NOTIFS = 'rh-net-notifs', etat = () => store.get(NOTIFS, null) || { seen_at: 0, followers: {} }
+
   return {
     extras, me,
+    suivis: (hex = me) => suivisDe(hex), abonnes: (hex = me) => abonnesDe(hex),
+    async suivre(hex, on = true) {
+      if (!hexOk(hex) || hex === me) return { error: 'Nobody to follow.' }
+      const ev = await listeDe(me)
+      let tags = ev ? ev.tags.map((t) => [...t]) : []
+      const has = tags.some((t) => t[0] === 'p' && t[1] === hex)
+      if (on && !has) tags.push(['p', hex])
+      if (!on) tags = tags.filter((t) => !(t[0] === 'p' && t[1] === hex))
+      // never with an expiration: this list replaces the one other apps see
+      const sent = await envoyer(finalizeEvent({ kind: K.suivis, created_at: now(), content: ev ? ev.content : '', tags }, sk))
+      return { ...sent, following: on, count: tags.filter((t) => t[0] === 'p').length }
+    },
+    async gens(hexes) { hexes = hexes.filter(hexOk).slice(0, 300); if (!hexes.length) return []; const P = await profilsDe(new Set(hexes)); return hexes.map((h) => P[h]).filter(Boolean) },
+
+    // notifications: what people did with you
+    async notifications(days = 30, limit = 120) {
+      const since = now() - days * 86400, st = etat(), items = [], cibles = new Set(), t0 = now()
+      const evs = await lire([{ kinds: [K.post, K.repost, K.reaction, K.award], '#p': [me], since, limit: limit * 2 }, { kinds: [K.suivis], '#p': [me], limit: 500 }])
+      const connus = Object.keys(st.followers).length > 0
+      for (const ev of evs) {
+        if (ev.pubkey === me) continue
+        const cible = first(ev.tags, 'e')
+        if (ev.kind === K.suivis) { if (!ev.tags.some((t) => t[0] === 'p' && t[1] === me)) continue
+          if (!(ev.pubkey in st.followers)) st.followers[ev.pubkey] = connus ? t0 : ev.created_at   // a follow counts once, when first seen
+          items.push({ id: 'f' + ev.pubkey, type: 'follow', at: st.followers[ev.pubkey], who: ev.pubkey }); continue }
+        if (ev.kind === K.reaction) items.push({ id: ev.id, type: 'like', at: ev.created_at, who: ev.pubkey, post: cible })
+        else if (ev.kind === K.repost) items.push({ id: ev.id, type: 'repost', at: ev.created_at, who: ev.pubkey, post: cible })
+        else if (ev.kind === K.post) items.push({ id: ev.id, type: cible ? 'reply' : 'mention', at: ev.created_at, who: ev.pubkey, post: cible, text: ev.content.slice(0, 280) })
+        else if (ev.kind === K.award) { const a = first(ev.tags, 'a'); items.push({ id: ev.id, type: 'badge', at: ev.created_at, who: ev.pubkey, badge: a, badge_name: (a.split(':')[2] || 'a badge').replace(/-/g, ' ') }) }
+        if (cible) cibles.add(cible)
+      }
+      const actuels = new Set(items.filter((i) => i.type === 'follow').map((i) => i.who))
+      st.followers = Object.fromEntries(Object.entries(st.followers).filter(([h]) => actuels.has(h))); store.set(NOTIFS, st)
+      const textes = {}
+      if (cibles.size) for (const ev of await lire([{ ids: [...cibles].slice(0, 300) }])) textes[ev.id] = ev.content.slice(0, 140)
+      const P = await profilsDe(new Set(items.map((i) => i.who)))
+      items.sort((a, b) => b.at - a.at); items.splice(limit)
+      for (const i of items) { i.person = P[i.who] || { hex: i.who }; if (i.post) i.post_text = textes[i.post] || ''; i.new = i.at > st.seen_at }
+      return { items, unread: items.filter((i) => i.new).length, seen_at: st.seen_at }
+    },
+    notifsVues() { const st = etat(); st.seen_at = now(); store.set(NOTIFS, st); return st.seen_at },
+    async notifsNouvelles() { const r = await this.notifications(7, 60); return { unread: r.unread, fresh: [] } },
     // your profile
     profilLocal() { const p = extras(), act = activite ? activite() : { level: 0 }; return vue(me, { name: slug(pseudo) }, { ...p, pseudo, level: act.level }) },
     async majProfil(fields) { store.set('rh-net-profile', extrasPropres(extras(), fields)); const sent = await publierProfil(); if ('pinned' in fields) await this.epingler(extras().pinned); return { profile: this.profilLocal(), sent } },
@@ -198,8 +250,9 @@ export function reseau({ pool, relays, sk, me, pseudo, store, activite, expire =
     },
     async mur(hex = me, limit = 60) {
       const posts = await hydrater(await lire([{ kinds: [K.post, K.repost], authors: [hex], limit }]), limit)
-      const [profile, badges] = await Promise.all([profilsDe(new Set([hex])).then((p) => p[hex]), this.badgesDe(hex)])
-      return { profile, badges, posts: posts.filter((p) => !p.reply_to && !p.reposted_by), replies: posts.filter((p) => p.reply_to && !p.reposted_by),
+      const [profile, badges, following, followers, miens] = await Promise.all([profilsDe(new Set([hex])).then((p) => p[hex]), this.badgesDe(hex),
+        suivisDe(hex), abonnesDe(hex), hex === me ? null : suivisDe(me)])
+      return { profile, badges, following, followers, i_follow: (miens || following).includes(hex), follows_me: following.includes(me), posts: posts.filter((p) => !p.reply_to && !p.reposted_by), replies: posts.filter((p) => p.reply_to && !p.reposted_by),
         reposts: posts.filter((p) => p.reposted_by), media: posts.filter((p) => p.media.length && !p.reposted_by) }
     },
 

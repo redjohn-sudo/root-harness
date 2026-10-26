@@ -600,7 +600,40 @@ class Api:
         return self._net().delete_post(post_id)
 
     def net_feed(self, scope: str = "for-you", community: str = "", days: int = 7, limit: int = 60):
-        return self._net().feed(scope, community, self._friends(), int(days), int(limit))
+        net = self._net()
+        people = self._friends()
+        if scope in ("friends", "for-you"):
+            try:
+                people = list(dict.fromkeys(people + net.following()))     # your friends and the people you follow
+            except Exception:
+                pass
+        return net.feed(scope, community, people, int(days), int(limit))
+
+    def net_follow(self, hexkey: str, on: bool = True):
+        return self._net().follow(hexkey, bool(on))
+
+    def net_people(self, hexkeys: list):
+        return self._net().people([str(h) for h in (hexkeys or [])])
+
+    def net_notifications(self):
+        return self._net().notifications()
+
+    def net_notifications_seen(self):
+        return self._net().notifications_seen()
+
+    WHAT = {"like": "liked your post", "repost": "reposted your post", "reply": "answered you", "mention": "mentioned you",
+            "follow": "follows you now", "badge": "gave you a badge"}
+
+    def net_notifications_new(self):
+        """The dot on the tab; and your phones hear about it once (public things only, never your conversations)."""
+        r = self._net().notifications_new()
+        if r["fresh"]:
+            from . import push
+            first = r["fresh"][0]
+            who = (first.get("person") or {}).get("display") or "Someone"
+            more = f" (+{len(r['fresh']) - 1})" if len(r["fresh"]) > 1 else ""
+            push.notify_later("root-harness", f"{who} {self.WHAT.get(first['type'], 'did something')}{more}"[:140], "network")
+        return {"unread": r["unread"]}
 
     def net_thread(self, post_id: str):
         return self._net().thread(post_id)

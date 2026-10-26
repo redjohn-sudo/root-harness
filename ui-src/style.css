@@ -383,6 +383,31 @@ label.bouton,label.rond-btn{cursor:pointer}
 .ed-photo{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px}
 .ed-photo>.av.lettre{font-size:26px}
 
+/* following: the counts are links, "follows you" next to the name */
+.p-lien{display:inline;color:var(--encre-3);font-size:13.5px;padding:0;cursor:pointer}
+.p-lien:hover{color:var(--encre)}
+.p-lien b{color:var(--encre);font-weight:600;margin-right:3px}
+.suit-toi{display:inline-block;vertical-align:middle;margin-left:10px;font-size:12px;color:var(--encre-3);border:1px solid var(--trait);border-radius:999px;padding:1px 8px}
+.personne .tx .t{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.personne .tx .m{font-size:12.5px;color:var(--encre-3)}
+/* notifications: one quiet row each, the new ones lit */
+.notif{display:flex;align-items:flex-start;gap:10px;padding:12px 10px;border-radius:14px;cursor:pointer;opacity:0;animation:monte .45s var(--ease) forwards;animation-delay:calc(var(--i,0)*28ms);transition:background .2s}
+.notif:hover{background:rgba(255,255,255,.05)}
+.notif+.notif{margin-top:2px}
+.notif.neuve{background:rgba(111,212,182,.07)}
+.n-ico{flex:none;width:22px;height:22px;margin-top:7px;display:grid;place-items:center;color:var(--encre-3)}
+.n-ico svg{width:17px;height:17px}
+.n-like{color:var(--rouge)}.n-repost{color:var(--vert-clair)}.n-follow{color:var(--led)}.n-badge{color:var(--ambre)}
+.n-tx{flex:1;min-width:0;line-height:1.45}
+.n-tx b{font-weight:600}
+.n-tx .m{font-size:12.5px;color:var(--encre-3)}
+.n-cite{margin-top:4px;color:var(--encre)}
+.n-post{margin-top:4px;font-size:13.5px;color:var(--encre-3);border-left:2px solid var(--trait-fort);padding-left:8px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+@media (max-width:720px){
+  /* nine tabs: they share the bar */
+  #rail .onglet{flex:1;width:auto;max-width:46px;min-width:0}
+}
+
 /* -- the phone: the rail becomes a bar at the bottom, same buttons -- */
 @media (max-width:720px){
   #app{flex-direction:column-reverse}

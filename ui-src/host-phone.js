@@ -395,10 +395,16 @@ host.network = {
   workSuggest: async () => [], activity: async () => ({ level: net().profilLocal().level, days: 0 }),
   post: (t, o = {}) => net().poster(t, { media: o.media || [], community: o.community || '', agent: o.agent || '', replyTo: o.replyTo || null }),
   repost: (p) => net().republier(p), unrepost: (id) => net().derepublier(id), react: (id, a, on) => net().reagir(id, a, on), remove: (id) => net().supprimer(id),
-  feed: (s, o = {}) => net().fil(s, { community: o.community || '', friends: Object.keys(AMIS.contacts || {}), days: o.days || 7, limit: o.limit || 60 }),
+  async feed(s, o = {}) {
+    let friends = Object.keys(AMIS.contacts || {})
+    if (s === 'friends' || s === 'for-you') friends = [...new Set([...friends, ...(await net().suivis().catch(() => []))])]   // your friends and the people you follow
+    return net().fil(s, { community: o.community || '', friends, days: o.days || 7, limit: o.limit || 60 })
+  },
   thread: (id) => net().thread(id), wall: (h) => net().mur(h || me),
   async lookup(t) { const h = hexDe(t); if (h) return net().profilDe(h); const r = await host.friends.lookup(t); return r && r.hex ? net().profilDe(r.hex) : null },
   upload: (file) => net().envoyerMedia(file),
+  follow: (h, on) => net().suivre(h, on), people: (L) => net().gens(L),
+  notifications: () => net().notifications(), notificationsSeen: async () => net().notifsVues(), notificationsNew: () => net().notifsNouvelles(),
   posting: (s, a) => appel('settings_posting', s === undefined ? null : s, a === undefined ? null : a),
   badges: (h) => net().badgesDe(h || me), pin: (c) => net().epingler(c), defineBadge: (i, n, d, img) => net().badgeDefinir(i, n, d, img || ''), award: (a, r) => net().badgeDonner(a, r), checkBadges: () => net().verifierBadges(),
   communities: () => net().communautes(), createCommunity: (n, d) => net().creerCommunaute(n, d || ''), join: async (s, on) => net().rejoindre(s, on),

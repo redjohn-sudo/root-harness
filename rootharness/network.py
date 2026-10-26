@@ -47,6 +47,7 @@ HOME = Path(os.environ.get("ROOT_HARNESS_HOME") or Path.home() / ".root-harness"
 DIR = HOME / "network"
 PROFILE = DIR / "profile.json"        # your extras: school, role, state, work list, pinned badges
 MINE = DIR / "mine.json"              # ids of your own reactions and reposts, to take them back
+NOTIFS = DIR / "notifications.json"   # when you last looked, followers already known, what was already pushed
 RELAYS = ["wss://relay.damus.io", "wss://nos.lol", "wss://relay.primal.net"]
 TAG = "root-harness"                  # on every post made here: the "for you" feed is this tag
 EXTRAS = "rh-profile"                 # kind 30078 identifier of your profile extras
@@ -55,7 +56,7 @@ MEDIA_MAX = 20 * 1024 * 1024
 STATES = ("etudie", "travaille", "cherche")
 LEVELS = ((20, "actively active"), (8, "very active"), (1, "active"))
 
-K_PROFILE, K_POST, K_REPOST, K_REACTION, K_AWARD, K_DELETE = 0, 1, 6, 7, 8, 5
+K_PROFILE, K_POST, K_FOLLOWS, K_REPOST, K_REACTION, K_AWARD, K_DELETE = 0, 1, 3, 6, 7, 8, 5
 K_PINNED, K_BADGE, K_COMMUNITY, K_APPDATA, K_AUTH = 30008, 30009, 34550, 30078, 27235
 
 on_change = lambda: None     # the window points this at the sync
@@ -569,11 +570,148 @@ class Network:
         posts = await self._hydrate(evs, limit)
         profile = (await self._profiles_of({hexkey}))[hexkey]
         badges = await self._badges_of(hexkey)
+        following, followers = await self._follows_of(hexkey), await self._followers_of(hexkey)
+        mine = await self._follows_of(self.me) if hexkey != self.me else following
         return {"profile": profile, "badges": badges,
+                "following": following, "followers": followers,
+                "i_follow": hexkey in mine, "follows_me": self.me in following,
                 "posts": [p for p in posts if not p["reply_to"] and not p.get("reposted_by")],
                 "replies": [p for p in posts if p["reply_to"] and not p.get("reposted_by")],
                 "reposts": [p for p in posts if p.get("reposted_by")],
                 "media": [p for p in posts if p["media"] and not p.get("reposted_by")]}
+
+    # -- following (kind 3, the list every Nostr app shares) -----------------------------------------
+
+    async def _contact_list(self, hexkey: str):
+        evs = await self._fetch([self._f().kind(_n().Kind(K_FOLLOWS)).author(self._pk(hexkey)).limit(1)])
+        return max(evs, key=lambda e: e.created_at().as_secs()) if evs else None
+
+    async def _follows_of(self, hexkey: str) -> list[str]:
+        ev = await self._contact_list(hexkey)
+        if not ev:
+            return []
+        seen, out = set(), []
+        for t in _tags(ev):
+            if len(t) > 1 and t[0] == "p" and re.fullmatch(r"[0-9a-f]{64}", t[1]) and t[1] not in seen and t[1] != hexkey:
+                seen.add(t[1])
+                out.append(t[1])
+        return out
+
+    async def _followers_of(self, hexkey: str) -> list[str]:
+        """Whose latest list names this person (relays keep only the latest list of each)."""
+        evs = await self._fetch([self._f().kind(_n().Kind(K_FOLLOWS)).pubkey(self._pk(hexkey)).limit(500)])
+        latest = {}
+        for ev in evs:
+            a = ev.author().to_hex()
+            if a != hexkey and (a not in latest or ev.created_at().as_secs() > latest[a].created_at().as_secs()):
+                latest[a] = ev
+        return [a for a, ev in latest.items() if any(t[:2] == ["p", hexkey] for t in _tags(ev))]
+
+    def following(self, hexkey: str | None = None) -> list[str]:
+        return self._do(self._follows_of(hexkey or self.me))
+
+    def follow(self, hexkey: str, on: bool = True) -> dict:
+        """Add or remove one person from your list, keeping everything else in it (other apps' entries too)."""
+        if not re.fullmatch(r"[0-9a-f]{64}", hexkey or "") or hexkey == self.me:
+            return {"error": "Nobody to follow."}
+
+        async def go():
+            ev = await self._contact_list(self.me)
+            tags = [t for t in (_tags(ev) if ev else []) if t]
+            content = ev.content() if ev else ""
+            has = any(t[:2] == ["p", hexkey] for t in tags)
+            if on and not has:
+                tags.append(["p", hexkey])
+            if not on:
+                tags = [t for t in tags if t[:2] != ["p", hexkey]]
+            n = _n()
+            out = n.EventBuilder(n.Kind(K_FOLLOWS), content).tags([n.Tag.parse(t) for t in tags]).finalize(self.keys)
+            sent = await self._send(out)       # never with an expiration: this list replaces the one other apps see
+            return {**sent, "following": on, "count": sum(1 for t in tags if t[0] == "p")}
+        return self._do(go())
+
+    def people(self, hexkeys: list[str]) -> list[dict]:
+        """Profiles for a list (followers, following), in the given order."""
+        hexkeys = [h for h in hexkeys if re.fullmatch(r"[0-9a-f]{64}", h or "")][:300]
+        got = self._do(self._profiles_of(set(hexkeys)), 60) if hexkeys else {}
+        return [got[h] for h in hexkeys if h in got]
+
+    # -- notifications: what people did with you -----------------------------------------------------
+
+    def notifications(self, days: int = 30, limit: int = 120) -> dict:
+        return self._do(self._notifications(days, limit), 60)
+
+    async def _notifications(self, days: int, limit: int) -> dict:
+        n = _n()
+        since = n.Timestamp.from_secs(int(time.time()) - days * 86400)
+        me = self._pk(self.me)
+        evs = await self._fetch([self._f().kinds([n.Kind(K_POST), n.Kind(K_REPOST), n.Kind(K_REACTION), n.Kind(K_AWARD)]).pubkey(me).since(since).limit(limit * 2),
+                                 self._f().kind(n.Kind(K_FOLLOWS)).pubkey(me).limit(500)])
+        state = _read(NOTIFS, {"seen_at": 0, "followers": {}, "pushed_at": 0})
+        items, targets, now = [], set(), int(time.time())
+        for ev in evs:
+            who, kind, tags = ev.author().to_hex(), ev.kind().as_u16(), _tags(ev)
+            if who == self.me:
+                continue
+            at = ev.created_at().as_secs()
+            if kind == K_FOLLOWS:
+                if not any(t[:2] == ["p", self.me] for t in tags):
+                    continue
+                at = state["followers"].setdefault(who, now if state["followers"] else at)   # a follow counts once, when first seen
+                items.append({"id": "f" + who, "type": "follow", "at": at, "who": who})
+                continue
+            target = next((t[1] for t in tags if len(t) > 1 and t[0] == "e"), "")
+            if kind == K_REACTION:
+                items.append({"id": ev.id().to_hex(), "type": "like", "at": at, "who": who, "post": target})
+            elif kind == K_REPOST:
+                items.append({"id": ev.id().to_hex(), "type": "repost", "at": at, "who": who, "post": target})
+            elif kind == K_POST:
+                items.append({"id": ev.id().to_hex(), "type": "reply" if target else "mention", "at": at, "who": who, "post": target, "text": ev.content()[:280]})
+            elif kind == K_AWARD:
+                a = _first(tags, "a")
+                items.append({"id": ev.id().to_hex(), "type": "badge", "at": at, "who": who, "badge": a})
+            if target:
+                targets.add(target)
+        # people who unfollowed are forgotten, so a new follow later shows again
+        current = {i["who"] for i in items if i["type"] == "follow"}
+        state["followers"] = {h: t for h, t in state["followers"].items() if h in current}
+        _write(NOTIFS, state)
+        texts = {}
+        if targets:
+            for ev in await self._fetch([self._f().ids([self._eid(t) for t in list(targets)[:300]])]):
+                texts[ev.id().to_hex()] = ev.content()[:140]
+        badge_names = {}
+        for b in [i for i in items if i["type"] == "badge"]:
+            parts = b["badge"].split(":", 2)
+            if len(parts) == 3:
+                badge_names[b["badge"]] = parts[2].replace("-", " ")
+        people = await self._profiles_of({i["who"] for i in items})
+        items.sort(key=lambda i: -i["at"])
+        items = items[:limit]
+        for i in items:
+            i["person"] = people.get(i["who"]) or {"hex": i["who"]}
+            if i.get("post"):
+                i["post_text"] = texts.get(i["post"], "")
+            if i["type"] == "badge":
+                i["badge_name"] = badge_names.get(i["badge"], "a badge")
+            i["new"] = i["at"] > state["seen_at"]
+        return {"items": items, "unread": sum(1 for i in items if i["new"]), "seen_at": state["seen_at"]}
+
+    def notifications_seen(self) -> int:
+        state = _read(NOTIFS, {"seen_at": 0, "followers": {}, "pushed_at": 0})
+        state["seen_at"] = int(time.time())
+        _write(NOTIFS, state)
+        return state["seen_at"]
+
+    def notifications_new(self) -> dict:
+        """For the dot on the tab, and what to tell the phones once (computer only)."""
+        got = self.notifications(days=7, limit=60)
+        state = _read(NOTIFS, {"seen_at": 0, "followers": {}, "pushed_at": 0})
+        fresh = [i for i in got["items"] if i["at"] > max(state.get("pushed_at", 0), state["seen_at"])]
+        if fresh:
+            state["pushed_at"] = max(i["at"] for i in fresh)
+            _write(NOTIFS, state)
+        return {"unread": got["unread"], "fresh": fresh[:5]}
 
     def lookup(self, text: str) -> dict | None:
         """vincent#k7f2qa9m -> that person's profile, through the public card (directory.py)."""

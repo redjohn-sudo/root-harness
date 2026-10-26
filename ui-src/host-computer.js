@@ -58,6 +58,8 @@ const host = {
     feed: (s, o = {}) => api().net_feed(s, o.community || '', o.days || 7, o.limit || 60), thread: (id) => api().net_thread(id), wall: (h) => api().net_wall(h || ''), lookup: (t) => api().net_lookup(t),
     upload: async (file) => api().net_upload(await dataUrl(file), file.name || 'file'),
     posting: (s, a) => api().settings_posting(s, a),
+    follow: (h, on) => api().net_follow(h, on), people: (L) => api().net_people(L),
+    notifications: () => api().net_notifications(), notificationsSeen: () => api().net_notifications_seen(), notificationsNew: () => api().net_notifications_new(),
     badges: (h) => api().net_badges(h || ''), pin: (c) => api().net_badges_pin(c), defineBadge: (i, n, d, img) => api().net_badge_define(i, n, d, img || ''), award: (a, r) => api().net_badge_award(a, r), checkBadges: () => api().net_badges_check(),
     communities: () => api().net_communities(), createCommunity: (n, d) => api().net_community_create(n, d || ''), join: (s, on) => api().net_community_join(s, on),
   },

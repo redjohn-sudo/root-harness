@@ -21,6 +21,7 @@ const I = {
   image: '<rect x="3.5" y="5" width="17" height="14" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="M5 17l4.5-4.5 3 3 2.5-2.5 4 4"/>',
   loupe: '<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/>',
   retour: '<path d="M15 5l-7 7 7 7"/>', fleche: '<path d="M12 19V5M5 12l7-7 7 7"/>',
+  personne: '<circle cx="12" cy="8.5" r="3.6"/><path d="M4.5 20c.8-3.8 3.8-6 7.5-6s6.7 2.2 7.5 6"/>',
 }
 const ico = (n, w = 1.7) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">${I[n]}</svg>`
 
@@ -284,12 +285,12 @@ function rendrePage(v, mur, H) {
   v.innerHTML = `<div class="defile" style="padding-top:0"><div class="colonne">
     <div class="couverture"${p.banner ? ` style="background-image:url('${esc(p.banner)}')"` : ''}></div>
     <div class="p-haut">${avatar(p, 104)}<div class="boutons" style="margin:0 0 6px auto">${mine ? `<button class="bouton" id="p-qr">Share my ID</button><button class="bouton plein" id="p-edit">Edit profile</button>`
-      : `<button class="bouton" id="p-retour">${ico('retour')} my page</button><button class="bouton vert" id="p-ami">Add as a friend</button>`}</div></div>
-    <div class="p-nom">${esc(nom(p))}</div><div class="p-id">${esc(sousNom(p))}</div>
+      : `<button class="bouton" id="p-retour">${ico('retour')} my page</button><button class="bouton" id="p-ami">Add as a friend</button><button class="bouton${mur.i_follow ? '' : ' plein'}" id="p-suivre">${mur.i_follow ? 'Following' : 'Follow'}</button>`}</div></div>
+    <div class="p-nom">${esc(nom(p))}${!mine && mur.follows_me ? '<span class="suit-toi">follows you</span>' : ''}</div><div class="p-id">${esc(sousNom(p))}</div>
     <div class="p-puces">${p.state === 'cherche' ? '<span class="etat cherche">● looking for a job</span>' : p.state ? `<span class="etat">${esc(ETATS[p.state])}</span>` : ''}
       ${p.school || p.role ? `<span class="etat">${esc([p.school, p.role].filter(Boolean).join(' · '))}</span>` : ''}${niveau(p.level, p.level_label)}</div>
     ${p.about ? `<div class="p-bio">${esc(p.about)}</div>` : ''}
-    <div class="p-chiffres">${[[mur.posts.length, 'post'], [mur.replies.length, 'repl', 'y', 'ies'], [(p.communities || []).length, 'communit', 'y', 'ies'], [badges.length, 'badge']].map(([n, w, un = '', pl = 's']) => `<span><b>${n}</b> ${w}${n === 1 ? un : pl}</span>`).join('')}</div>
+    <div class="p-chiffres"><button class="p-lien" id="p-abonnes"><b>${(mur.followers || []).length}</b> follower${(mur.followers || []).length === 1 ? '' : 's'}</button><button class="p-lien" id="p-abonnements"><b>${(mur.following || []).length}</b> following</button>${[[mur.posts.length, 'post'], [mur.replies.length, 'repl', 'y', 'ies'], [(p.communities || []).length, 'communit', 'y', 'ies'], [badges.length, 'badge']].map(([n, w, un = '', pl = 's']) => `<span><b>${n}</b> ${w}${n === 1 ? un : pl}</span>`).join('')}</div>
     <div class="p-badges" id="p-badges">${montres.map((b, i) => `<span style="--i:${i}">${badge(look(b), true, 38)}</span>`).join('')}${mine || badges.length ? `<button class="bouton" id="p-tous">${mine ? 'all badges' : 'badges'}</button>` : ''}</div>
     <div class="section">${mine ? 'my work' : 'work'}${p.state === 'cherche' ? ' · available for work' : ''}<span class="ligne"></span></div>
     <div class="p-travail">${travail(p.work)}</div>${!p.work.length ? `<div class="vide">${mine ? 'Add what you build, your hackathons, what is in progress: Edit profile.' : 'Nothing shown yet.'}</div>` : ''}
@@ -308,12 +309,76 @@ function rendrePage(v, mur, H) {
     $('#p-qr').onclick = () => { if (p.id) { H.copy(p.id); toast('Your ID is copied: ' + p.id) } }
   } else {
     $('#p-retour').onclick = () => vueProfil(H, '')
+    $('#p-suivre').onclick = async () => {
+      const b = $('#p-suivre'), on = !mur.i_follow
+      b.disabled = true
+      if (!MOI) await moi(H)
+      try { const r = await H.network.follow(p.hex, on); if (r.error) throw new Error(r.error)
+        mur.i_follow = on; mur.followers = on ? [...new Set([...(mur.followers || []), MOI && MOI.hex].filter(Boolean))] : (mur.followers || []).filter((h) => !MOI || h !== MOI.hex)
+        b.textContent = on ? 'Following' : 'Follow'; b.classList.toggle('plein', !on)
+        $('#p-abonnes b').textContent = mur.followers.length
+        toast(on ? 'You follow ' + nom(p) + ': their posts come to your feed.' : 'Unfollowed.')
+      } catch (e) { toast(e.message || 'Not sent.') }
+      b.disabled = false
+    }
     $('#p-ami').onclick = async () => {
       const ajouter = (H.friends && H.friends.addContact) || (H.account && H.account.addContact)
       const r = await ajouter(p.npub, nom(p)).catch(() => null); toast(r ? nom(p) + ' is in your friends.' : 'Not added.')
     }
   }
   $('#p-tous') && ($('#p-tous').onclick = () => tousBadges(H, mur))
+  $('#p-abonnes').onclick = () => listeGens(H, (mine ? 'your' : nom(p) + "'s") + ' followers', mur.followers || [], mine ? 'Nobody follows you yet. Post, answer people: they come.' : 'No follower yet.')
+  $('#p-abonnements').onclick = () => listeGens(H, (mine ? 'who you follow' : 'who ' + nom(p) + ' follows'), mur.following || [], mine ? 'You follow nobody yet. Find people in the feed and follow them.' : 'Follows nobody yet.')
+}
+
+// followers and following: tap someone to open their page
+async function listeGens(H, titre, hexes, vide) {
+  const f = feuille(`<h3>${esc(titre)}</h3><div class="liste" id="g-liste"><div class="vide">${hexes.length ? 'Loading...' : esc(vide)}</div></div>`)
+  if (!hexes.length) return
+  let gens = []
+  try { gens = await H.network.people(hexes) } catch (e) { $('#g-liste', f).innerHTML = `<div class="vide">${esc(e.message || 'Unavailable.')}</div>`; return }
+  $('#g-liste', f).innerHTML = gens.map((g, i) => `<div class="item personne" data-hex="${esc(g.hex)}" style="--i:${Math.min(i, 30)}">${avatar(g, 40)}<div class="tx"><div class="t">${esc(nom(g))} ${niveau(g.level, g.level_label)}</div>
+    <div class="m">${esc(sousNom(g))}${g.state === 'cherche' ? ' · looking for a job' : g.school || g.role ? ' · ' + esc([g.school, g.role].filter(Boolean).join(' · ')) : ''}</div></div></div>`).join('') || `<div class="vide">${esc(vide)}</div>`
+  $$('#g-liste .personne', f).forEach((el) => el.onclick = () => { fermerFeuille(); ouvrirPage(H, el.dataset.hex) })
+}
+
+// =====================================================================================
+// notifications: what people did with you
+// =====================================================================================
+const QUOI = { like: 'liked your post', repost: 'reposted your post', reply: 'answered you', mention: 'mentioned you', follow: 'follows you now', badge: 'gave you a badge' }
+const ICONE_N = { like: 'coeur', repost: 'republier', reply: 'repondre', mention: 'repondre', follow: 'personne', badge: 'etincelle' }
+export async function vueNotifs(H) {
+  const v = $('#v-notifs')
+  v.innerHTML = `<div class="defile"><div class="colonne"><div class="titre">notifications</div><div class="sous-titre">Who liked, reposted, answered, followed you, or gave you a badge.</div><div id="n-liste"><div class="vide">Loading...</div></div></div></div>`
+  let r
+  try { r = await H.network.notifications() } catch (e) { $('#n-liste').innerHTML = `<div class="vide">${esc(e.message || 'Unavailable.')}</div>`; return }
+  pastilleNotifs(0)
+  $('#n-liste').innerHTML = r.items.map((i, k) => { const p = i.person || {}
+    return `<div class="notif${i.new ? ' neuve' : ''}" data-k="${k}" style="--i:${Math.min(k, 20)}"><span class="n-ico n-${i.type}">${ico(ICONE_N[i.type] || 'etincelle')}</span>${avatar(p, 36)}
+      <div class="n-tx"><div><b>${esc(nom(p))}</b> ${esc(QUOI[i.type] || '')}${i.type === 'badge' ? ': <b>' + esc(i.badge_name || '') + '</b>' : ''} <span class="m">· ${quand(i.at)}</span></div>
+      ${i.text ? `<div class="n-cite">${esc(i.text)}</div>` : ''}${i.post_text ? `<div class="n-post">${esc(i.post_text)}</div>` : ''}</div></div>` }).join('')
+    || '<div class="vide">Nothing yet. Post what you build: when people like it, answer or follow you, it shows here.</div>'
+  $$('#n-liste .notif').forEach((el) => el.onclick = () => {
+    const i = r.items[+el.dataset.k]
+    if (i.post && ['like', 'repost', 'reply'].includes(i.type)) ouvrirFil({ id: i.type === 'reply' ? i.post : i.post, author: MOI || { hex: '' }, text: i.post_text || '', counts: {}, mine: {} }, H)
+    else ouvrirPage(H, i.who)
+  })
+  H.network.notificationsSeen().catch(() => {})
+}
+function pastilleNotifs(n) {
+  const b = document.querySelector('.onglet[data-v="notifs"]'); if (!b) return
+  let p = b.querySelector('.pastille')
+  if (n && !p) { p = document.createElement('span'); p.className = 'pastille'; b.appendChild(p) } else if (!n && p) p.remove()
+}
+// every minute: anything new for you? (the dot on the bell; the computer also tells your phones)
+let VEILLE = 0
+export function surveillerNotifs(H) {
+  clearInterval(VEILLE)
+  const voir = async () => {
+    if (!H.network || document.querySelector('#v-notifs.on')) return
+    try { const r = await H.network.notificationsNew(); pastilleNotifs(r && r.unread) } catch {}
+  }
+  setTimeout(voir, 6000); VEILLE = setInterval(voir, 60000)
 }
 
 function rendreListe(mur, H) {
