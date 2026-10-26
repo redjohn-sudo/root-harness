@@ -87,6 +87,7 @@ main{flex:1;min-width:0;display:flex;flex-direction:column;position:relative}
 .reglage{display:flex;align-items:center;gap:12px;padding:12px 2px;border-bottom:1px solid var(--trait)}
 .reglage:last-child{border:0}
 .reglage .l{flex:1}.reglage .d{font-size:12.5px;color:var(--encre-3)}
+.reglage>.tete{width:40px;height:40px;flex:none}.reglage .l{min-width:0}
 pre.code{font:12px var(--mono);background:rgba(0,0,0,.35);border-radius:10px;padding:10px 12px;white-space:pre-wrap;word-break:break-all;margin:8px 0}
 
 /* -- the chat -- */
@@ -95,7 +96,7 @@ pre.code{font:12px var(--mono);background:rgba(0,0,0,.35);border-radius:10px;pad
 .pilule-cerveau:hover{background:rgba(30,32,46,.7)}
 .pilule-cerveau .tete{width:26px;height:26px}
 .pilule-cerveau .modele{color:var(--encre-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px}
-.pilule-cerveau{min-width:0;max-width:100%}
+.pilule-cerveau{min-width:0;max-width:100%;white-space:nowrap}
 .etat{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--encre-3)}
 .point{width:7px;height:7px;border-radius:50%;background:var(--vert-clair);box-shadow:0 0 8px var(--vert-clair)}
 .point.attente,.point.travail{background:var(--ambre);box-shadow:0 0 8px var(--ambre);animation:respire 1.3s ease-in-out infinite}
