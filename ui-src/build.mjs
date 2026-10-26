@@ -21,6 +21,7 @@ for (const c of cibles) {
   copyFileSync('style.css', c.out + '/style.css')
   writeFileSync(c.out + '/index.html', page(c.head))
   copyFileSync('assets/root-head.svg', c.out + '/root-head.svg')
+  if (c.entry === 'host-computer.js') copyFileSync('../mobile/dist/icon-512.png', c.out + '/icon.png')
 }
 writeFileSync('../mobile/dist/manifest.webmanifest', JSON.stringify({ name: 'root-harness', short_name: 'root-harness', start_url: './', display: 'standalone',
   background_color: '#11131c', theme_color: '#11131c', icons: [{ src: 'icon-192.png', sizes: '192x192', type: 'image/png' }, { src: 'icon-512.png', sizes: '512x512', type: 'image/png' }] }))

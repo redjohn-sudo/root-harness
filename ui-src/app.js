@@ -420,6 +420,8 @@ async function feuilleGroupe() {
     <div class="liste" style="margin-top:8px">${ov.contacts.map((c, i) => `<label class="item" style="--i:${i}"><input type="checkbox" value="${esc(c.hex)}"> <div class="tx"><div class="t">${esc(c.name)}</div></div></label>`).join('')}</div>
     <div class="err" id="g-err"></div><div class="boutons"><button class="bouton plein" id="g-ok">Create</button></div>`)
   $('#g-ok', f).onclick = async () => { const m = $$('input[type=checkbox]:checked', f).map((x) => x.value); if (!m.length) return ($('#g-err', f).textContent = 'Pick at least one friend.')
+    const meme = ov.channels.find((c) => c.members.length === m.length && c.members.every((x) => m.includes(x.hex)))
+    if (meme) { fermerFeuille(); toast('You already talk with these people here.'); CANAL = meme; return vueCanal() }
     const cid = await H.friends.createGroup($('#g-nom', f).value || ov.contacts.filter((c) => m.includes(c.hex)).map((c) => c.name).join(', '), m)
     fermerFeuille(); if (!cid) return toast('Could not create it.'); const o2 = await H.friends.overview(); CANAL = o2.channels.find((c) => c.id === cid); vueCanal() }
 }

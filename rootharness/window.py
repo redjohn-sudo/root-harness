@@ -825,4 +825,18 @@ def start():
     window = webview.create_window(
         "root-harness", str(UI), js_api=api, width=1100, height=760, min_size=(380, 560), background_color="#11131c")
     api.bind(window)
+    _dock_icon()
     webview.start()
+
+
+def _dock_icon():
+    """Root's pixel head in the Dock, instead of Python's rocket (macOS)."""
+    if sys.platform != "darwin":
+        return
+    try:
+        from AppKit import NSApplication, NSImage
+        image = NSImage.alloc().initWithContentsOfFile_(str(UI.parent / "icon.png"))
+        if image:
+            NSApplication.sharedApplication().setApplicationIconImage_(image)
+    except Exception:
+        pass
