@@ -295,12 +295,14 @@ function rendrePage(v, mur, H) {
     <div class="p-travail">${travail(p.work)}</div>${!p.work.length ? `<div class="vide">${mine ? 'Add what you build, your hackathons, what is in progress: Edit profile.' : 'Nothing shown yet.'}</div>` : ''}
     <div class="p-onglets">${[['posts', 'Posts'], ['replies', 'Replies'], ['reposts', 'Reposts'], ['media', 'Photos & videos']].map(([k, t]) => `<button data-o="${k}" class="${k === ONGLET_P ? 'on' : ''}">${t}</button>`).join('')}</div>
     <div id="p-liste"></div></div></div>`
-  const L = mur[ONGLET_P] || []
-  if (ONGLET_P === 'media' && L.length) $('#p-liste').innerHTML = `<div class="grille-media">${L.map((x) => `<div class="gm" data-id="${esc(x.id)}" style="background-image:url('${esc(x.media[0].url)}')"></div>`).join('')}</div>`
-  else $('#p-liste').innerHTML = L.map((x, i) => carte(x, i)).join('') || `<div class="vide">${{ posts: mine ? 'No post yet. In the feed, your agent can write the first one.' : 'No post yet.', replies: 'No reply yet.', reposts: 'Nothing reposted yet.', media: 'Posts with a photo or a video show here.' }[ONGLET_P]}</div>`
-  brancher($('#p-liste'), L, H, null)        // hearts and reposts toggle in place: no re-render, the scroll stays
-  $$('#p-liste .gm').forEach((g) => g.onclick = () => { const x = L.find((y) => y.id === g.dataset.id); if (x) ouvrirFil(x, H) })
-  $$('.p-onglets [data-o]').forEach((b) => b.onclick = () => { ONGLET_P = b.dataset.o; vueProfil(H) })
+  rendreListe(mur, H)
+  // a tab only redraws its list: the page around it stays put
+  $$('.p-onglets [data-o]').forEach((b) => b.onclick = () => {
+    if (ONGLET_P === b.dataset.o) return
+    ONGLET_P = b.dataset.o
+    $$('.p-onglets [data-o]').forEach((x) => x.classList.toggle('on', x === b))
+    rendreListe(mur, H)
+  })
   if (mine) {
     $('#p-edit').onclick = () => editer(H, p)
     $('#p-qr').onclick = () => { if (p.id) { H.copy(p.id); toast('Your ID is copied: ' + p.id) } }
@@ -312,6 +314,14 @@ function rendrePage(v, mur, H) {
     }
   }
   $('#p-tous') && ($('#p-tous').onclick = () => tousBadges(H, mur))
+}
+
+function rendreListe(mur, H) {
+  const el = $('#p-liste'), mine = !!mur.profile.mine, L = mur[ONGLET_P] || []
+  if (ONGLET_P === 'media' && L.length) el.innerHTML = `<div class="grille-media">${L.map((x) => `<div class="gm" data-id="${esc(x.id)}" style="background-image:url('${esc(x.media[0].url)}')"></div>`).join('')}</div>`
+  else el.innerHTML = L.map((x, i) => carte(x, i)).join('') || `<div class="vide">${{ posts: mine ? 'No post yet. In the feed, your agent can write the first one.' : 'No post yet.', replies: 'No reply yet.', reposts: 'Nothing reposted yet.', media: 'Posts with a photo or a video show here.' }[ONGLET_P]}</div>`
+  brancher(el, L, H, null)        // hearts and reposts toggle in place: no re-render, the scroll stays
+  $$('.gm', el).forEach((g) => g.onclick = () => { const x = L.find((y) => y.id === g.dataset.id); if (x) ouvrirFil(x, H) })
 }
 
 function tousBadges(H, mur) {
