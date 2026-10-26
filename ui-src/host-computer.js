@@ -1,6 +1,6 @@
 // The computer's host: the interface talks to root-harness in Python
 // (window.pywebview.api), which runs the agents, keeps the memory and syncs it.
-import { lancer, aller } from './app.js'
+import { lancer, aller, feuille, fermerFeuille, toast, qr } from './app.js'
 
 const api = () => window.pywebview.api
 
@@ -54,14 +54,31 @@ const host = {
     el.innerHTML = `<div class="section">your phone<span class="ligne"></span></div><div class="verre carte">
       <div class="reglage"><div class="l">Use from my phone<div class="d">Your phone becomes this computer's remote, through sealed messages</div></div><span class="inter${r.on ? ' on' : ''}" id="r-tel"></span></div>
       ${r.on ? `<div class="reglage"><div class="l">On your phone (same Wi-Fi), open in Safari<div class="d" style="font-family:var(--mono)">${esc((r.url || '').replace('https://', 'http://'))}</div><div class="d">then Share, Add to Home Screen. Type http:// in full.</div></div></div>` : ''}
+      <div class="boutons" style="margin:4px 0 6px"><button class="bouton vert" id="r-relier">Link a phone with a QR code</button></div>
       <div class="reglage"><div class="l">GitHub on my phone<div class="d">Vibe code from the phone with your GitHub sign-in, kept in your sealed memory</div></div><span class="inter${t.on ? ' on' : ''}" id="r-ghtel"></span></div></div>
       <div class="section">vibe code<span class="ligne"></span></div><div class="verre carte" id="r-vibe">${vibeEtat(v, esc)}</div>`
+    el.querySelector('#r-relier').onclick = relierTelephone
     el.querySelector('#r-tel').onclick = async () => { await api().remote_set(!r.on); host.reglagesEnPlus(el, { feuille, fermerFeuille, toast, esc }) }
     el.querySelector('#r-ghtel').onclick = async () => { const x = await api().vibe_phone_token(!t.on); if (x && x.error) toast(x.error); host.reglagesEnPlus(el, { feuille, fermerFeuille, toast, esc }) }
     const c = el.querySelector('#r-creer'); if (c) c.onclick = async () => { c.textContent = 'Creating...'; const x = await api().vibe_create(); if (x.error) toast(x.error); host.reglagesEnPlus(el, { feuille, fermerFeuille, toast, esc }) }
     const re = el.querySelector('#r-revoir'); if (re) re.onclick = () => host.reglagesEnPlus(el, { feuille, fermerFeuille, toast, esc })
     const go = el.querySelector('#r-go'); if (go) go.onclick = () => aller('vibe')
   },
+}
+
+// link a phone: a QR code, the same 6 digits on both screens, then approve here
+async function relierTelephone() {
+  const r = await api().pairing_start()
+  if (r.error) return toast(r.error)
+  const f = feuille(`<h3>link a phone</h3><div class="sous-titre">Scan this with your phone's camera. It opens root-harness there.</div>
+    <div class="qr" style="max-width:240px">${qr(r.url)}</div><div id="a-code" class="d" style="text-align:center;color:var(--encre-3)">waiting for your phone...</div>`)
+  window.__codeAppairage = (code) => {
+    const z = f.querySelector('#a-code')
+    z.innerHTML = `<div style="color:var(--encre-2);margin-bottom:6px">Does your phone show this code?</div><div class="code-appairage">${code.slice(0, 3)} ${code.slice(3)}</div>
+      <div class="boutons" style="justify-content:center"><button class="bouton plein" id="a-oui">Yes, link it</button><button class="bouton danger" id="a-non">No, cancel</button></div>`
+    z.querySelector('#a-oui').onclick = async () => { const ok = await api().pairing_approve(); window.__codeAppairage = null; fermerFeuille(); toast(ok ? 'Phone linked.' : 'It did not go through: try again.') }
+    z.querySelector('#a-non').onclick = async () => { await api().pairing_cancel(); window.__codeAppairage = null; fermerFeuille(); toast('Cancelled: nothing was sent.') }
+  }
 }
 
 function vibeEtat(v, esc) {

@@ -232,6 +232,9 @@ textarea.champ{resize:none;font:13px var(--mono)}
 .boite-btw .champ{flex:1}
 #t-fil{padding-top:4px}#t-fil .msg{max-width:100%}
 
+/* -- linking a phone -- */
+.code-appairage{font:600 38px var(--mono);letter-spacing:.12em;margin:8px 0 6px;color:var(--vert-clair);text-shadow:0 0 24px var(--lueur);animation:pop .6s var(--ease)}
+
 /* -- your ID and its QR code -- */
 .mon-id{font:600 17px var(--mono);letter-spacing:.01em;text-align:center;color:var(--encre);word-break:break-all;margin:6px 0 12px}
 .qr{width:100%;max-width:200px;margin:0 auto 16px;border-radius:16px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.35);animation:pop .6s var(--ease)}

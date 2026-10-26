@@ -519,6 +519,38 @@ class Api:
         finally:
             s.close()
 
+    # -- link a phone with a QR code (pairing.py) ---------------------------------
+
+    def pairing_start(self):
+        """A QR code to link a phone: needs "Use from my phone" on (the phone app is served here)."""
+        from .pairing import Pairing
+        if self.keys is None:
+            return {"error": "Unlock your account first."}
+        if not self._remote_on():
+            self.remote_set(True)
+        # where the phone app lives: an address you set (https later), or this computer on the Wi-Fi
+        base = read_settings().get("phone_app_url") or (f"http://{self._lan_ip()}:8765/" if self._web else None)
+        if self.remote is None or not base:
+            return {"error": "Could not start the phone app on this Wi-Fi."}
+        if getattr(self, "pairing", None):
+            self.pairing.close()
+        self.pairing = Pairing(self.keys, account.state().get("pseudo", ""), self._emit)
+        return {"url": base.rstrip("/") + "/#pair=" + self.pairing.token}
+
+    def pairing_approve(self):
+        p = getattr(self, "pairing", None)
+        ok = bool(p and p.approve())
+        if ok:
+            self.pairing = None
+        return ok
+
+    def pairing_cancel(self):
+        p = getattr(self, "pairing", None)
+        if p:
+            p.close()
+            self.pairing = None
+        return True
+
     def remote_state(self):
         return {"on": self._remote_on(), "running": self.remote is not None,
                 "url": f"http://{self._lan_ip()}:8765" if self._web else "",

@@ -152,6 +152,41 @@ async function envoyerCanal(cid, content, extra = []) {
   return { r, ok }
 }
 
+// -- linking this phone with a QR code (rootharness/pairing.py) ---------------------------
+// The QR opens this app with #pair=<the computer's one-time key>. The phone makes its own
+// one-time key, answers, shows the same 6 digits as the computer, and receives the
+// identity sealed for it once you approve on the computer.
+const PAIR = (() => { const m = location.hash.match(/pair=(npub1[0-9a-z]+)/); try { return m ? nip19.decode(m[1]).data : null } catch { return null } })()
+function codeAppairage(computerHex, phoneHex) {
+  const h = sha256(new Uint8Array([...hexToBytes(computerHex), ...hexToBytes(phoneHex)]))
+  const n = ((h[0] << 24) >>> 0) + (h[1] << 16) + (h[2] << 8) + h[3]          // first 4 bytes, big-endian
+  return String(n % 1000000).padStart(6, '0')
+}
+function scellerAvec(skX, to, tags, content, expire) {
+  const pub = getPublicKey(skX)
+  const rumor = { kind: 14, created_at: now(), pubkey: pub, tags: [['p', to], ...tags], content }
+  rumor.id = bytesToHex(sha256(utf8ToBytes(JSON.stringify([0, rumor.pubkey, rumor.created_at, rumor.kind, rumor.tags, rumor.content]))))
+  const back = () => now() - Math.floor(Math.random() * 3600)
+  const seal = finalizeEvent({ kind: 13, created_at: back(), tags: [], content: nip44.v2.encrypt(JSON.stringify(rumor), ck(skX, to)) }, skX)
+  const eph = generateSecretKey(), t = [['p', to]]; if (expire) t.push(['expiration', String(now() + expire)])
+  return finalizeEvent({ kind: 1059, created_at: back(), tags: t, content: nip44.v2.encrypt(JSON.stringify(seal), ck(eph, to)) }, eph)
+}
+function appairer(onCode) {
+  return new Promise((resolve) => {
+    const eph = generateSecretKey(), mine = getPublicKey(eph), t0 = now()
+    onCode(codeAppairage(PAIR, mine))
+    const sub = pool.subscribe(RELAYS, { kinds: [1059], '#p': [mine], since: t0 - 3 * 3600 }, { onevent(ev) {
+      try {
+        const seal = JSON.parse(nip44.v2.decrypt(ev.content, ck(eph, ev.pubkey)))
+        if (seal.pubkey !== PAIR || !verifyEvent(seal)) return                 // only the computer of the QR code
+        const rumor = JSON.parse(nip44.v2.decrypt(seal.content, ck(eph, seal.pubkey))), m = JSON.parse(rumor.content)
+        if (m.op === 'pair-key' && m.key) { sub.close(); resolve({ key: nip19.decode(m.key).data, pseudo: m.pseudo || '' }) }
+      } catch {}
+    } })
+    publier(scellerAvec(eph, PAIR, [['rh-pair', '1']], JSON.stringify({ op: 'pair-hello' }), 600))
+  })
+}
+
 // -- the computer: sealed orders and answers --------------------------------------------
 function duOrdinateur(m) {
   if (m.v !== 1 || m.dir !== 'computer' || m.ts < now() - 600 || vus.has('o' + m.id)) return
@@ -205,6 +240,13 @@ const host = {
     async state() { const a = compte(); return a ? { exists: true, unlocked: !!sk, pseudo: a.pseudo, npub: a.npub, id: me ? handle(a.pseudo, me) : '' } : { exists: false } },
     async setFindable() {},
     async create() { return { error: 'Create your account on your computer first, then sign in here.' } },
+    pairing: !!PAIR,
+    pair: (onCode) => appairer(onCode),
+    async finishPair(key, pseudo, code) {
+      if ((code || '').length < 6) return { error: 'At least 6 characters.' }
+      localStorage.setItem(STORE, JSON.stringify({ pseudo, locked: nip49.encrypt(key, code), npub: nip19.npubEncode(getPublicKey(key)) }))
+      history.replaceState(null, '', location.pathname); await ouvert(key); return {}
+    },
     async restore(p, pw, progres) { try { const k = await connecter(p, pw, progres); if (!k) return { error: 'No account with this pseudo and password.' }; await ouvert(k); return {} }
       catch (e) { return { error: 'Could not reach the relays: ' + (e.message || e) } } },
     async unlock(pw) { const a = compte(); try { const k = nip49.decrypt(a.locked, pw); await ouvert(k); return {} } catch { return { error: 'Wrong password.' } } },

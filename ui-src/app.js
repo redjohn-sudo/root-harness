@@ -58,6 +58,7 @@ export function aller(v) {
   ;({ chat: vueChat, discussions: vueDiscussions, amis: vueAmis, vibe: vueVibe, encyclo: vueEncyclo, reglages: vueReglages })[v]()
 }
 
+export { feuille, fermerFeuille, qr }
 export function toast(t) { const e = $('#toast'); e.textContent = t; e.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove('on'), 2600) }
 function feuille(html) {
   const f = $('#feuille'); f.innerHTML = '<div class="poignee"></div><button class="fermer" title="Close">✕</button>' + html
@@ -224,6 +225,19 @@ async function porte() {
       <button class="bouton danger" id="p-go" style="width:100%;justify-content:center;margin-top:6px">Start a new account</button><span class="lien" id="p-ret">Back</span>`
     $('#p-go').onclick = async () => { if (!(await H.account.reset(val('p-reset')))) return erreur('Type RESET in capitals.'); porte() }
     $('#p-ret').onclick = deverrouiller; $('#p-kit').onclick = parMots
+  }
+  // a phone opened by the QR code of a computer: link it
+  if (H.kind === 'phone' && H.account.pairing) {
+    ecran(`<div class="grande-tete">${tete()}</div><h2>linking this phone</h2><p>Check that your computer shows the same code, then approve it there.</p>
+      <div class="code-appairage" id="p-code">······</div><div class="d" style="color:var(--encre-3);font-size:13px">waiting for your computer...</div>`)
+    const r = await H.account.pair((code) => { $('#p-code').textContent = code.slice(0, 3) + ' ' + code.slice(3) })
+    ecran(`<div class="grande-tete">${tete()}</div><h2>hi ${esc(r.pseudo)}</h2><p>Choose a code to unlock root-harness on this phone (6+ characters).</p>
+      <input class="champ" id="p-mdp" type="password" placeholder="unlock code"><input class="champ" id="p-mdp2" type="password" placeholder="again">
+      <div class="err" id="p-err"></div><button class="bouton plein" id="p-go">Done</button>`)
+    const go = async () => { if (val('p-mdp') !== val('p-mdp2')) return erreur('The two codes are different.')
+      const x = await H.account.finishPair(r.key, r.pseudo, val('p-mdp')); if (x.error) return erreur(x.error); fini() }
+    $('#p-go').onclick = go; entree(['p-mdp', 'p-mdp2'], go); $('#p-mdp').focus()
+    return false
   }
   st.exists ? deverrouiller() : (H.kind === 'phone' ? connecter() : creer())
   return false
@@ -740,6 +754,7 @@ export async function lancer(host) {
     if (e.type === 'channel_message') {
       if (CANAL && e.channel === CANAL.id) { bulleCanal(e.message); H.friends.messages(CANAL.id) }
       else { pastille(true); if (VUE === 'amis' && !CANAL) vueAmis() }
+    } else if (e.type === 'pair_code') { window.__codeAppairage && window.__codeAppairage(e.code)
     } else if (e.type === 'glossary_added') {
       toast('📖 New ' + (e.terms.length > 1 ? 'words' : 'word') + ': ' + e.terms.map((t) => t.term).join(', '))
       if (VUE === 'encyclo') vueEncyclo(); else pastilleEncyclo(true)

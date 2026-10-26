@@ -423,7 +423,8 @@ class Channels:
         async def go():
             wrap = await _aw(n.nip17_make_private_msg(
                 self.keys, self.keys.public_key(), json.dumps(payload, ensure_ascii=False),
-                expiration=timedelta(days=1), rumor_extra_tags=[n.Tag.custom("rh-remote", ["1"])]))
+                # wraps are back-dated up to 2 days: a shorter expiration would be born expired
+                expiration=timedelta(days=3), rumor_extra_tags=[n.Tag.custom("rh-remote", ["1"])]))
             out = await _aw(self.client.send_event(wrap))
             self.last_refused = {str(k): v for k, v in out.failed.items()}
             return len(out.success)
