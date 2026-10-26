@@ -31,6 +31,8 @@ from pathlib import Path
 HOME = Path(os.environ.get("ROOT_HARNESS_HOME") or Path.home() / ".root-harness")
 ACCOUNT = HOME / "account.json"
 KEYCHAIN = ("root-harness", "nostr-secret-key")
+if os.environ.get("ROOT_HARNESS_HOME"):       # a test or demo home never touches the real keychain entry
+    KEYCHAIN = ("root-harness:" + hashlib.sha256(os.environ["ROOT_HARNESS_HOME"].encode()).hexdigest()[:10], "nostr-secret-key")
 MIN_PASSWORD = 10     # the locked key is published for sync: no short passwords
 
 
