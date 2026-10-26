@@ -39,6 +39,10 @@ const host = {
     send: (c, t) => api().channel_send(c, t), share: (c, p) => api().channel_share(c, p),
     addContact: (n, m) => api().channel_add_contact(n, m), createGroup: (n, m) => api().channel_create(n, m),
   },
+  glossary: {
+    list: () => api().glossary_list(), setAuto: (o) => api().glossary_set_auto(o), add: (t, d, c) => api().glossary_add(t, d, c),
+    remove: (i) => api().glossary_remove(i), ask: (i, q, h) => api().glossary_ask(i, q, h),
+  },
   vibe: {
     status: () => api().vibe_status(), projects: () => api().vibe_projects(), repos: () => api().vibe_repos(),
     thread: (n) => api().vibe_thread(n), send: (r, t, n) => api().vibe_send(r, t, n || 0),

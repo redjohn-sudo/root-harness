@@ -41,7 +41,7 @@ from datetime import timedelta
 from pathlib import Path
 from typing import Callable
 
-from . import account, conversations
+from . import account, conversations, glossary
 
 HOME = Path(os.environ.get("ROOT_HARNESS_HOME") or Path.home() / ".root-harness")
 STATE = HOME / "sync.json"
@@ -183,6 +183,9 @@ def local_items() -> dict:
             log = _read(HOME / "channels" / f"{cid}.json", [])
             if log:
                 items["chan:" + cid] = log
+    g = glossary.raw()
+    if g["terms"] or g["hidden"] or g["auto"]:
+        items["glossary"] = g
     env = HOME / ".env"
     if env.exists():
         items["keys"] = env.read_text(encoding="utf-8")
@@ -225,6 +228,8 @@ def _merge(name: str, remote) -> None:
         for m in remote:
             log.setdefault(m["rid"], m)
         _write(path, sorted(log.values(), key=lambda m: m["at"]))
+    elif name == "glossary":
+        glossary.merge(remote)
     elif name == "keys":
         env = HOME / ".env"
         have = env.read_text(encoding="utf-8").splitlines() if env.exists() else []

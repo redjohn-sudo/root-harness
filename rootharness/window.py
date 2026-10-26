@@ -22,7 +22,7 @@ from pathlib import Path
 
 import webview
 
-from . import permissions, brains, conversations, account
+from . import permissions, brains, conversations, account, glossary
 
 UI = Path(__file__).parent / "ui" / "index.html"
 # Your settings live in your home folder, never in the repo.
@@ -425,6 +425,7 @@ class Api:
         self.sync = sync.Sync(self.keys, self._emit)
         hook = self.sync.dirty
         conversations.on_change = hook
+        glossary.on_change = hook
         sys.modules[__name__].on_change = hook
         from . import channels as ch_mod
         ch_mod.on_change = hook
@@ -512,6 +513,63 @@ class Api:
         else:
             self._stop_remote()
         return self.remote_state()
+
+    # -- the encyclopedia (glossary.py, side.py) -----------------------------------
+
+    def glossary_list(self):
+        return glossary.listing()
+
+    def glossary_set_auto(self, on: bool):
+        glossary.set_auto(bool(on))
+        return glossary.listing()
+
+    def glossary_add(self, term: str, definition: str, cat: str = ""):
+        return glossary.add(term, definition, cat, "you") or {"error": "This word is already there, or something is missing."}
+
+    def glossary_remove(self, ident: str):
+        glossary.remove(ident)
+        return True
+
+    def glossary_ask(self, ident: str, question: str, history: list | None = None):
+        """A side question about a word, to the agent you are using (like /btw)."""
+        from . import side
+        t = next((t for t in glossary.listing()["terms"] if t["id"] == ident), None)
+        if not t:
+            return {"error": "Unknown word."}
+        msgs = [{"role": "user", "content": f'We are talking about the term "{t["term"]}". '
+                                            f'Its short definition: {t["def"]}'},
+                {"role": "assistant", "content": "Got it."}]
+        msgs += [m for m in (history or []) if m.get("role") in ("user", "assistant") and m.get("content")][-10:]
+        msgs.append({"role": "user", "content": str(question)[:2000]})
+        try:
+            return {"answer": side.ask(self.brain, getattr(self.session, "model", None), msgs),
+                    "agent": self.brain["name"]}
+        except Exception as e:
+            return {"error": f"{type(e).__name__}: {e}"[:240]}
+
+    def _learn_words(self, prompt: str):
+        """After a turn: the agent spots the new technical words of the exchange."""
+        if not glossary.auto():
+            return
+        texts = [e.get("text", "") for e in self.log.get("events", [])[-12:] if e.get("type") == "text"]
+        exchange = ("Me: " + prompt + "\n\nAgent: " + "\n".join(texts))[-6000:]
+        if len(exchange) < 120:
+            return
+        brain, model = self.brain, getattr(self.session, "model", None)
+
+        def work():
+            from . import side
+            try:
+                known = ", ".join(sorted(glossary.known()))[:3000]
+                answer = side.ask(brain, model, [{"role": "user", "content": glossary.EXTRACT.format(
+                    n=3, known=known, exchange=exchange)}], system="You answer with JSON only.", max_tokens=600)
+                added = [a for a in (glossary.add(t["term"], t["def"], t.get("cat", ""), brain["name"])
+                                     for t in glossary.parse_terms(answer)) if a]
+                if added:
+                    self._emit({"type": "glossary_added", "terms": added})
+            except Exception:
+                pass
+        threading.Thread(target=work, daemon=True).start()
 
     def sync_status(self):
         return self.sync.status() if self.sync else {}
@@ -894,6 +952,7 @@ class Api:
         finally:
             self._save()
             self._busy.release()
+        self._learn_words(prompt)
 
     def _save(self):
         """Keep the conversation: what the window showed, and how to continue it."""

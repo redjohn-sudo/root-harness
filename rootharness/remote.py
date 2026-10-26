@@ -31,8 +31,9 @@ CALLABLE = {"active_brain", "brains_list", "choose_brain", "models", "set_model"
             "set_mode", "commands", "send", "interrupt", "permission_answer", "question_answer",
             "new_conversation", "current_events", "continue_from", "conversations_list", "open_conversation",
             "read_conversation", "move_conversation", "rename_conversation", "delete_conversation",
-            "create_folder", "rename_folder", "delete_folder", "tools_list"}
-FORWARDED = {"text", "tool", "result", "error", "permission", "question", "done", "usage", "status", "remote_user"}
+            "create_folder", "rename_folder", "delete_folder", "tools_list",
+            "glossary_list", "glossary_set_auto", "glossary_add", "glossary_remove", "glossary_ask"}
+FORWARDED = {"glossary_added", "text", "tool", "result", "error", "permission", "question", "done", "usage", "status", "remote_user"}
 
 
 class Remote:

@@ -18,6 +18,7 @@ import * as nip19 from 'nostr-tools/nip19'
 import { SimplePool } from 'nostr-tools/pool'
 import { lancer } from './app.js'
 import { code, parse, handle } from './ident.js'
+import BASE from '../rootharness/glossary_base.json'
 
 const RELAYS = ['wss://relay.damus.io', 'wss://nos.lol', 'wss://relay.primal.net']
 const STORE = 'rh-account', CACHE = 'rh-cache'
@@ -265,6 +266,15 @@ const host = {
       await annoncer({ op: 'group_create', name: name.trim().slice(0, 60), members: members.sort() }); return canalId(new Set([...members, me])) },
   },
 
+  // the encyclopedia: from the computer when it is on, otherwise the base + your synced words
+  glossary: {
+    async list() { try { return await appel('glossary_list') } catch {
+      const g = cache.get('glossary') || { terms: {}, hidden: [], auto: false }, id = (t) => t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+      const items = Object.fromEntries(BASE.map((b) => [id(b.term), { ...b, source: 'base', added: 0 }])); Object.assign(items, g.terms); (g.hidden || []).forEach((h) => delete items[h])
+      return { auto: g.auto, terms: Object.entries(items).map(([k, v]) => ({ id: k, ...v })).sort((a, b) => a.term.localeCompare(b.term)) } } },
+    setAuto: (o) => appel('glossary_set_auto', o), add: (t, d, c) => appel('glossary_add', t, d, c), remove: (i) => appel('glossary_remove', i),
+    ask: (i, q, h) => appel('glossary_ask', i, q, h).catch((e) => ({ error: e.message })),
+  },
   vibe: {
     async status() {
       let r; try { r = await runner() } catch (e) { return { ready: false, why: e.message } }
@@ -304,7 +314,8 @@ async function ouvert(key) {
 async function memoire() {
   try {
     MANIFESTE = null
-    const [ch, keys, bg] = await Promise.all([lire('channels'), lire('keys'), cache.get('background') ? null : lire('background')])
+    const [ch, keys, bg, gl] = await Promise.all([lire('channels'), lire('keys'), cache.get('background') ? null : lire('background'), lire('glossary').catch(() => null)])
+    if (gl) cache.set('glossary', gl)
     if (ch) { for (const k of ['contacts', 'pseudos']) AMIS[k] = { ...(ch[k] || {}), ...AMIS[k] }
       for (const [id, c] of Object.entries(ch.channels || {})) AMIS.channels[id] = { ...c, ...(AMIS.channels[id] || {}), unread: AMIS.channels[id]?.unread || 0 }
       await Promise.all(Object.keys(ch.channels || {}).map(async (id) => { const L = await lire('chan:' + id).catch(() => null); (L || []).forEach((m) => ajouterMessage(id, m)) }))

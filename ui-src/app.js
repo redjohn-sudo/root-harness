@@ -17,6 +17,7 @@ const I = {
   dossiers: '<path d="M3.5 7.5a2 2 0 012-2h4l2 2h7a2 2 0 012 2v8a2 2 0 01-2 2h-13a2 2 0 01-2-2z"/>',
   amis: '<circle cx="9" cy="9" r="3.2"/><path d="M3.5 19c.6-3 2.9-4.6 5.5-4.6s4.9 1.6 5.5 4.6"/><circle cx="17" cy="8" r="2.4"/><path d="M15.5 13.6c2.6.1 4.4 1.6 5 4.4"/>',
   vibe: '<path d="M8 8l-4 4 4 4M16 8l4 4-4 4M13.5 5.5l-3 13"/>',
+  livre: '<path d="M4 5.5A2 2 0 016 3.5h13v15H6a2 2 0 00-2 2z"/><path d="M4 20.5a2 2 0 012-2h13M8.5 8h6M8.5 11h4"/>',
   reglages: '<circle cx="12" cy="12" r="3"/><path d="M19.4 13.5l1.6 1.2-2 3.4-1.9-.8a7.6 7.6 0 01-2 1.2L14.8 21h-4l-.3-2.5a7.6 7.6 0 01-2-1.2l-1.9.8-2-3.4 1.6-1.2a7.7 7.7 0 010-2.4L4.6 9.9l2-3.4 1.9.8a7.6 7.6 0 012-1.2L10.8 3h4l.3 2.5a7.6 7.6 0 012 1.2l1.9-.8 2 3.4-1.6 1.2a7.7 7.7 0 010 2.4z"/>',
   plus: '<path d="M12 5v14M5 12h14"/>', partage: '<path d="M12 15V4M8 8l4-4 4 4M5 13v5a2 2 0 002 2h10a2 2 0 002-2v-5"/>',
   image: '<rect x="3.5" y="5" width="17" height="14" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="M5 17l4.5-4.5 3 3 2.5-2.5 4 4"/>',
@@ -25,8 +26,8 @@ const I = {
 const ico = (n, w = 1.7) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">${I[n]}</svg>`
 
 // -- the shell ----------------------------------------------------------------------
-const ONGLETS = [['chat', 'Your agents'], ['discussions', 'Conversations'], ['amis', 'Friends & groups'], ['vibe', 'Vibe code'], ['reglages', 'Settings']]
-const ICONE = { chat: 'chat', discussions: 'dossiers', amis: 'amis', vibe: 'vibe', reglages: 'reglages' }
+const ONGLETS = [['chat', 'Your agents'], ['discussions', 'Conversations'], ['amis', 'Friends & groups'], ['vibe', 'Vibe code'], ['encyclo', 'Encyclopedia'], ['reglages', 'Settings']]
+const ICONE = { chat: 'chat', discussions: 'dossiers', amis: 'amis', vibe: 'vibe', encyclo: 'livre', reglages: 'reglages' }
 
 function coquille() {
   document.body.innerHTML = `<div id="fond"></div>
@@ -36,13 +37,14 @@ function coquille() {
     </nav>
     <main>
       <section class="vue" id="v-chat"></section><section class="vue" id="v-discussions"></section>
-      <section class="vue" id="v-amis"></section><section class="vue" id="v-vibe"></section><section class="vue" id="v-reglages"></section>
+      <section class="vue" id="v-amis"></section><section class="vue" id="v-vibe"></section><section class="vue" id="v-encyclo"></section><section class="vue" id="v-reglages"></section>
     </main>
   </div>
   <div id="voile"></div><div class="feuille" id="feuille"></div><div class="toast" id="toast"></div>
   <div id="porte"><div class="carte-porte verre" id="carte-porte"></div></div>`
   $$('.onglet').forEach((b) => b.onclick = () => aller(b.dataset.v))
   $('#voile').onclick = fermerFeuille
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('#feuille').classList.contains('on')) fermerFeuille() })
   addEventListener('mousemove', (e) => { const r = document.documentElement.style
     r.setProperty('--mx', (e.clientX / innerWidth - .5).toFixed(3)); r.setProperty('--my', (e.clientY / innerHeight - .5).toFixed(3)) })
   cligner()
@@ -53,11 +55,14 @@ export function aller(v) {
   VUE = v
   $$('.onglet').forEach((b) => b.classList.toggle('on', b.dataset.v === v))
   $$('.vue').forEach((s) => s.classList.toggle('on', s.id === 'v-' + v))
-  ;({ chat: vueChat, discussions: vueDiscussions, amis: vueAmis, vibe: vueVibe, reglages: vueReglages })[v]()
+  ;({ chat: vueChat, discussions: vueDiscussions, amis: vueAmis, vibe: vueVibe, encyclo: vueEncyclo, reglages: vueReglages })[v]()
 }
 
 export function toast(t) { const e = $('#toast'); e.textContent = t; e.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove('on'), 2600) }
-function feuille(html) { const f = $('#feuille'); f.innerHTML = '<div class="poignee"></div>' + html; f.classList.add('on'); $('#voile').classList.add('on'); return f }
+function feuille(html) {
+  const f = $('#feuille'); f.innerHTML = '<div class="poignee"></div><button class="fermer" title="Close">✕</button>' + html
+  $('.fermer', f).onclick = fermerFeuille; f.classList.add('on'); $('#voile').classList.add('on'); return f
+}
 function fermerFeuille() { $('#feuille').classList.remove('on'); $('#voile').classList.remove('on') }
 async function fond() {
   const url = await H.background(); const f = $('#fond')
@@ -401,9 +406,9 @@ async function feuilleCerveau() {
   const f = feuille('<h3>your agent</h3><div class="sous-titre">Loading...</div>')
   let L, M, E
   try { [L, M, E] = await Promise.all([H.agent.brains(), H.agent.models(), H.agent.efforts()]) } catch (e) {
-    f.innerHTML = `<div class="poignee"></div><h3>your agent</h3><div class="sous-titre">${H.kind === 'phone' ? 'Your computer is off or not answering. On the go, use <b>Vibe code</b>: Claude works on GitHub.' : esc(e.message || e)}</div>`; return }
+    f.innerHTML = `<div class="poignee"></div><button class="fermer" title="Close" onclick="document.getElementById('voile').click()">✕</button><h3>your agent</h3><div class="sous-titre">${H.kind === 'phone' ? 'Your computer is off or not answering. On the go, use <b>Vibe code</b>: Claude works on GitHub.' : esc(e.message || e)}</div>`; return }
   const modes = CERVEAU.modes || []
-  f.innerHTML = `<div class="poignee"></div><h3>your agent</h3><div class="sous-titre">Same tools, same permission cards, whoever thinks.</div>
+  f.innerHTML = `<div class="poignee"></div><button class="fermer" title="Close" onclick="document.getElementById('voile').click()">✕</button><h3>your agent</h3><div class="sous-titre">Same tools, same permission cards, whoever thinks.</div>
     <div class="section">agent<span class="ligne"></span></div><div class="liste">${L.brains.map((b, i) => `<div class="item${b.id === L.active ? ' on' : ''}" data-b="${esc(b.id)}" style="--i:${i}"><div class="tx"><div class="t">${esc(b.name)}</div><div class="m">${esc(b.ready ? b.note : b.why)}</div></div>${b.ready ? '' : '<span class="badge">not ready</span>'}</div>`).join('')}</div>
     ${M.models.length ? `<div class="section">model<span class="ligne"></span></div><div class="liste">${M.models.map((m, i) => `<div class="item${m.id === M.current ? ' on' : ''}" data-m="${esc(m.id)}" style="--i:${i}"><div class="tx"><div class="t">${esc(m.label)}</div>${m.desc ? `<div class="m">${esc(m.desc)}</div>` : ''}</div></div>`).join('')}</div>` : ''}
     ${E.efforts.length ? `<div class="section">effort<span class="ligne"></span></div><div class="boutons">${E.efforts.map((x) => `<button class="bouton${x === E.current ? ' vert' : ''}" data-e="${esc(x)}">${esc(x)}</button>`).join('')}</div>` : ''}
@@ -420,7 +425,7 @@ async function feuillePartage(source) {
   const ov = await H.friends.overview().catch(() => null)
   if (!ov) { f.innerHTML = '<div class="poignee"></div><h3>share</h3><div class="sous-titre">Unlock your account first.</div>'; return }
   const chans = ov.channels.filter((c) => !c.request)
-  f.innerHTML = `<div class="poignee"></div><h3>share this conversation</h3><div class="sous-titre">It goes sealed: only the people in the channel can read it. Tool outputs stay with you.</div>
+  f.innerHTML = `<div class="poignee"></div><button class="fermer" title="Close" onclick="document.getElementById('voile').click()">✕</button><h3>share this conversation</h3><div class="sous-titre">It goes sealed: only the people in the channel can read it. Tool outputs stay with you.</div>
     <div class="liste">${chans.map((c, i) => `<div class="item" data-c="${esc(c.id)}" style="--i:${i}"><div class="tx"><div class="t">${esc(c.name)}</div><div class="m">${esc(c.members.map((m) => m.name).join(', '))}</div></div></div>`).join('') || '<div class="vide">No friend or group yet: add one in Friends & groups.</div>'}</div>`
   $$('[data-c]', f).forEach((el) => el.onclick = async () => {
     const conv = source || await H.agent.history()
@@ -574,7 +579,7 @@ async function vueVibe() {
 async function feuilleIdee() {
   const f = feuille('<h3>a new idea</h3><div class="sous-titre">Loading your repositories...</div>')
   const repos = await H.vibe.repos().catch(() => [])
-  f.innerHTML = `<div class="poignee"></div><h3>a new idea</h3><div class="sous-titre">Where should Claude work?</div>
+  f.innerHTML = `<div class="poignee"></div><button class="fermer" title="Close" onclick="document.getElementById('voile').click()">✕</button><h3>a new idea</h3><div class="sous-titre">Where should Claude work?</div>
     <input class="champ" id="i-cherche" placeholder="search a repository, or type a name for a new one">
     <div class="liste" id="i-liste" style="max-height:38vh;overflow:auto;margin-top:8px"></div>`
   const rendre = () => { const q = $('#i-cherche', f).value.trim().toLowerCase(), L = repos.filter((r) => r.toLowerCase().includes(q)).slice(0, 40)
@@ -616,6 +621,61 @@ async function vueProjet() {
   $('#p-envoyer').onclick = go; ta.oninput = () => ajuster(ta)
   ta.onkeydown = (e) => { if (e.key === 'Enter' && !e.shiftKey && !matchMedia('(pointer:coarse)').matches) { e.preventDefault(); go() } }
 }
+
+// =====================================================================================
+// the encyclopedia: the words that matter, one clear definition each
+// =====================================================================================
+const CATS = [['', 'all'], ['agents', 'agents'], ['llm', 'LLM'], ['rag', 'RAG'], ['code', 'code'], ['security', 'security & CTF']]
+let ENC = null, ENC_CAT = '', ENC_Q = ''
+async function vueEncyclo() {
+  const v = $('#v-encyclo')
+  v.innerHTML = `<div class="defile"><div class="colonne"><div class="titre">encyclopedia</div><div class="sous-titre">The words of agents, LLMs, RAG, code and security. Tap one to ask your agent about it.</div>
+    <div class="verre carte"><div class="reglage" style="border:0;padding:0"><div class="l">Learn as I work<div class="d">After each answer, your agent adds the new technical words of the exchange, with a short definition.</div></div><span class="inter" id="e-auto"></span></div></div>
+    <input class="champ" id="e-cherche" placeholder="search a word" value="${esc(ENC_Q)}"><div class="boutons" id="e-cats">${CATS.map(([k, t]) => `<button class="bouton${k === ENC_CAT ? ' vert' : ''}" data-c="${k}">${t}</button>`).join('')}<button class="bouton" id="e-ajout">+ a word</button></div>
+    <div id="e-liste"><div class="vide">Loading...</div></div></div></div>`
+  try { ENC = await H.glossary.list() } catch { $('#e-liste').innerHTML = '<div class="vide">Unavailable right now.</div>'; return }
+  $('#e-auto').classList.toggle('on', !!ENC.auto)
+  $('#e-auto').onclick = async () => { const r = await H.glossary.setAuto(!ENC.auto).catch(() => null); if (r) { ENC = r; $('#e-auto').classList.toggle('on', !!ENC.auto); toast(ENC.auto ? 'Your agent will add new words as you work.' : 'Off.') } }
+  $('#e-cherche').oninput = () => { ENC_Q = $('#e-cherche').value; rendreEncyclo() }
+  $$('#e-cats [data-c]').forEach((b) => b.onclick = () => { ENC_CAT = b.dataset.c; $$('#e-cats [data-c]').forEach((x) => x.classList.toggle('vert', x === b)); rendreEncyclo() })
+  $('#e-ajout').onclick = feuilleMot
+  rendreEncyclo(); pastilleEncyclo(false)
+}
+function rendreEncyclo() {
+  const q = ENC_Q.trim().toLowerCase()
+  const L = ENC.terms.filter((t) => (!ENC_CAT || t.cat === ENC_CAT) && (!q || t.term.toLowerCase().includes(q) || t.def.toLowerCase().includes(q)))
+  const neufs = L.filter((t) => t.source !== 'base').sort((a, b) => b.added - a.added)
+  const ligne = (t, i) => `<div class="item mot" data-id="${esc(t.id)}" style="--i:${Math.min(i, 30)}"><div class="tx"><div class="t">${esc(t.term)}${t.source !== 'base' ? `<span class="badge" style="margin-left:8px">${esc(t.source === 'you' ? 'you' : 'learned · ' + t.source)}</span>` : ''}</div><div class="m">${esc(t.def)}</div></div></div>`
+  $('#e-liste').innerHTML = (neufs.length && !q ? `<div class="section">learned lately<span class="ligne"></span></div><div class="liste">${neufs.slice(0, 6).map(ligne).join('')}</div>` : '')
+    + `<div class="section">${L.length} words<span class="ligne"></span></div><div class="liste">${L.map(ligne).join('') || '<div class="vide">No word matches.</div>'}</div>`
+  $$('#e-liste .mot').forEach((el) => el.onclick = () => feuilleTerme(ENC.terms.find((t) => t.id === el.dataset.id)))
+}
+function feuilleTerme(t) {
+  const agent = CERVEAU.name || 'your agent', fil = []
+  const f = feuille(`<div class="badge" style="display:inline-block;margin-bottom:8px">${esc((CATS.find((c) => c[0] === t.cat) || ['', t.cat])[1])}</div><h3 style="font-size:28px">${esc(t.term)}</h3>
+    <div class="corps" style="margin:8px 0 14px;color:var(--encre)"><p>${esc(t.def)}</p></div>
+    <div class="section">ask ${esc(agent)} about it<span class="ligne"></span></div><div class="fil" id="t-fil"></div>
+    <div class="boite-btw"><input class="champ" id="t-q" placeholder="a question about ${esc(t.term)}..." autocomplete="off"><button class="rond-btn envoyer" id="t-go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${I.fleche}</svg></button></div>
+    <div class="d" style="color:var(--encre-4);font-size:12px;margin-top:8px">A side talk, like /btw: your main conversation stays untouched.</div>
+    ${t.source !== 'base' ? '<div class="boutons" style="margin-top:14px"><button class="bouton danger" id="t-suppr">remove this word</button></div>' : ''}`)
+  const go = async () => {
+    const q = $('#t-q', f).value.trim(); if (!q) return; $('#t-q', f).value = ''
+    bulleMoi(q, null, '#t-fil'); ajouter('<div class="ecrit" style="margin-left:0"><i></i><i></i><i></i></div>', '#t-fil')
+    const r = await H.glossary.ask(t.id, q, fil.slice()).catch((e) => ({ error: e.message || String(e) }))
+    $('#t-fil .ecrit', f)?.remove()
+    if (r.error) return ajouter(`<div class="sys">${esc(r.error)}</div>`, '#t-fil')
+    fil.push({ role: 'user', content: q }, { role: 'assistant', content: r.answer }); bulleAgent(r.answer, '#t-fil')
+  }
+  $('#t-go', f).onclick = go; $('#t-q', f).onkeydown = (e) => { if (e.key === 'Enter') go() }
+  $('#t-suppr', f) && ($('#t-suppr', f).onclick = async () => { await H.glossary.remove(t.id); fermerFeuille(); vueEncyclo() })
+}
+function feuilleMot() {
+  const f = feuille(`<h3>a new word</h3><input class="champ" id="m-t" placeholder="the word"><textarea class="champ" id="m-d" rows="3" placeholder="a short, clear definition" style="font:15px var(--police)"></textarea>
+    <div class="boutons">${CATS.slice(1).map(([k, t], i) => `<button class="bouton${i ? '' : ' vert'}" data-c="${k}">${t}</button>`).join('')}</div><div class="err" id="m-err"></div><div class="boutons"><button class="bouton plein" id="m-ok">Add</button></div>`)
+  let cat = 'agents'; $$('[data-c]', f).forEach((b) => b.onclick = () => { cat = b.dataset.c; $$('[data-c]', f).forEach((x) => x.classList.toggle('vert', x === b)) })
+  $('#m-ok', f).onclick = async () => { const r = await H.glossary.add($('#m-t', f).value, $('#m-d', f).value, cat); if (!r || r.error) return ($('#m-err', f).textContent = (r && r.error) || 'Not added.'); fermerFeuille(); vueEncyclo() }
+}
+function pastilleEncyclo(on) { const b = $('.onglet[data-v="encyclo"]'); let p = $('.pastille', b); if (on && !p) { p = document.createElement('span'); p.className = 'pastille'; b.appendChild(p) } else if (!on && p) p.remove() }
 
 // =====================================================================================
 // settings
@@ -665,6 +725,9 @@ export async function lancer(host) {
     if (e.type === 'channel_message') {
       if (CANAL && e.channel === CANAL.id) { bulleCanal(e.message); H.friends.messages(CANAL.id) }
       else { pastille(true); if (VUE === 'amis' && !CANAL) vueAmis() }
+    } else if (e.type === 'glossary_added') {
+      toast('📖 New ' + (e.terms.length > 1 ? 'words' : 'word') + ': ' + e.terms.map((t) => t.term).join(', '))
+      if (VUE === 'encyclo') vueEncyclo(); else pastilleEncyclo(true)
     } else if (e.type === 'channels_changed') { if (VUE === 'amis' && !CANAL) vueAmis() }
     else if (e.type === 'synced') { if (e.changed) { fond(); if (VUE === 'discussions') vueDiscussions() } }
     else if (e.type === 'computer') { if (VUE === 'chat') rafraichirCerveau() }
