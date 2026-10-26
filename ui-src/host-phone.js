@@ -18,6 +18,7 @@ import * as nip19 from 'nostr-tools/nip19'
 import { SimplePool } from 'nostr-tools/pool'
 import { lancer } from './app.js'
 import { code, parse, handle } from './ident.js'
+import { reseau } from './social-net.js'
 import BASE from '../rootharness/glossary_base.json'
 
 const RELAYS = ['wss://relay.damus.io', 'wss://nos.lol', 'wss://relay.primal.net']
@@ -201,12 +202,14 @@ async function ordre(op, extra = {}) {
   await publier(sceller([['rh-remote', '1']], payload, me, 86400))
   return id
 }
+const LENTS = new Set(['post_draft', 'glossary_ask'])  // the agent writes the answer: a model call, slow
 function appel(method, ...args) {
   return new Promise(async (resolve, reject) => {
     try {
       const id = await ordre('call', { method, args })
       attentes.set(id, { resolve, reject })
-      setTimeout(() => { if (attentes.has(id)) { attentes.delete(id); reject(new Error('Your computer is off or not answering.')) } }, Date.now() - ordinateur < 90000 ? 45000 : 12000)
+      setTimeout(() => { if (attentes.has(id)) { attentes.delete(id); reject(new Error('Your computer is off or not answering.')) } },
+        LENTS.has(method) ? 90000 : Date.now() - ordinateur < 90000 ? 45000 : 12000)
     } catch (e) { reject(e) }
   })
 }
@@ -317,6 +320,8 @@ const host = {
     setAuto: (o) => appel('glossary_set_auto', o), add: (t, d, c) => appel('glossary_add', t, d, c), remove: (i) => appel('glossary_remove', i),
     ask: (i, q, h) => appel('glossary_ask', i, q, h).catch((e) => ({ error: e.message })),
   },
+  // the network: your agent on the computer writes the post
+  social: { draft: (h) => appel('post_draft', h || '') },
   vibe: {
     async status() {
       let r; try { r = await runner() } catch (e) { return { ready: false, why: e.message } }
@@ -375,6 +380,28 @@ host.reglagesEnPlus = async function plus(el, outils) {
     try { await notifActiver(!st.on); outils.toast(st.on ? 'Notifications off on this phone.' : 'Notifications on. Your computer will tell you.') } catch (e) { outils.toast(e.message) }
     plus(el, outils)
   }
+}
+
+// -- the network, signed right here on the phone (social-net.js) -----------------------------
+let NET = null
+const netStore = { get: (k, d) => { const v = cache.get(k); return v === undefined || v === null ? d : v }, set: (k, v) => cache.set(k, v) }
+function net() {
+  if (!sk) throw new Error('Locked.')
+  if (!NET || NET.me !== me) NET = reseau({ pool, relays: RELAYS, sk, me, pseudo: (compte() || {}).pseudo || '', store: netStore })
+  return NET
+}
+host.network = {
+  profile: (h) => (h ? net().profilDe(h) : Promise.resolve(net().profilLocal())), update: (f) => net().majProfil(f),
+  workSuggest: async () => [], activity: async () => ({ level: net().profilLocal().level, days: 0 }),
+  post: (t, o = {}) => net().poster(t, { media: o.media || [], community: o.community || '', agent: o.agent || '', replyTo: o.replyTo || null }),
+  repost: (p) => net().republier(p), unrepost: (id) => net().derepublier(id), react: (id, a, on) => net().reagir(id, a, on), remove: (id) => net().supprimer(id),
+  feed: (s, o = {}) => net().fil(s, { community: o.community || '', friends: Object.keys(AMIS.contacts || {}), days: o.days || 7, limit: o.limit || 60 }),
+  thread: (id) => net().thread(id), wall: (h) => net().mur(h || me),
+  async lookup(t) { const h = hexDe(t); if (h) return net().profilDe(h); const r = await host.friends.lookup(t); return r && r.hex ? net().profilDe(r.hex) : null },
+  upload: (file) => net().envoyerMedia(file),
+  posting: (s, a) => appel('settings_posting', s === undefined ? null : s, a === undefined ? null : a),
+  badges: (h) => net().badgesDe(h || me), pin: (c) => net().epingler(c), defineBadge: (i, n, d, img) => net().badgeDefinir(i, n, d, img || ''), award: (a, r) => net().badgeDonner(a, r), checkBadges: () => net().verifierBadges(),
+  communities: () => net().communautes(), createCommunity: (n, d) => net().creerCommunaute(n, d || ''), join: async (s, on) => net().rejoindre(s, on),
 }
 
 // unlocked: listen, load the memory, say hello to the computer

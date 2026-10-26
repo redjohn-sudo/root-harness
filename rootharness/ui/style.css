@@ -248,6 +248,141 @@ textarea.champ{resize:none;font:13px var(--mono)}
 body.travail .tete .led{animation:diode .5s steps(1) infinite}
 @keyframes diode{0%,49%{fill:#7fd0ff}50%,100%{fill:#3a6a88}}
 
+/* -- the network: the feed and your profile -- */
+/* avatars: a picture, one letter on a hue, or Root's head on dark glass */
+.av{display:inline-grid;place-items:center;flex:none;width:44px;height:44px;border-radius:50%;overflow:hidden;vertical-align:middle;
+  background:rgba(255,255,255,.08) center/cover no-repeat}
+.av.lettre{background:hsl(var(--h) 45% 32%);color:hsl(var(--h) 70% 85%);font-size:18px;font-weight:600;line-height:1}
+.av.racine{background:rgba(16,18,28,.72);box-shadow:inset 0 0 0 1px var(--trait)}
+.av.racine .tete{width:100%;height:100%;padding:8%}
+/* badges in pixels, on a faint glass tile */
+.pix{display:inline-grid;place-items:center;padding:3px;border-radius:8px;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px rgba(255,255,255,.05);transition:transform .25s var(--ease)}
+.pix svg{width:100%;height:100%;display:block;shape-rendering:crispEdges}
+.pix.verrou{filter:grayscale(1);opacity:.35}
+/* how active: three bars, lit from the left */
+.niveau{display:inline-flex;align-items:flex-end;gap:2px;font-size:12px;line-height:1;color:var(--encre-3);white-space:nowrap}
+.niveau i{width:3px;border-radius:1.5px;background:var(--encre-4);margin-bottom:2px}
+.niveau i:nth-child(1){height:6px}.niveau i:nth-child(2){height:9px}.niveau i:nth-child(3){height:12px;margin-right:4px}
+.niveau.n1 i:nth-child(1),.niveau.n2 i:nth-child(-n+2),.niveau.n3 i{background:var(--vert-clair)}
+.niveau.n3 i{box-shadow:0 0 6px var(--lueur)}
+/* a post: avatar on the left, everything else in .pc */
+.post{display:flex;gap:12px;padding:16px 10px;opacity:0;animation:monte .5s var(--ease) forwards;animation-delay:calc(var(--i,0)*28ms)}
+.post+.post{border-top:1px solid var(--trait)}
+.post>.av{margin-top:2px}
+.pc{flex:1;min-width:0}
+.ph{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}
+.ph>b{font-weight:600;min-width:0;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+.ph>b:hover{text-decoration:underline;text-underline-offset:3px}
+.ptx{cursor:pointer}
+.ph .m{font-size:12.5px;color:var(--encre-3);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* in a post header the bars alone say how active, without the label or the glow */
+.ph .niveau span{display:none}
+.ph .niveau i{box-shadow:none}
+.ph .niveau i:nth-child(3){margin-right:0}
+.ptx{margin-top:5px;line-height:1.55;word-break:break-word;overflow-wrap:anywhere}
+.ptx p{margin:0 0 8px}.ptx p:last-child{margin:0}
+.ptx code{font:13px var(--mono);background:rgba(255,255,255,.08);padding:1px 5px;border-radius:5px}
+.ptx pre{font:12.5px var(--mono);background:rgba(0,0,0,.35);border:1px solid var(--trait);border-radius:12px;padding:11px 13px;overflow-x:auto;white-space:pre-wrap;margin:8px 0}
+.ptx strong{font-weight:600}
+.ptx h4{font-size:15px;margin:10px 0 4px}
+.media{margin-top:10px;border-radius:16px;overflow:hidden;max-height:340px;background:rgba(0,0,0,.28)}
+.media img,.media video{display:block;width:100%;max-height:340px;object-fit:cover}
+.media.code{padding:12px 14px;font:12.5px/1.65 var(--mono);box-shadow:inset 0 0 0 1px var(--trait)}
+.m-l{white-space:pre-wrap;color:var(--encre-2);padding-left:calc(14px + 1ch);text-indent:calc(-14px - 1ch)}
+.m-l b{display:inline-block;width:14px;font-weight:600;color:var(--encre-4)}
+.m-l.plus{color:var(--vert-clair)}.m-l.plus b{color:inherit}
+.m-l.gris{color:var(--encre-3);margin-top:6px}
+.media.scene{display:grid;place-items:center;height:180px;background:rgba(16,18,28,.5);box-shadow:inset 0 0 0 1px var(--trait)}
+.scene-tete{position:relative;width:72px;height:72px;display:grid;place-items:center}
+.scene-tete::before{content:"";position:absolute;inset:-56px;border-radius:50%;background:radial-gradient(circle,var(--lueur),transparent 68%)}
+.scene-tete .tete{position:relative;width:100%;height:100%;filter:drop-shadow(0 10px 24px rgba(0,0,0,.45))}
+.pagent{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:12px;color:var(--encre-3)}
+.pagent svg{width:13px;height:13px;flex:none;color:var(--vert-clair)}
+/* reactions: quiet icons, a faint circle on hover, a small jump when toggled */
+.pact{display:flex;align-items:center;justify-content:space-between;max-width:340px;margin:8px 0 0 -6px}
+.pact button{position:relative;isolation:isolate;display:inline-flex;align-items:center;gap:5px;padding:6px;border-radius:999px;color:var(--encre-3);font-size:12.5px;transition:color .2s}
+.pact button::before{content:"";position:absolute;z-index:-1;left:-1px;top:calc(50% - 16px);width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.07);opacity:0;transform:scale(.7);transition:opacity .2s,transform .25s var(--ease)}
+.pact button:hover{color:var(--encre)}
+.pact button:hover::before{opacity:1;transform:none}
+.pact button svg{width:18px;height:18px;flex:none}
+.pact button span:empty{display:none}
+.pact [data-a=coeur]:hover{color:var(--rouge)}.pact [data-a=coeur]:hover::before{background:rgba(248,113,113,.12)}
+.pact [data-a=rt]:hover{color:var(--vert-clair)}.pact [data-a=rt]:hover::before{background:rgba(111,212,182,.12)}
+.pact .on.coeur{color:var(--rouge)}.pact .on.coeur svg{fill:currentColor}
+.pact .on.rt{color:var(--vert-clair)}
+.pact .saute svg{animation:saute .45s var(--ease)}
+@keyframes saute{0%{transform:scale(1)}40%{transform:scale(1.35)}70%{transform:scale(.9)}100%{transform:none}}
+/* the feed: write, then the pills, then the posts */
+.ecrire{display:flex;gap:12px;align-items:flex-start;margin-bottom:14px}
+.ecrire>.av{margin-top:4px}
+.ec{flex:1;min-width:0}
+.ecrire textarea.champ{font:15px/1.5 var(--police);background:transparent;border-color:transparent;padding:8px 4px;resize:none}
+.ecrire textarea.champ:focus{background:transparent;border-color:transparent}
+.ecrire textarea.champ::placeholder{color:var(--encre-4)}
+.ec-bas{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:6px}
+.ec-bas .bouton{padding:8px 13px;font-size:13.5px}
+.ec-bas .bouton svg{width:15px;height:15px;flex:none;color:var(--vert-clair)}
+.ec-bas .bouton:disabled{opacity:.6;cursor:default}
+.ec-bas .rond-btn{width:34px;height:34px;color:var(--encre-3)}
+.ec-bas .bouton.plein{margin-left:auto;padding:8px 18px}
+.champ.petit{--chevron:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(238,241,246,.6)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  width:auto;max-width:100%;padding:7px 30px 7px 12px;font-size:13px;color:var(--encre-2);border-radius:999px;cursor:pointer;appearance:none;-webkit-appearance:none;
+  background:rgba(255,255,255,.05) var(--chevron) no-repeat right 10px center/14px}
+.champ.petit:focus{background-color:rgba(255,255,255,.08)}
+.champ.petit option{background:#1a1d2a;color:var(--encre)}
+label.bouton,label.rond-btn{cursor:pointer}
+#f-onglets{margin-top:4px}
+#f-commus{margin-top:8px}
+#f-liste{margin-top:8px}
+/* the profile: cover, the avatar over its edge, then the facts */
+.couverture{height:150px;margin-top:calc(16px + var(--haut));border-radius:var(--r);box-shadow:inset 0 0 0 1px var(--trait);
+  background:radial-gradient(80% 140% at 88% 0%,rgba(111,212,182,.2),transparent 62%) center/cover no-repeat,linear-gradient(118deg,#262a48 0%,#213047 55%,#224640 100%) center/cover no-repeat}
+.p-haut{display:flex;align-items:flex-end;gap:12px;margin-top:-40px;padding:0 14px}
+.p-haut>.av{box-shadow:0 0 0 3px #11131c}
+.p-haut>.av.lettre{font-size:40px}
+.p-nom{font-size:26px;font-weight:300;letter-spacing:-.01em;line-height:1.15;margin-top:12px;padding:0 4px}
+.p-id{font:13px var(--mono);color:var(--encre-3);margin-top:3px;padding:0 4px}
+.p-puces{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-top:12px;padding:0 4px}
+.p-puces .etat{border:1px solid var(--trait);border-radius:999px;padding:3px 10px}
+.p-puces .etat.cherche{display:inline-block;color:var(--vert-clair);border-color:rgba(111,212,182,.35)}
+.p-puces .etat.cherche::first-letter{text-shadow:0 0 8px var(--vert-clair)}
+.p-bio{margin-top:12px;padding:0 4px;color:var(--encre-2);line-height:1.55;max-width:560px}
+.p-chiffres{display:flex;flex-wrap:wrap;gap:6px 22px;margin-top:14px;padding:0 4px;font-size:13.5px;color:var(--encre-3)}
+.p-chiffres b{color:var(--encre);font-weight:600;margin-right:3px}
+.p-badges{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:16px;padding:0 4px}
+.p-badges>span{display:inline-grid;line-height:0;animation:pop .5s var(--ease) both;animation-delay:calc(var(--i,0)*50ms)}
+.p-badges .pix:hover{transform:translateY(-2px)}
+.p-badges .bouton{padding:8px 13px;font-size:13px;margin-left:4px}
+.p-travail{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.tr{display:flex;flex-direction:column;padding:14px 16px;border-radius:var(--r-pt);opacity:0;animation:monte .5s var(--ease) forwards;animation-delay:calc(var(--i,0)*45ms)}
+.tr-q{display:flex;align-items:center;gap:7px;font-size:12px;letter-spacing:.04em;color:var(--encre-3)}
+.tr-q.vivant{color:var(--led)}
+.tr-q.vivant i{width:6px;height:6px;border-radius:50%;background:var(--led);box-shadow:0 0 8px var(--led);animation:clignote 2.4s steps(1) infinite}
+.tr-q.bientot{color:var(--ambre)}
+.tr-t{font-size:16px;font-weight:500;margin-top:6px}
+.tr-d{font-size:14px;color:var(--encre-2);line-height:1.45;margin-top:3px}
+.tr-w{font-size:12px;color:var(--encre-3);margin-top:auto;padding-top:8px}
+@keyframes clignote{0%,49%{opacity:1}50%,100%{opacity:.3}}
+.p-onglets{display:flex;gap:2px;margin-top:26px;border-bottom:1px solid var(--trait)}
+.p-onglets button{position:relative;padding:10px 12px;font-size:14px;color:var(--encre-3);white-space:nowrap;transition:color .2s}
+.p-onglets button:hover,.p-onglets button.on{color:var(--encre)}
+.p-onglets button.on::after{content:"";position:absolute;left:12px;right:12px;bottom:-1px;height:2px;border-radius:1px;background:var(--vert-clair);box-shadow:0 0 10px var(--lueur);animation:monte .35s var(--ease)}
+.grille-media{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:12px}
+.gm{aspect-ratio:1;border-radius:12px;background:rgba(255,255,255,.05) center/cover no-repeat;animation:pop .45s var(--ease) both}
+/* the sheets: all the badges, and the picture row when editing */
+.grille-badges{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.gb{display:flex;flex-direction:column;align-items:center;text-align:center;gap:5px;padding:14px 10px 12px;border-radius:var(--r-pt);border:1px solid transparent;background:rgba(255,255,255,.05);
+  transition:background .2s,border-color .2s;opacity:0;animation:monte .45s var(--ease) forwards;animation-delay:calc(var(--i,0)*35ms)}
+.gb:hover{background:rgba(255,255,255,.08)}
+.gb.epingle{border-color:rgba(111,212,182,.6)}
+.gb.non .gb-n,.gb.non .gb-d{opacity:.5}
+.gb .pix{margin-bottom:3px}
+.gb-n{font-size:13px;font-weight:500}
+.gb-d{font-size:12px;color:var(--encre-3);line-height:1.4}
+.gb-u{font-size:12px;letter-spacing:.06em;color:var(--ambre)}
+.ed-photo{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.ed-photo>.av.lettre{font-size:26px}
+
 /* -- the phone: the rail becomes a bar at the bottom, same buttons -- */
 @media (max-width:720px){
   #app{flex-direction:column-reverse}
@@ -265,4 +400,19 @@ body.travail .tete .led{animation:diode .5s steps(1) infinite}
   #d-agents .bouton,#e-cats .bouton{flex:none}
   .tete-chat{justify-content:flex-start}
   .msg.agent .tete{display:none}
+}
+
+/* -- the network on the phone: pill rows scroll sideways, one column of work -- */
+@media (max-width:720px){
+  #f-onglets,#f-commus,.p-onglets{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-right:-16px;padding-right:16px}
+  #f-onglets::-webkit-scrollbar,#f-commus::-webkit-scrollbar,.p-onglets::-webkit-scrollbar{display:none}
+  #f-onglets .bouton,#f-commus .bouton,.p-onglets button{flex:none}
+  .ecrire{padding:12px 12px 10px;gap:10px}
+  .ec-bas{gap:6px}
+  .post{padding:14px 4px;gap:10px}
+  .pact{margin-left:-4px;max-width:none}
+  .couverture{height:120px;margin-top:calc(16px + var(--haut))}
+  .p-haut{flex-wrap:wrap;gap:10px 12px;padding:0 10px}
+  .p-travail{grid-template-columns:1fr}
+  .grille-badges{grid-template-columns:repeat(2,minmax(0,1fr))}
 }

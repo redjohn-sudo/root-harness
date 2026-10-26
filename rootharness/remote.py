@@ -33,8 +33,8 @@ CALLABLE = {"active_brain", "brains_list", "choose_brain", "models", "set_model"
             "read_conversation", "move_conversation", "rename_conversation", "delete_conversation",
             "create_folder", "rename_folder", "delete_folder", "tools_list",
             "glossary_list", "glossary_set_auto", "glossary_add", "glossary_remove", "glossary_ask",
-            "push_key", "push_register"}
-FORWARDED = {"glossary_added", "text", "tool", "result", "error", "permission", "question", "done", "usage", "status", "remote_user"}
+            "push_key", "push_register", "post_draft", "settings_posting"}
+FORWARDED = {"glossary_added", "post_suggestion", "post_published", "text", "tool", "result", "error", "permission", "question", "done", "usage", "status", "remote_user"}
 
 
 class Remote:

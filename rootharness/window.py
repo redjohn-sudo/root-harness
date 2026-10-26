@@ -79,6 +79,7 @@ class Api:
         self.keys = None                # your identity, once unlocked
         self.sync = None                # your account's memory on every machine
         self.remote = None              # your phone as a remote (remote.py)
+        self.network = None             # the network: your public page and the feed (network.py)
         self._web = None                # the phone app, served on your Wi-Fi
         try:
             self.keys = account.auto()  # "stay signed in": no password at launch
@@ -553,6 +554,100 @@ class Api:
             self.pairing = None
         return True
 
+    # -- the network (network.py): your public page, the feed, badges, communities ----------
+
+    def _net(self):
+        if self.keys is None:
+            raise RuntimeError("Locked: type your password first.")
+        if self.network is None:
+            from . import network as net_mod
+            self.network = net_mod.Network(self.keys, account.state().get("pseudo", ""), self._emit)
+            if self.sync:
+                net_mod.on_change = self.sync.dirty
+        return self.network
+
+    def _friends(self) -> list[str]:
+        from . import channels as ch_mod
+        return list(ch_mod._load()["contacts"].keys())
+
+    def net_profile(self, hexkey: str = ""):
+        return self._net().profile_view(hexkey or None, local=not hexkey)
+
+    def net_profile_update(self, fields: dict):
+        return self._net().profile_update(fields or {})
+
+    def net_work_suggest(self):
+        from . import network as net_mod
+        return net_mod.work_suggest()
+
+    def net_activity(self):
+        from . import network as net_mod
+        return net_mod.activity()
+
+    def net_post(self, text: str, media: list | None = None, community: str = "", agent: str = "", reply_to: dict | None = None):
+        return self._net().post(text, media, community, agent, reply_to)
+
+    def net_repost(self, post: dict):
+        return self._net().repost(post)
+
+    def net_unrepost(self, post_id: str):
+        return self._net().unrepost(post_id)
+
+    def net_react(self, post_id: str, author: str, on: bool = True):
+        return self._net().react(post_id, author, bool(on))
+
+    def net_delete(self, post_id: str):
+        return self._net().delete_post(post_id)
+
+    def net_feed(self, scope: str = "for-you", community: str = "", days: int = 7, limit: int = 60):
+        return self._net().feed(scope, community, self._friends(), int(days), int(limit))
+
+    def net_thread(self, post_id: str):
+        return self._net().thread(post_id)
+
+    def net_wall(self, hexkey: str = ""):
+        return self._net().wall(hexkey or None)
+
+    def net_lookup(self, text: str):
+        return self._net().lookup(text)
+
+    def net_upload(self, data_url: str, name: str = "file"):
+        """The interface picks a file and sends it as a data URL; it goes to the media host."""
+        head, _, b64 = str(data_url).partition(",")
+        mime = head[5:].split(";")[0] if head.startswith("data:") else ""
+        try:
+            data = base64.b64decode(b64)
+        except (ValueError, TypeError):
+            data = b""
+        if not data or not head.startswith("data:"):
+            return {"error": "Unreadable file."}
+        return self._net().upload_bytes(data, mime or "application/octet-stream", str(name)[:80])
+
+    def net_badges(self, hexkey: str = ""):
+        net = self._net()
+        return net.badges_mine() if not hexkey else net._do(net._badges_of(hexkey), 40)
+
+    def net_badges_pin(self, coords: list):
+        return self._net().badges_pin([str(c) for c in (coords or [])])
+
+    def net_badge_define(self, ident: str, name: str, description: str, image: str = ""):
+        return self._net().badge_define(ident, name, description, image)
+
+    def net_badge_award(self, a: str, recipients: list):
+        return self._net().badge_award(a, [str(r) for r in (recipients or [])])
+
+    def net_badges_check(self):
+        return self._net().badges_check()
+
+    def net_communities(self):
+        return self._net().communities()
+
+    def net_community_create(self, name: str, description: str = ""):
+        return self._net().community_create(name, description)
+
+    def net_community_join(self, slug: str, on: bool = True):
+        return self._net().community_join(slug, bool(on))
+
     # -- notifications on your phones (push.py) ------------------------------------
 
     def push_key(self):
@@ -621,6 +716,62 @@ class Api:
         except Exception as e:
             return {"error": f"{type(e).__name__}: {e}"[:240]}
 
+    # -- the network: your agent writes the post about your work ----------------------
+
+    POST = """Write a short social post (under 60 words, first person, as me) about the work
+in this conversation between me and my AI agent: what we built or found, concretely,
+and why it matters. Friendly, plain words, no hashtags, no emoji, no hype, never a
+dash used as punctuation. Never include secrets, keys, passwords, file paths or
+private names. Answer with the post only.
+
+The conversation:
+{exchange}"""
+
+    def settings_posting(self, suggest: bool | None = None, auto: bool | None = None):
+        """suggest: after a long task your agent drafts a post and asks. auto: it posts it (off by default)."""
+        fields = {}
+        if suggest is not None:
+            fields["post_suggest"] = bool(suggest)
+        if auto is not None:
+            fields["post_auto"] = bool(auto)
+        st = write_settings(**fields) if fields else read_settings()
+        return {"suggest": st.get("post_suggest", True), "auto": st.get("post_auto", False)}
+
+    def _suggest_post(self):
+        """After a long task (90 s or more): your agent writes the post; you decide, unless you chose auto."""
+        st = read_settings()
+        if not st.get("post_suggest", True) or time.time() - getattr(self, "_turn_started", time.time()) < 90:
+            return
+
+        def work():
+            d = self.post_draft()
+            if d.get("error"):
+                return
+            if st.get("post_auto") and self.keys is not None:
+                try:
+                    sent = self._net().post(d["text"], agent=d.get("agent", ""))
+                    self._emit({"type": "post_published", "id": sent.get("id"), "text": d["text"], "agent": d.get("agent", "")})
+                    return
+                except Exception:
+                    pass
+            self._emit({"type": "post_suggestion", "text": d["text"], "agent": d.get("agent", "")})
+        threading.Thread(target=work, daemon=True).start()
+
+    def post_draft(self, hint: str = ""):
+        events = self.log.get("events", [])[-40:]
+        talk = "\n".join(("Me: " if e.get("type") == "user" else "Agent: ") + str(e.get("text", ""))[:1500]
+                         for e in events if e.get("type") in ("user", "text") and e.get("text"))[-8000:]
+        if len(talk) < 60:
+            return {"error": "Talk with your agent first: it writes the post from your conversation."}
+        from . import side
+        prompt = self.POST.format(exchange=talk) + (f"\n\nAlso: {str(hint)[:300]}" if hint else "")
+        try:
+            return {"text": side.ask(self.brain, getattr(self.session, "model", None),
+                                     [{"role": "user", "content": prompt}], max_tokens=300),
+                    "agent": self.brain["name"]}
+        except Exception as e:
+            return {"error": f"{type(e).__name__}: {e}"[:240]}
+
     def _learn_words(self, prompt: str):
         """After a turn: the agent spots the new technical words of the exchange."""
         if not glossary.auto():
@@ -678,6 +829,9 @@ class Api:
         if self.channels:
             self.channels.close()
             self.channels = None
+        if self.network:
+            self.network.close()
+            self.network = None
         self.keys = None
         return self.account_state()
 
@@ -989,6 +1143,8 @@ class Api:
     def _emit(self, event: dict):
         if event.get("type") in ("permission", "question", "done"):
             self._notify(event)
+        if event.get("type") == "done":
+            self._suggest_post()
         if event.get("type") in ("text", "tool", "result", "error"):
             self.log["events"].append(event)      # to show it again later
         if self.remote:

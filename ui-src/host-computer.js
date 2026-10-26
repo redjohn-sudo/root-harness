@@ -3,6 +3,7 @@
 import { lancer, aller, feuille, fermerFeuille, toast, qr } from './app.js'
 
 const api = () => window.pywebview.api
+const dataUrl = (file) => new Promise((ok, ko) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = ko; r.readAsDataURL(file) })
 
 const host = {
   kind: 'computer',
@@ -43,9 +44,22 @@ const host = {
     list: () => api().glossary_list(), setAuto: (o) => api().glossary_set_auto(o), add: (t, d, c) => api().glossary_add(t, d, c),
     remove: (i) => api().glossary_remove(i), ask: (i, q, h) => api().glossary_ask(i, q, h),
   },
+  social: { draft: (h) => api().post_draft(h || '') },
   vibe: {
     status: () => api().vibe_status(), projects: () => api().vibe_projects(), repos: () => api().vibe_repos(),
     thread: (n) => api().vibe_thread(n), send: (r, t, n) => api().vibe_send(r, t, n || 0),
+  },
+
+  // the network: your public page, the feed, badges and communities, signed by the computer
+  network: {
+    profile: (h) => api().net_profile(h || ''), update: (f) => api().net_profile_update(f), workSuggest: () => api().net_work_suggest(), activity: () => api().net_activity(),
+    post: (t, o = {}) => api().net_post(t, o.media || [], o.community || '', o.agent || '', o.replyTo || null),
+    repost: (p) => api().net_repost(p), unrepost: (id) => api().net_unrepost(id), react: (id, a, on) => api().net_react(id, a, on), remove: (id) => api().net_delete(id),
+    feed: (s, o = {}) => api().net_feed(s, o.community || '', o.days || 7, o.limit || 60), thread: (id) => api().net_thread(id), wall: (h) => api().net_wall(h || ''), lookup: (t) => api().net_lookup(t),
+    upload: async (file) => api().net_upload(await dataUrl(file), file.name || 'file'),
+    posting: (s, a) => api().settings_posting(s, a),
+    badges: (h) => api().net_badges(h || ''), pin: (c) => api().net_badges_pin(c), defineBadge: (i, n, d, img) => api().net_badge_define(i, n, d, img || ''), award: (a, r) => api().net_badge_award(a, r), checkBadges: () => api().net_badges_check(),
+    communities: () => api().net_communities(), createCommunity: (n, d) => api().net_community_create(n, d || ''), join: (s, on) => api().net_community_join(s, on),
   },
 
   // what only the computer can set: your phone, and the vibe-code workshop

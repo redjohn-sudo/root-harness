@@ -3,6 +3,7 @@
 // to reach the agents, the conversations, the friends and GitHub from there.
 import { tete, cligner } from './root.js'
 import { qr } from './ident.js'
+import { vueFil, vueProfil, evenementReseau } from './social.js'
 
 let H = null                                  // the host
 const $ = (s, r = document) => r.querySelector(s)
@@ -14,6 +15,8 @@ const quand = (ms) => { const d = (Date.now() - ms) / 1000
 // -- icons (thin, like Lanterns) ------------------------------------------------
 const I = {
   chat: '<path d="M20 12a8 8 0 01-11.6 7.1L4 20l1-4.2A8 8 0 1120 12z"/>',
+  fil: '<path d="M4 10.5L12 4l8 6.5V19a1.5 1.5 0 01-1.5 1.5h-13A1.5 1.5 0 014 19z"/><path d="M9.5 20.5v-6h5v6"/>',
+  profil: '<circle cx="12" cy="8.5" r="3.6"/><path d="M4.5 20c.8-3.8 3.8-6 7.5-6s6.7 2.2 7.5 6"/>',
   dossiers: '<path d="M3.5 7.5a2 2 0 012-2h4l2 2h7a2 2 0 012 2v8a2 2 0 01-2 2h-13a2 2 0 01-2-2z"/>',
   amis: '<circle cx="9" cy="9" r="3.2"/><path d="M3.5 19c.6-3 2.9-4.6 5.5-4.6s4.9 1.6 5.5 4.6"/><circle cx="17" cy="8" r="2.4"/><path d="M15.5 13.6c2.6.1 4.4 1.6 5 4.4"/>',
   vibe: '<path d="M8 8l-4 4 4 4M16 8l4 4-4 4M13.5 5.5l-3 13"/>',
@@ -26,8 +29,8 @@ const I = {
 const ico = (n, w = 1.7) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">${I[n]}</svg>`
 
 // -- the shell ----------------------------------------------------------------------
-const ONGLETS = [['chat', 'Your agents'], ['discussions', 'Conversations'], ['amis', 'Friends & groups'], ['vibe', 'Vibe code'], ['encyclo', 'Encyclopedia'], ['reglages', 'Settings']]
-const ICONE = { chat: 'chat', discussions: 'dossiers', amis: 'amis', vibe: 'vibe', encyclo: 'livre', reglages: 'reglages' }
+const ONGLETS = [['chat', 'Your agents'], ['fil', 'The feed'], ['profil', 'My profile'], ['discussions', 'Conversations'], ['amis', 'Friends & groups'], ['vibe', 'Vibe code'], ['encyclo', 'Encyclopedia'], ['reglages', 'Settings']]
+const ICONE = { chat: 'chat', fil: 'fil', profil: 'profil', discussions: 'dossiers', amis: 'amis', vibe: 'vibe', encyclo: 'livre', reglages: 'reglages' }
 
 function coquille() {
   document.body.innerHTML = `<div id="fond"></div>
@@ -36,7 +39,7 @@ function coquille() {
       ${ONGLETS.map(([k, t]) => `<button class="onglet" data-v="${k}" title="${t}">${ico(ICONE[k])}</button>`).join('')}
     </nav>
     <main>
-      <section class="vue" id="v-chat"></section><section class="vue" id="v-discussions"></section>
+      <section class="vue" id="v-chat"></section><section class="vue" id="v-fil"></section><section class="vue" id="v-profil"></section><section class="vue" id="v-discussions"></section>
       <section class="vue" id="v-amis"></section><section class="vue" id="v-vibe"></section><section class="vue" id="v-encyclo"></section><section class="vue" id="v-reglages"></section>
     </main>
   </div>
@@ -55,7 +58,7 @@ export function aller(v) {
   VUE = v
   $$('.onglet').forEach((b) => b.classList.toggle('on', b.dataset.v === v))
   $$('.vue').forEach((s) => s.classList.toggle('on', s.id === 'v-' + v))
-  ;({ chat: vueChat, discussions: vueDiscussions, amis: vueAmis, vibe: vueVibe, encyclo: vueEncyclo, reglages: vueReglages })[v]()
+  ;({ chat: vueChat, fil: () => vueFil(H), profil: () => vueProfil(H), discussions: vueDiscussions, amis: vueAmis, vibe: vueVibe, encyclo: vueEncyclo, reglages: vueReglages })[v]()
 }
 
 export { feuille, fermerFeuille, qr }
@@ -759,6 +762,8 @@ export async function lancer(host) {
       toast('📖 New ' + (e.terms.length > 1 ? 'words' : 'word') + ': ' + e.terms.map((t) => t.term).join(', '))
       if (VUE === 'encyclo') vueEncyclo(); else pastilleEncyclo(true)
     } else if (e.type === 'channels_changed') { if (VUE === 'amis' && !CANAL) vueAmis() }
+    else if (e.type === 'post_suggestion' || e.type === 'post_published' || e.type === 'badges_new') evenementReseau(H, e)
+    else if (e.type === 'network_posted') { if (VUE === 'fil') vueFil(H) }
     else if (e.type === 'synced') { if (e.changed) { fond(); if (VUE === 'discussions') vueDiscussions() } }
     else if (e.type === 'computer') { if (VUE === 'chat') rafraichirCerveau() }
     else montrer(e, false)

@@ -25,6 +25,11 @@ and your messages live on your devices, and travel sealed.
 - **One account, every device.** A pseudo and a password. Sign in on another
   computer or your phone: your conversations, folders, friends, background and
   keys come with you, sealed.
+- **The network.** A page anyone can see (your projects, hackathons, what is in
+  progress, "looking for a job"), a feed of what people build with their agents,
+  communities, replies, reposts, badges to earn and to pin. Your agent writes
+  the post about the work you just did; you decide, or let it post by itself.
+  Everything on the network is public and lives on the relays: no server of ours.
 
 ## Start
 
@@ -65,6 +70,7 @@ and turn on *GitHub on my phone* to vibe code from the phone.
 | Friends and groups (NIP-17 / NIP-59 sealed messages) | `rootharness/channels.py` |
 | The phone as a remote (sealed orders to yourself) | `rootharness/remote.py` |
 | Vibe code (one workshop repository, Claude Code GitHub Action) | `rootharness/vibe.py`, `rootharness/github/` |
+| The network (public Nostr events: profile, posts, reactions, NIP-58 badges, communities; NIP-96 media) | `rootharness/network.py`, `ui-src/social-net.js`, `ui-src/social.js` |
 
 root-harness is an independent project, not made or endorsed by Anthropic. It
 never handles your Claude sign-in: you sign in to the official Claude Code
@@ -72,6 +78,8 @@ yourself, and each person uses their own account or API key.
 
 Honest limits: free relays promise no storage and may rate-limit; they see
 your IP and when you connect. A stolen identity key would open past messages.
+What you post on the network is public, signed with your key and kept by
+relays you do not control: it may stay even after you delete it.
 Claude Code sessions stay on the computer that ran them. Vibe code is not live
 (a GitHub machine starts in about a minute) and uses your GitHub Actions minutes
 and your Claude plan.
