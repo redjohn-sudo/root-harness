@@ -226,8 +226,8 @@ const host = {
     // from the computer when it is on, otherwise from your sealed memory (read-only)
     async list() { try { return await appel('conversations_list') } catch {
       const idx = cache.get('index') || await lire('index'); if (!idx) throw new Error('not synced'); cache.set('index', idx)
-      const names = { claude: 'Claude', codex: 'Codex', deepseek: 'DeepSeek', nebius: 'Nebius', 'claude-api': 'Claude API', ollama: 'Ollama' }
-      return { folders: idx.folders || [], conversations: Object.values(idx.conversations || {}).map((c) => ({ ...c, brain_name: names[c.brain] || c.brain, terminal: !!c.terminal })).sort((a, b) => b.updated - a.updated) } } },
+      const names = { claude: 'Claude Agent', codex: 'Codex', deepseek: 'DeepSeek', nebius: 'Nebius', 'claude-api': 'Claude API', ollama: 'Ollama' }
+      return { folders: idx.folders || [], conversations: Object.values(idx.conversations || {}).map((c) => ({ ...c, brain_name: names[c.brain] || c.brain, model_label: (c.model || '').split('/').pop(), terminal: !!c.terminal })).sort((a, b) => b.updated - a.updated) } } },
     async open(i) { try { return await appel('open_conversation', i) } catch { const r = await host.convs.read(i); return { ...r, brain: { name: 'your computer is off', label: 'read only', offline: true }, notes: ['Read only: your computer is off.'], title: '' } } },
     async read(i) { try { return await appel('read_conversation', i) } catch { const r = await lire('conv:' + i); return { events: (r && r.events) || [] } } },
     move: (i, f) => appel('move_conversation', i, f), remove: (i) => appel('delete_conversation', i), createFolder: (n) => appel('create_folder', n),

@@ -439,31 +439,45 @@ async function feuillePartage(source) {
 // =====================================================================================
 // conversations: by agent, and your folders
 // =====================================================================================
-let FERMES = new Set()
+let FERMES = new Set(), AGENT_FILTRE = ''
+// each agent gets its own colour, the same everywhere
+const couleur = (nom) => { let h = 0; for (const ch of nom || '') h = (h * 31 + ch.charCodeAt(0)) % 360; return `hsl(${h} 62% 66%)` }
+const pastilleAgent = (nom) => `<span class="point-agent" style="background:${couleur(nom)};box-shadow:0 0 8px ${couleur(nom)}"></span>`
 async function vueDiscussions() {
   const v = $('#v-discussions')
-  v.innerHTML = `<div class="defile"><div class="colonne"><div class="titre">conversations</div><div class="sous-titre">Everything you did with your agents, by agent and in your folders.</div>
-    <input class="champ" id="d-cherche" placeholder="search"><div class="boutons"><button class="bouton" id="d-dossier">${'+'} folder</button></div><div id="d-liste"><div class="vide">Loading...</div></div></div></div>`
+  v.innerHTML = `<div class="defile"><div class="colonne"><div class="titre">conversations</div><div class="sous-titre">Each one stays with the agent you had it with. Pick an agent to see only its conversations.</div>
+    <input class="champ" id="d-cherche" placeholder="search a conversation, an agent, a model"><div class="boutons" id="d-agents"></div><div id="d-liste"><div class="vide">Loading...</div></div></div></div>`
   let D
   try { D = await H.convs.list() } catch { $('#d-liste').innerHTML = `<div class="vide">${H.kind === 'phone' ? 'Your conversations show here once your computer has synced them.' : 'Unavailable.'}</div>`; return }
+  const agents = {}; D.conversations.forEach((c) => { agents[c.brain_name] = (agents[c.brain_name] || 0) + 1 })
+  if (AGENT_FILTRE && !agents[AGENT_FILTRE]) AGENT_FILTRE = ''
+  $('#d-agents').innerHTML = `<button class="bouton${AGENT_FILTRE ? '' : ' vert'}" data-a="">all · ${D.conversations.length}</button>`
+    + Object.entries(agents).sort((x, y) => y[1] - x[1]).map(([n, k]) => `<button class="bouton${AGENT_FILTRE === n ? ' vert' : ''}" data-a="${esc(n)}">${pastilleAgent(n)}${esc(n)} · ${k}</button>`).join('')
+    + `<button class="bouton" id="d-dossier">+ folder</button>`
+  const ligne = (c, i) => `<div class="item${c.current ? ' on' : ''}" data-id="${esc(c.id)}" style="--i:${Math.min(i, 30)}">${pastilleAgent(c.brain_name)}<div class="tx"><div class="t">${esc(c.title)}</div>
+    <div class="m">${esc([c.brain_name, c.model_label, quand(c.updated)].filter(Boolean).join(' · '))}</div></div>${c.terminal ? '<span class="badge">terminal</span>' : ''}${c.folder && AGENT_FILTRE ? `<span class="badge">${esc((D.folders.find((f) => f.id === c.folder) || {}).name || '')}</span>` : ''}</div>`
   const rendre = () => {
-    const q = $('#d-cherche').value.toLowerCase(), L = D.conversations.filter((c) => !q || c.title.toLowerCase().includes(q))
-    const ligne = (c, i) => `<div class="item${c.current ? ' on' : ''}" data-id="${esc(c.id)}" style="--i:${i}"><div class="tx"><div class="t">${esc(c.title)}</div><div class="m">${esc(c.brain_name)} · ${quand(c.updated)}</div></div>${c.terminal ? '<span class="badge">terminal</span>' : ''}</div>`
+    const q = $('#d-cherche').value.toLowerCase()
+    const L = D.conversations.filter((c) => (!AGENT_FILTRE || c.brain_name === AGENT_FILTRE) && (!q || [c.title, c.brain_name, c.model_label].join(' ').toLowerCase().includes(q)))
     let h = '', i = 0
-    for (const f of D.folders) { const L2 = L.filter((c) => c.folder === f.id); h += `<div class="section" data-f="${esc(f.id)}">▸ ${esc(f.name)} · ${L2.length}<span class="ligne"></span></div><div class="liste">${L2.map((c) => ligne(c, i++)).join('')}</div>` }
-    const par = {}; L.filter((c) => !c.folder).forEach((c) => (par[c.brain_name] = par[c.brain_name] || []).push(c))
-    for (const [n, L2] of Object.entries(par)) h += `<div class="section">${esc(n)} · ${L2.length}<span class="ligne"></span></div><div class="liste">${L2.map((c) => ligne(c, i++)).join('')}</div>`
-    $('#d-liste').innerHTML = h || '<div class="vide">No conversation yet.</div>'
+    if (AGENT_FILTRE || q) h = `<div class="liste">${L.map((c) => ligne(c, i++)).join('')}</div>`
+    else {
+      for (const f of D.folders) { const L2 = L.filter((c) => c.folder === f.id); h += `<div class="section">▸ ${esc(f.name)} · ${L2.length}<span class="ligne"></span></div><div class="liste">${L2.map((c) => ligne(c, i++)).join('')}</div>` }
+      const par = {}; L.filter((c) => !c.folder).forEach((c) => (par[c.brain_name] = par[c.brain_name] || []).push(c))
+      for (const [n, L2] of Object.entries(par)) h += `<div class="section">${pastilleAgent(n)} ${esc(n)} · ${L2.length}<span class="ligne"></span></div><div class="liste">${L2.map((c) => ligne(c, i++)).join('')}</div>`
+    }
+    $('#d-liste').innerHTML = (L.length ? h : '') || '<div class="vide">No conversation here.</div>'
     $$('#d-liste .item').forEach((el) => el.onclick = () => ouvrirDiscussion(el.dataset.id, D))
   }
+  $$('#d-agents [data-a]').forEach((b) => b.onclick = () => { AGENT_FILTRE = b.dataset.a; $$('#d-agents [data-a]').forEach((x) => x.classList.toggle('vert', x === b)); rendre() })
   $('#d-cherche').oninput = rendre; rendre()
   $('#d-dossier').onclick = () => { const f = feuille(`<h3>new folder</h3><input class="champ" id="f-nom" placeholder="name"><div class="boutons"><button class="bouton plein" id="f-ok">Create</button></div>`)
     $('#f-ok', f).onclick = async () => { if ($('#f-nom', f).value.trim()) { await H.convs.createFolder($('#f-nom', f).value); fermerFeuille(); vueDiscussions() } } }
 }
 async function ouvrirDiscussion(id, D) {
   const c = D.conversations.find((x) => x.id === id)
-  const f = feuille(`<h3>${esc(c.title)}</h3><div class="sous-titre">${esc(c.brain_name)} · ${quand(c.updated)}</div>
-    <div class="boutons"><button class="bouton plein" id="o-ouvrir">Open and continue</button><button class="bouton" id="o-partager">${ico('partage')} share</button></div>
+  const f = feuille(`<h3>${esc(c.title)}</h3><div class="sous-titre">${pastilleAgent(c.brain_name)}with ${esc([c.brain_name, c.model_label].filter(Boolean).join(' · '))} · ${quand(c.updated)}</div>
+    <div class="boutons"><button class="bouton plein" id="o-ouvrir">Continue with ${esc(c.brain_name)}</button><button class="bouton" id="o-partager">${ico('partage')} share</button></div>
     <div class="section">move to<span class="ligne"></span></div><div class="boutons">${D.folders.map((x) => `<button class="bouton" data-f="${esc(x.id)}">${esc(x.name)}</button>`).join('')}${c.folder ? '<button class="bouton" data-f="">out of the folder</button>' : ''}</div>
     <div class="boutons" style="margin-top:20px"><button class="bouton danger" id="o-suppr">${c.terminal ? 'hide' : 'delete'}</button></div>`)
   $('#o-ouvrir', f).onclick = async () => { fermerFeuille(); const r = await H.convs.open(id); if (!r) return toast("Can't open it right now.")

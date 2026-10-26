@@ -12,6 +12,7 @@ import asyncio
 import base64
 import json
 import os
+import re
 import shutil
 import time
 import uuid
@@ -46,6 +47,23 @@ def write_settings(**changes) -> dict:
     SETTINGS.write_text(json.dumps(s, indent=2), encoding="utf-8")
     on_change()
     return s
+
+
+def _model_label(brain_id: str, model: str | None) -> str:
+    """A readable model name for a conversation: Opus 5.5, V4.1 Flash, gpt-6.1-sol..."""
+    if not model:
+        return ""
+    b = brains.by_id(brain_id) or {}
+    hit = next((m["label"] for m in b.get("models", []) if m["id"] == model), None)
+    if hit:
+        return hit
+    if brain_id == "claude":
+        if model == "default":
+            return "default"
+        m = re.match(r"(?:claude-)?([a-z]+)(?:-(\d+)(?:-(\d+))?)?", model)
+        if m:
+            return (m.group(1).capitalize() + (" " + m.group(2) + ("." + m.group(3) if m.group(3) else "") if m.group(2) else "")).strip()
+    return model.split("/")[-1]
 
 
 class Api:
@@ -115,6 +133,7 @@ class Api:
             known.update(x for x in (c.get("claude_session"), c.get("terminal")) if x)
             items.append({"id": c["id"], "title": c["title"], "brain": c["brain"],
                           "brain_name": names.get(c["brain"], c["brain"]), "updated": c["updated"],
+                          "model_label": _model_label(c["brain"], c.get("model")),
                           "folder": c.get("folder"), "terminal": bool(c.get("terminal")),
                           "current": c["id"] == self.conv})
         try:        # Claude Code sessions from the terminal, in your home folder
