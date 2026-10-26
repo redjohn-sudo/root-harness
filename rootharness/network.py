@@ -244,6 +244,7 @@ class Network:
         self._profiles: dict[str, dict] = {}      # hex -> {name, pseudo, picture, ...} seen lately
 
     def _do(self, coro, timeout=40):
+        self.ready()          # the first call right after start must not ask relays that are not connected yet
         return asyncio.run_coroutine_threadsafe(coro, self.loop).result(timeout)
 
     async def _start(self):
@@ -361,7 +362,11 @@ class Network:
              "communities": [slug(c) for c in (extras.get("communities") or []) if slug(c)][:30],
              "mine": hexkey == self.me}
         v["level_label"] = level_label(v["level"])
-        self._profiles[hexkey] = v
+        if hexkey == self.me and not (meta or extras):
+            p, act = profile_local(), activity()   # your own page: what this device knows, if the relays said nothing
+            return self._view_profile(hexkey, {"name": directory.slug(self.pseudo)}, {**p, "pseudo": self.pseudo, "level": act["level"], "days": act["days"]})
+        if meta or extras:
+            self._profiles[hexkey] = v                 # an empty answer is not kept: next time we ask again
         return v
 
     async def _profiles_of(self, hexkeys: set[str]) -> dict[str, dict]:

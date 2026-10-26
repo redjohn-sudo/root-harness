@@ -84,9 +84,11 @@ export function reseau({ pool, relays, sk, me, pseudo, store, activite, expire =
         let d; try { d = JSON.parse(ev.content || '{}') } catch { continue }
         ;(ev.kind === K.profil ? metas : exs)[ev.pubkey] = d
       }
-      manque.forEach((h) => vue(h, metas[h] || {}, exs[h] || {}))
+      manque.forEach((h) => { const v = vue(h, metas[h] || {}, exs[h] || {}); if (!metas[h] && !exs[h]) profils.delete(h) })   // an empty answer is not kept
     }
-    return Object.fromEntries([...hexes].map((h) => [h, profils.get(h) || vue(h, {}, {})]))
+    const out = Object.fromEntries([...hexes].map((h) => [h, profils.get(h) || vue(h, {}, {})]))
+    for (const h of hexes) if (profils.get(h) && !profils.get(h).pseudo && !profils.get(h).about) profils.delete(h)
+    return out
   }
   async function publierProfil() {
     // no activity counter on this device (the phone): keep the level last published from the computer
