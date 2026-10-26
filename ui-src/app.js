@@ -96,25 +96,105 @@ async function porte() {
   const libre = () => { const b = $('#p-go'); if (b.dataset.t) b.textContent = b.dataset.t; b.disabled = false; $('#p-barre')?.classList.remove('on') }
   const fini = async () => { o.classList.remove('on'); await demarrer() }
 
+  // sign-up: one question per screen, everything set once, then nothing to configure
+  const ETAPES = 5
+  const points = (i) => `<div class="etapes">${Array.from({ length: ETAPES }, (_, k) => `<i class="${k < i ? 'fait' : k === i ? 'on' : ''}"></i>`).join('')}</div>`
+  const ecran = (html) => { c.classList.remove('glisse'); void c.offsetWidth; c.innerHTML = html; c.classList.add('glisse') }
+  const I = { pseudo: '', mdp: '' }
   const creer = () => {
-    c.innerHTML = `<div class="grande-tete">${tete()}</div><h2>root-harness</h2><p>Your agents, your friends, your projects. Pick a pseudo and a password: everything stays yours, on your devices.</p>
-      <input class="champ" id="p-pseudo" placeholder="pseudo" autocomplete="username" autocapitalize="off">
-      <input class="champ" id="p-mdp" type="password" placeholder="password (10+ characters)">
-      <input class="champ" id="p-mdp2" type="password" placeholder="same password again">
-      <div class="err" id="p-err"></div><button class="bouton plein" id="p-go">Create my account</button>
-      <span class="lien" id="p-deja">I already have an account</span>`
-    const go = async () => { const r = await H.account.create(val('p-pseudo'), val('p-mdp'), val('p-mdp2')); if (r.error) return erreur(r.error); fini() }
-    $('#p-go').onclick = go; entree(['p-pseudo', 'p-mdp', 'p-mdp2'], go); $('#p-deja').onclick = connecter; $('#p-pseudo').focus()
+    ecran(`${points(0)}<div class="grande-tete">${tete()}</div><h2>what should we call you?</h2><p>Any pseudo. It's how your friends see you, sealed in your messages.</p>
+      <input class="champ" id="p-pseudo" placeholder="pseudo" autocomplete="username" autocapitalize="off" maxlength="32" value="${esc(I.pseudo)}">
+      <div class="err" id="p-err"></div><button class="bouton plein" id="p-go">Continue</button><span class="lien" id="p-deja">I already have an account</span>`)
+    const go = () => { const v = val('p-pseudo').trim(); if (!v) return erreur('Pick a pseudo.'); I.pseudo = v; motDePasse() }
+    $('#p-go').onclick = go; entree(['p-pseudo'], go); $('#p-deja').onclick = connecter; $('#p-pseudo').focus()
+  }
+  const force = (m) => { let n = 0; if (m.length >= 10) n++; if (m.length >= 14) n++; if (m.length >= 20) n++
+    if (/[a-z]/.test(m) && /[A-Z]/.test(m)) n += .5; if (/\d/.test(m)) n += .5; if (/[^\w\s]/.test(m)) n += .5; if (/\s/.test(m)) n += .5
+    if (/^(.)\1+$|password|azerty|qwerty|123456/i.test(m)) n = 0; return Math.min(4, n) }
+  const motDePasse = () => {
+    ecran(`${points(1)}<h2>a strong password</h2><p>It locks your account on every device. A short sentence you remember works best.</p>
+      <input class="champ" id="p-mdp" type="password" placeholder="password (10+ characters)" autocomplete="new-password">
+      <div class="force"><i id="p-force"></i></div><div class="force-t" id="p-force-t"></div>
+      <input class="champ" id="p-mdp2" type="password" placeholder="same password again" autocomplete="new-password">
+      <div class="err" id="p-err"></div><div class="barre" id="p-barre"><i></i></div><button class="bouton plein" id="p-go">Create my account</button><span class="lien" id="p-ret">Back</span>`)
+    $('#p-mdp').oninput = () => { const f = force(val('p-mdp')), b = $('#p-force'); b.style.width = (f / 4 * 100) + '%'
+      b.style.background = ['#f87171', '#f87171', '#f0b35a', '#6fd4b6', '#6fd4b6'][Math.floor(f)]
+      $('#p-force-t').textContent = val('p-mdp') ? ['too weak', 'weak', 'okay', 'strong', 'excellent'][Math.floor(f)] : '' }
+    const go = async () => { if (force(val('p-mdp')) < 2) return erreur('Make it a bit longer: a short sentence is perfect.')
+      occupe('Creating your account...'); const r = await H.account.create(I.pseudo, val('p-mdp'), val('p-mdp2')); libre()
+      if (r.error) return erreur(r.error); I.mdp = val('p-mdp'); kit() }
+    $('#p-go').onclick = go; entree(['p-mdp', 'p-mdp2'], go); $('#p-ret').onclick = creer; $('#p-mdp').focus()
+  }
+  const kit = async () => {
+    const r = await H.account.recoveryWords(I.mdp); const mots = r.words || []
+    ecran(`${points(2)}<h2>your recovery kit</h2><p>These 24 words are your account. Write them on paper and keep them safe: they bring everything back if you forget your password. Never share them.</p>
+      <div class="mots">${mots.map((m, i) => `<span><em>${i + 1}</em>${esc(m)}</span>`).join('')}</div>
+      <button class="bouton plein" id="p-go">I wrote them down</button>`)
+    $('#p-go').onclick = () => verifier(mots)
+  }
+  const verifier = (mots) => {
+    const a = Math.floor(Math.random() * 12), b = 12 + Math.floor(Math.random() * 12)
+    ecran(`${points(2)}<h2>quick check</h2><p>Type two of your words, so we know they're safe with you.</p>
+      <input class="champ" id="p-a" placeholder="word number ${a + 1}" autocapitalize="off" autocomplete="off">
+      <input class="champ" id="p-b" placeholder="word number ${b + 1}" autocapitalize="off" autocomplete="off">
+      <div class="err" id="p-err"></div><button class="bouton plein" id="p-go">Check</button><span class="lien" id="p-ret">Show my words again</span>`)
+    const go = () => { if (val('p-a').trim().toLowerCase() !== mots[a] || val('p-b').trim().toLowerCase() !== mots[b]) return erreur('Not quite: look at your paper again.'); agents() }
+    $('#p-go').onclick = go; entree(['p-a', 'p-b'], go); $('#p-ret').onclick = kit; $('#p-a').focus()
+  }
+  const agents = async () => {
+    ecran(`${points(3)}<h2>your agents</h2><p>Looking at this computer...</p>`)
+    const d = await H.setup.detect()
+    const ligne = (ok, t, m) => `<div class="rangee"><span class="puce ${ok ? 'oui' : ''}">${ok ? '✓' : '·'}</span><div><div>${t}</div><div class="d">${m}</div></div></div>`
+    const cles = [['ANTHROPIC_API_KEY', 'Anthropic API key', 'sk-ant-...'], ['DEEPSEEK_API_KEY', 'DeepSeek', 'sk-...'], ['NEBIUS_API_KEY', 'Nebius (Kimi, GLM, Qwen)', 'key']]
+    ecran(`${points(3)}<h2>your agents</h2><p>What's already here is ready. Add a key only if you use that agent: you can skip.</p>
+      ${ligne(d.claude.signed_in, 'Claude Agent', d.claude.signed_in ? 'ready, with your Claude account' + (d.claude.plan ? ' (' + esc(d.claude.plan) + ')' : '') : d.claude.installed ? 'open a terminal and run <code>claude</code> once to sign in' : 'install Claude Code, then run <code>claude</code> once')}
+      ${ligne(d.ollama > 0, 'Ollama', d.ollama ? d.ollama + ' local models, free and offline' : 'optional: free models on your computer, ollama.com')}
+      ${ligne(!!d.github, 'GitHub', d.github ? 'signed in as ' + esc(d.github) : 'optional, for vibe code: run <code>gh auth login</code>')}
+      ${cles.map(([k, t, ph]) => d.keys[k] ? ligne(true, t, 'key saved') : `<div class="rangee"><span class="puce">·</span><div style="flex:1"><div>${t}</div><input class="champ cle" data-k="${k}" type="password" placeholder="${ph} (optional)" autocomplete="off"></div></div>`).join('')}
+      <div class="err" id="p-err"></div><button class="bouton plein" id="p-go">Continue</button>`)
+    $('#p-go').onclick = async () => { for (const x of $$('.cle', c)) if (x.value.trim() && !(await H.setup.key(x.dataset.k, x.value.trim()))) return erreur('This key does not look right.'); extras(d) }
+  }
+  const extras = (d) => {
+    const L = [['tel', 'Use from my phone', 'Your phone drives this computer\'s agents, sealed.'],
+      ...(d.github ? [['vibe', 'Vibe code from anywhere', 'A private workshop on your GitHub: Claude builds your ideas, computer off.'],
+        ['ghtel', 'GitHub on my phone', 'Vibe code from the phone with your GitHub sign-in, kept sealed.']] : []),
+      ['fond', 'My own background', 'Pick a picture for your root-harness.']]
+    ecran(`${points(4)}<h2>a few extras</h2><p>One tap each, all optional. You can change them later in Settings.</p>
+      ${L.map(([k, t, m]) => `<div class="rangee"><div style="flex:1"><div>${t}</div><div class="d">${m}</div></div><span class="inter" data-x="${k}"></span></div>`).join('')}
+      <div class="err" id="p-err"></div><button class="bouton plein" id="p-go">Finish</button>`)
+    $$('[data-x]', c).forEach((x) => x.onclick = async () => {
+      const on = !x.classList.contains('on'), k = x.dataset.x
+      if (k === 'fond') { await H.chooseBackground(); fond(); x.classList.add('on'); return }
+      x.classList.toggle('on', on)
+      const r = k === 'tel' ? await H.setup.phone(on) : k === 'ghtel' ? await H.setup.githubPhone(on) : on ? await H.setup.workshop() : {}
+      if (r && r.error) { x.classList.remove('on'); erreur(r.error) }
+      else if (k === 'vibe' && on) $('#p-err').textContent = 'Workshop ready. Two keys to add once, from Settings, Vibe code.'
+    })
+    $('#p-go').onclick = bienvenue
+  }
+  const bienvenue = () => {
+    ecran(`<div class="grande-tete">${tete()}</div><h2>all set, ${esc(I.pseudo)}</h2><p>Your account is yours, on your devices. Let's make something.</p>
+      <button class="bouton plein" id="p-go">Open root-harness</button>`)
+    $('#p-go').onclick = fini
+  }
+  const parMots = () => {
+    ecran(`<div class="grande-tete">${tete()}</div><h2>your 24 words</h2><p>They bring your account back here, with a new password.</p>
+      <textarea class="champ" id="p-mots" rows="4" placeholder="word1 word2 ... word24" autocapitalize="off" autocomplete="off"></textarea>
+      <input class="champ" id="p-pseudo" placeholder="pseudo" autocapitalize="off" value="${esc(st.pseudo || '')}">
+      <input class="champ" id="p-mdp" type="password" placeholder="new password (10+)"><input class="champ" id="p-mdp2" type="password" placeholder="again">
+      <div class="err" id="p-err"></div><button class="bouton plein" id="p-go">Bring my account back</button><span class="lien" id="p-ret">Back</span>`)
+    $('#p-go').onclick = async () => { occupe('Restoring...'); const r = await H.account.restoreWords(val('p-mots'), val('p-pseudo'), val('p-mdp'), val('p-mdp2')); libre(); if (r.error) return erreur(r.error); fini() }
+    $('#p-ret').onclick = () => porte()
   }
   const connecter = () => {
     c.innerHTML = `<div class="grande-tete">${tete()}</div><h2>welcome back</h2><p>Your pseudo and password. Your memory comes with them.</p>
       <input class="champ" id="p-pseudo" placeholder="pseudo" autocomplete="username" autocapitalize="off">
       <input class="champ" id="p-mdp" type="password" placeholder="password" autocomplete="current-password">
       <div class="err" id="p-err"></div><div class="barre" id="p-barre"><i></i></div><button class="bouton plein" id="p-go">Sign in</button>
-      ${st.exists ? '' : '<span class="lien" id="p-nouveau">Create a new account</span>'}`
+      ${H.kind === 'computer' ? '<span class="lien" id="p-mots">Use my 24 words instead</span>' : ''}${st.exists ? '' : '<span class="lien" id="p-nouveau">Create a new account</span>'}`
     const go = async () => { occupe('Finding your account...'); const r = await H.account.restore(val('p-pseudo'), val('p-mdp'), (p) => { const i = $('#p-barre i'); if (i) i.style.width = Math.round(p * 100) + '%' })
       libre(); if (r.error) return erreur(r.error); fini() }
-    $('#p-go').onclick = go; entree(['p-pseudo', 'p-mdp'], go); $('#p-nouveau') && ($('#p-nouveau').onclick = creer); $('#p-pseudo').focus()
+    $('#p-go').onclick = go; entree(['p-pseudo', 'p-mdp'], go); $('#p-nouveau') && ($('#p-nouveau').onclick = creer); $('#p-mots') && ($('#p-mots').onclick = parMots); $('#p-pseudo').focus()
   }
   const deverrouiller = () => {
     c.innerHTML = `<div class="grande-tete">${tete()}</div><h2>hi ${esc(st.pseudo)}</h2><p>Type your password.</p>
@@ -126,11 +206,13 @@ async function porte() {
     $('#p-go').onclick = go; entree(['p-mdp'], go); $('#p-oubli').onclick = H.kind === 'phone' ? async () => { await H.account.signOut(); porte() } : oubli; $('#p-mdp').focus()
   }
   const oubli = () => {
-    c.innerHTML = `<div class="grande-tete">${tete()}</div><h2>start over?</h2><p>A password cannot be recovered. A new account gets a new ID; your channels go away, your agent conversations stay.</p>
+    c.innerHTML = `<div class="grande-tete">${tete()}</div><h2>forgot it?</h2><p>Your 24 words bring your account back with a new password.</p>
+      <button class="bouton plein" id="p-kit">Use my 24 words</button>
+      <p style="margin-top:22px">No words? Then only a new account is possible: new ID, your channels go away, your agent conversations stay.</p>
       <input class="champ" id="p-reset" placeholder="type RESET to confirm"><div class="err" id="p-err"></div>
-      <button class="bouton plein" id="p-go">Start over</button><span class="lien" id="p-ret">Back</span>`
+      <button class="bouton danger" id="p-go" style="width:100%;justify-content:center;margin-top:6px">Start a new account</button><span class="lien" id="p-ret">Back</span>`
     $('#p-go').onclick = async () => { if (!(await H.account.reset(val('p-reset')))) return erreur('Type RESET in capitals.'); porte() }
-    $('#p-ret').onclick = deverrouiller
+    $('#p-ret').onclick = deverrouiller; $('#p-kit').onclick = parMots
   }
   st.exists ? deverrouiller() : (H.kind === 'phone' ? connecter() : creer())
   return false
@@ -527,7 +609,7 @@ async function vueReglages() {
       <div class="reglage">${tete()}<div class="l"><div>${esc(st.pseudo || '')}</div><div class="d" style="font-family:var(--mono);word-break:break-all">${esc(st.npub || '')}</div></div></div>
       ${H.kind === 'computer' ? `<div class="reglage"><div class="l">Stay signed in<div class="d">No password when root-harness opens</div></div><span class="inter${st.stay ? ' on' : ''}" id="r-stay"></span></div>
       <div class="reglage"><div class="l">Sync between my devices<div class="d">Your whole memory, sealed, on relays</div></div><span class="inter${st.sync ? ' on' : ''}" id="r-sync"></span></div>` : ''}
-      <div class="boutons"><button class="bouton" id="r-lock">Lock</button>${H.kind === 'computer' ? '<button class="bouton" id="r-mdp">Change password</button>' : '<button class="bouton danger" id="r-sortir">Sign out of this phone</button>'}</div></div>
+      <div class="boutons"><button class="bouton" id="r-lock">Lock</button>${H.kind === 'computer' ? '<button class="bouton" id="r-mdp">Change password</button><button class="bouton" id="r-kit">My recovery kit</button>' : '<button class="bouton danger" id="r-sortir">Sign out of this phone</button>'}</div></div>
     <div class="section">background<span class="ligne"></span></div><div class="verre carte"><div class="boutons">${H.kind === 'computer' ? '<button class="bouton vert" id="r-image">Choose a picture</button>' : ''}<button class="bouton" id="r-sans">Plain night</button></div>
       <div class="d" style="color:var(--encre-3);font-size:12.5px;margin-top:8px">${H.kind === 'phone' ? 'Your phone uses the picture of your computer.' : 'Your picture goes to your phone too, never to anyone else.'}</div></div>
     <div id="r-plus"></div></div></div>`
@@ -537,6 +619,11 @@ async function vueReglages() {
   $('#r-sortir') && ($('#r-sortir').onclick = async () => { await H.account.signOut(); location.reload() })
   $('#r-mdp') && ($('#r-mdp').onclick = () => { const f = feuille(`<h3>change password</h3><input class="champ" id="m-a" type="password" placeholder="current password"><input class="champ" id="m-n" type="password" placeholder="new password (10+)"><input class="champ" id="m-n2" type="password" placeholder="again"><div class="err" id="m-err"></div><div class="boutons"><button class="bouton plein" id="m-ok">Change</button></div>`)
     $('#m-ok', f).onclick = async () => { const r = await H.account.changePassword($('#m-a', f).value, $('#m-n', f).value, $('#m-n2', f).value); if (r.error) return ($('#m-err', f).textContent = r.error); fermerFeuille(); toast('Password changed') } })
+  $('#r-kit') && ($('#r-kit').onclick = () => { const f = feuille(`<h3>your recovery kit</h3><div class="sous-titre">Your 24 words are your account. Type your password to see them, somewhere nobody can look.</div>
+      <input class="champ" id="w-mdp" type="password" placeholder="password"><div class="err" id="w-err"></div><div class="boutons"><button class="bouton plein" id="w-ok">Show my words</button></div><div id="w-mots"></div>`)
+    $('#w-ok', f).onclick = async () => { const r = await H.account.recoveryWords($('#w-mdp', f).value); if (r.error) return ($('#w-err', f).textContent = r.error)
+      $('#w-mots', f).innerHTML = `<div class="mots" style="margin-top:12px">${r.words.map((m, i) => `<span><em>${i + 1}</em>${esc(m)}</span>`).join('')}</div><div class="d" style="color:var(--encre-3);font-size:12.5px;margin-top:8px">Write them on paper. Never in a message, never in a photo.</div>`
+      $('#w-mdp', f).value = '' } })
   $('#r-image') && ($('#r-image').onclick = async () => { await H.chooseBackground(); fond() })
   $('#r-sans').onclick = async () => { await H.plainBackground(); fond() }
   if (H.reglagesEnPlus) H.reglagesEnPlus($('#r-plus'), { feuille, fermerFeuille, toast, esc, ico })

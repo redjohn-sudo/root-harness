@@ -3,3 +3,5 @@ claude-agent-sdk>=0.2.174
 # encrypted channels between users (Nostr) and the key in the system keychain
 nostr-sdk>=0.45,<0.46
 keyring>=25
+# the 24-word recovery kit (BIP39 encoding of your key)
+mnemonic>=0.21

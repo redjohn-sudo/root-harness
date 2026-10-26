@@ -198,6 +198,27 @@ body.travail .envoyer{background:var(--ambre)}
 .barre i{display:block;height:100%;width:0;background:var(--vert-clair);transition:width .3s}
 .secoue{animation:secoue .45s}@keyframes secoue{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
 
+/* -- sign-up: one question per screen -- */
+.carte-porte.glisse>*{animation:monte .55s var(--ease) both}
+.carte-porte.glisse>*:nth-child(2){animation-delay:.04s}.carte-porte.glisse>*:nth-child(3){animation-delay:.08s}.carte-porte.glisse>*:nth-child(4){animation-delay:.12s}
+.carte-porte.glisse>*:nth-child(5){animation-delay:.16s}.carte-porte.glisse>*:nth-child(n+6){animation-delay:.2s}
+.etapes{display:flex;justify-content:center;gap:6px;margin:-6px 0 18px}
+.etapes i{width:6px;height:6px;border-radius:3px;background:var(--trait-fort);transition:all .4s var(--ease)}
+.etapes i.fait{background:var(--vert)}.etapes i.on{width:22px;background:var(--vert-clair)}
+.force{height:4px;border-radius:2px;background:rgba(255,255,255,.08);margin:8px 2px 2px;overflow:hidden}
+.force i{display:block;height:100%;width:0;border-radius:2px;transition:width .35s var(--ease),background .3s}
+.force-t{font-size:12px;color:var(--encre-3);text-align:left;min-height:16px;margin:2px 4px 6px}
+.mots{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:4px 0 14px;text-align:left}
+.mots span{font:13px var(--mono);padding:7px 8px;border-radius:9px;background:rgba(255,255,255,.06);border:1px solid var(--trait);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mots em{font-style:normal;color:var(--encre-4);margin-right:6px;font-size:11px}
+.rangee{display:flex;align-items:center;gap:12px;text-align:left;padding:10px 2px;border-bottom:1px solid var(--trait)}
+.rangee .d{font-size:12.5px;color:var(--encre-3)}.rangee code{font:12px var(--mono);background:rgba(255,255,255,.08);padding:1px 5px;border-radius:5px}
+.rangee .champ{margin-top:6px;padding:8px 10px;font-size:14px}
+.puce{width:22px;height:22px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:12px;background:rgba(255,255,255,.08);color:var(--encre-3)}
+.puce.oui{background:rgba(63,157,132,.3);color:var(--vert-clair)}
+#porte .carte-porte{max-height:calc(100vh - 40px);overflow-y:auto}
+textarea.champ{resize:none;font:13px var(--mono)}
+
 /* -- Root's head: she blinks, her earpiece breathes -- */
 .tete svg{width:100%;height:100%;display:block;image-rendering:pixelated}
 .tete .ferme{opacity:0}

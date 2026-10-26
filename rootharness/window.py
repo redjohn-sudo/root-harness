@@ -303,6 +303,50 @@ class Api:
         self._start_remote()
         return self.account_state()
 
+    def account_recovery_words(self, password: str):
+        """Your 24 words (your password again first: they are your key)."""
+        keys = account.unlock(password)
+        if keys is None:
+            return {"error": "Wrong password."}
+        return {"words": account.recovery_words(keys)}
+
+    def account_restore_words(self, words: str, pseudo: str, password: str, again: str):
+        """Lost password: the 24 words bring the account back, with a new one."""
+        keys, why = account.restore_words(words, pseudo, password, again)
+        if keys is None:
+            return {"error": why}
+        self.keys = keys
+        self._publish_login(account.state()["pseudo"], password)
+        self._start_sync()
+        self._start_remote()
+        return self.account_state()
+
+    def setup_detect(self):
+        """What is already on this computer, so sign-up asks only the rest."""
+        out = {"claude": {"installed": bool(shutil.which("claude"))}, "github": None, "ollama": 0,
+               "keys": {k: brains.key(k) not in ("", "-") for k in
+                        ("ANTHROPIC_API_KEY", "DEEPSEEK_API_KEY", "NEBIUS_API_KEY")}}
+        if self.brain["kind"] == "claude" and getattr(self.session, "info", None) is not None:
+            acc = (self.session.info or {}).get("account") or {}
+            out["claude"].update(signed_in=bool(acc), plan=acc.get("subscriptionType", ""))
+        try:
+            out["ollama"] = len(brains.models(brains.by_id("ollama")))
+        except Exception:
+            pass
+        try:
+            out["github"] = json.loads(subprocess.run(["gh", "api", "user"], capture_output=True, text=True,
+                                                      timeout=15).stdout or "{}").get("login")
+        except (OSError, subprocess.SubprocessError, ValueError):
+            pass
+        return out
+
+    def setup_key(self, name: str, value: str):
+        """A key typed at sign-up (DeepSeek, Anthropic API...), kept in your sealed memory."""
+        ok = brains.save_key(name, value)
+        if ok and self.sync:
+            self.sync.dirty()
+        return ok
+
     def account_unlock(self, password: str):
         keys = account.unlock(password)
         if keys is None:

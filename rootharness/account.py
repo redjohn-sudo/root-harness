@@ -188,6 +188,39 @@ def set_pseudo(pseudo: str) -> bool:
     return True
 
 
+# -- the recovery kit: your key itself, written as 24 words (BIP39) -------------
+# Whoever has the 24 words has the account: they are shown once at sign-up, to
+# be written on paper, and they bring the account back if the password is lost.
+
+def recovery_words(keys) -> list[str]:
+    from mnemonic import Mnemonic
+    return Mnemonic("english").to_mnemonic(bytes.fromhex(keys.secret_key().to_hex())).split()
+
+
+def restore_words(words: str, pseudo: str, password: str, again: str):
+    """A new password from the 24 words. Returns (keys, None) or (None, reason)."""
+    from mnemonic import Mnemonic
+    m = Mnemonic("english")
+    phrase = " ".join(words.lower().split())
+    if len(phrase.split()) != 24 or not m.check(phrase):
+        return None, "These 24 words are not right: check each word and their order."
+    pseudo = _clean_pseudo(pseudo)
+    if not pseudo:
+        return None, "Choose a pseudo."
+    if len(password) < MIN_PASSWORD:
+        return None, f"Your new password needs at least {MIN_PASSWORD} characters."
+    if password != again:
+        return None, "The two passwords are different."
+    n = _n()
+    keys = n.Keys.parse(bytes(m.to_entropy(phrase)).hex())
+    acc = _load() or {}
+    _save({"pseudo": pseudo, "npub": keys.public_key().to_bech32(),
+           "locked_key": keys.secret_key().encrypt(password).to_bech32(),
+           "stay": False, "sync": acc.get("sync", True)})
+    _forget_in_keychain()
+    return keys, None
+
+
 def reset() -> None:
     """Forgotten password: start over with a new identity. The old channels
     belonged to the old identity, so they go too."""

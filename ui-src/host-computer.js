@@ -16,6 +16,12 @@ const host = {
     unlock: (a) => api().account_unlock(a), lock: () => api().account_lock(), setStay: (o) => api().account_set_stay(o),
     setSync: (o) => api().account_set_sync(o), changePassword: (a, b, c) => api().account_change_password(a, b, c),
     reset: (c) => api().account_reset(c), signOut: async () => true,
+    recoveryWords: (p) => api().account_recovery_words(p), restoreWords: (w, p, a, b) => api().account_restore_words(w, p, a, b),
+  },
+  // sign-up: what is already here, the keys you add, the extras you turn on
+  setup: {
+    detect: () => api().setup_detect(), key: (n, v) => api().setup_key(n, v),
+    phone: (on) => api().remote_set(on), githubPhone: (on) => api().vibe_phone_token(on), workshop: () => api().vibe_create(),
   },
   agent: {
     active: () => api().active_brain(), brains: () => api().brains_list(), chooseBrain: (i) => api().choose_brain(i),
