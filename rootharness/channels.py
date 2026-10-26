@@ -180,6 +180,14 @@ class Channels:
         if rumor.kind().as_u16() != 14:
             return
         tags = rumor.tags()
+        if any(t.kind() == "rh-op" for t in tags):
+            if sender == self.me:          # one of your devices added a friend or a group
+                try:
+                    self._apply(json.loads(rumor.content()))
+                except (ValueError, TypeError, KeyError):
+                    pass
+                self.on_event({"type": "channels_changed"})
+            return
         if any(t.kind() == "rh-remote" for t in tags):
             # your phone talking to this computer: not a channel message
             if self.on_remote and sender == self.me:
@@ -209,6 +217,12 @@ class Channels:
                 ch["name"] = subject
             at = rumor.created_at().as_secs()
             msg = {"rid": rid, "from": sender, "text": rumor.content(), "at": at}
+            if any(t.kind() == "rh-share" for t in tags):
+                try:
+                    share = json.loads(rumor.content())
+                    msg = {**msg, "text": "shared: " + str(share.get("title", "")), "share": share}
+                except (ValueError, TypeError):
+                    pass
             new = _append(cid, msg)       # our own copy comes back too: shown once
             if new:
                 ch["last"] = max(ch["last"], at)
@@ -273,6 +287,7 @@ class Channels:
         h = _hex_of(npub)
         if not h or not name.strip() or (self.me and h == self.me):
             return None
+        self._announce({"op": "contact_add", "hex": h, "name": name.strip()[:40]})
         with self.lock:
             s = _load()
             s["contacts"][h] = {"name": name.strip()[:40]}
@@ -288,6 +303,7 @@ class Channels:
         if not members or not self.ready():
             return None
         cid = channel_id(set(members) | {self.me})
+        self._announce({"op": "group_create", "name": name.strip()[:60], "members": sorted(members)})
         with self.lock:
             s = _load()
             s["channels"].setdefault(cid, {"name": name.strip()[:60], "members": sorted(members),
@@ -311,7 +327,7 @@ class Channels:
                 _save(s)
         return True
 
-    def send(self, cid: str, text: str) -> dict | None:
+    def send(self, cid: str, text: str, share: dict | None = None) -> dict | None:
         """Seal the message once per member (and once for you, for your other
         devices), then hand the sealed copies to the relays."""
         if not text.strip() or not self.ready():
@@ -322,6 +338,8 @@ class Channels:
             return None
         rid = uuid.uuid4().hex
         msg = {"rid": rid, "from": self.me, "text": text, "at": int(time.time())}
+        if share:
+            msg = {**msg, "text": "shared: " + share["title"], "share": share}
         with self.lock:
             _append(cid, msg)
             s = _load()
@@ -329,17 +347,19 @@ class Channels:
             s["channels"][cid]["request"] = False
             _save(s)
         try:
-            ok = self._do(self._seal_and_send(ch, text, rid), 60)
+            ok = self._do(self._seal_and_send(ch, text, rid, bool(share)), 60)
         except Exception:
             ok = 0
         return {**self._view(msg), "relays_ok": ok}
 
-    async def _seal_and_send(self, ch: dict, text: str, rid: str) -> int:
+    async def _seal_and_send(self, ch: dict, text: str, rid: str, share: bool = False) -> int:
         n = _n()
         everyone = ch["members"] + [self.me]
         best = 0
         for receiver in everyone:
             tags = [n.Tag.custom("rh-id", [rid])]
+            if share:
+                tags.append(n.Tag.custom("rh-share", ["1"]))
             if self.pseudo:
                 tags.append(n.Tag.custom("rh-name", [self.pseudo]))
             if ch["name"]:
@@ -351,6 +371,48 @@ class Channels:
             if receiver != self.me:
                 best = max(best, len(out.success))
         return best
+
+    def _apply(self, op: dict) -> None:
+        """An account operation made on one of your devices."""
+        with self.lock:
+            s = _load()
+            if op.get("op") == "contact_add" and _hex_of(op.get("hex", "")):
+                s["contacts"][op["hex"]] = {"name": str(op.get("name", ""))[:40] or "friend"}
+            elif op.get("op") == "group_create":
+                members = sorted(m for m in op.get("members", []) if _hex_of(m))
+                if members:
+                    cid = channel_id(set(members) | {self.me})
+                    s["channels"].setdefault(cid, {"name": str(op.get("name", ""))[:60], "members": members,
+                                                   "unread": 0, "last": int(time.time()), "request": False})
+            for ch in s["channels"].values():
+                if all(m in s["contacts"] for m in ch["members"]):
+                    ch["request"] = False
+            _save(s)
+
+    def _announce(self, op: dict) -> None:
+        """Tell your other devices (sealed to yourself, kept a month)."""
+        if not self.client:
+            return
+        n = _n()
+
+        async def go():
+            wrap = await _aw(n.nip17_make_private_msg(self.keys, self.keys.public_key(), json.dumps(op),
+                                                      expiration=timedelta(days=30),
+                                                      rumor_extra_tags=[n.Tag.custom("rh-op", ["1"])]))
+            await _aw(self.client.send_event(wrap))
+        try:
+            asyncio.run_coroutine_threadsafe(go(), self.loop)
+        except Exception:
+            pass
+
+    def send_share(self, cid: str, share: dict) -> dict | None:
+        """A conversation, sealed for the channel: titles and messages only."""
+        events = [{"type": e.get("type"), "text": str(e.get("text", ""))[:6000]}
+                  for e in (share.get("events") or []) if e.get("type") in ("user", "text")]
+        payload = {"rh": "share", "title": str(share.get("title", ""))[:120], "agent": str(share.get("agent", ""))[:60], "events": events}
+        while len(json.dumps(payload, ensure_ascii=False)) > 40000 and payload["events"]:
+            payload["events"].pop(0)                     # a sealed message holds ~64 KB: keep the latest
+        return self.send(cid, json.dumps(payload, ensure_ascii=False), share=payload)
 
     def send_self(self, payload: dict) -> int:
         """A sealed message to yourself (your phone reads it), gone after a day."""

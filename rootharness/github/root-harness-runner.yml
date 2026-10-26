@@ -1,0 +1,133 @@
+# root-harness · vibe code: Claude Code builds your ideas in ANY of your
+# repositories (or a new one), on GitHub's machines, with your Claude plan.
+#
+# This lives in your private "root-harness-runner" repository. Each idea is an
+# issue whose first line says where to work ("repo: owner/name" or
+# "new: name"); your comments on it continue the conversation. Only you (the
+# owner) can start it. Claude works on a branch and opens a pull request: you
+# review before anything is merged.
+#
+# Two secrets, added by you (root-harness never sees them):
+#   CLAUDE_CODE_OAUTH_TOKEN  from `claude setup-token` (your Claude plan)
+#   RH_GITHUB_TOKEN          a GitHub token that can push to your repositories
+name: root-harness · vibe code
+
+on:
+  issues:
+    types: [opened]
+  issue_comment:
+    types: [created]
+
+jobs:
+  vibe:
+    if: |
+      contains(github.event.issue.labels.*.name, 'root-harness-vibe') && !github.event.issue.pull_request &&
+      ((github.event_name == 'issues' && github.event.issue.user.login == github.repository_owner) ||
+       (github.event_name == 'issue_comment' && github.event.comment.user.login == github.repository_owner))
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    concurrency:
+      group: vibe-${{ github.event.issue.number }}
+    permissions:
+      contents: read
+      issues: write
+      id-token: write
+    env:
+      GH_TOKEN: ${{ secrets.RH_GITHUB_TOKEN }}
+      RUNNER_TOKEN: ${{ github.token }}
+      ISSUE: ${{ github.event.issue.number }}
+    steps:
+      # where to work, and the conversation so far (read from the event file,
+      # never pasted into a shell command)
+      - name: Read the idea
+        id: idee
+        run: |
+          python3 - <<'PY'
+          import json, os, re, subprocess
+          ev = json.load(open(os.environ["GITHUB_EVENT_PATH"]))
+          issue = ev["issue"]; body = issue.get("body") or ""
+          first, _, idea = body.partition("\n")
+          m = re.match(r"\s*(repo|new):\s*([A-Za-z0-9._/-]+)\s*$", first)
+          if not m:
+              raise SystemExit("The first line must be 'repo: owner/name' or 'new: name'.")
+          kind, target = m.group(1), m.group(2)
+          owner = os.environ["GITHUB_REPOSITORY"].split("/")[0]
+          if kind == "new" and "/" not in target:
+              target = f"{owner}/{target}"
+          env = dict(os.environ, GH_TOKEN=os.environ["RUNNER_TOKEN"])
+          comments = json.loads(subprocess.run(["gh", "api", f"repos/{os.environ['GITHUB_REPOSITORY']}/issues/{issue['number']}/comments", "--paginate"],
+                                              capture_output=True, text=True, env=env, check=True).stdout or "[]")
+          talk = [f"Me: {idea.strip()}"]
+          for c in comments:
+              text = (c.get("body") or "").split("<!-- rh:")[0].strip()
+              who = "Me" if c["user"]["login"] == owner else "You (Claude, earlier)"
+              if text:
+                  talk.append(f"{who}: {text}")
+          branch = f"root-harness/vibe-{issue['number']}"
+          prompt = f"""You are Claude Code, working for the owner of {target} from their phone (root-harness).
+          The conversation so far, newest last:
+
+          {chr(10).join(talk)}
+
+          Do what the latest message asks, in this repository (your current directory).
+          Rules: work on the git branch {branch} (it is already checked out); commit with clear messages;
+          push it with `git push -u origin {branch}`; then make sure a pull request exists from {branch}
+          (create it with `gh pr create --fill` if needed, `gh pr view --json url` to get its link).
+          Never push to the default branch. Keep it simple and working; run the tests or a build if there is one.
+          End with a short summary for a phone screen: what you did, what to check, and the pull request link."""
+          with open(os.environ["GITHUB_OUTPUT"], "a") as out:
+              out.write(f"kind={kind}\ntarget={target}\nbranch={branch}\n")
+              out.write("prompt<<RH_EOF\n" + prompt + "\nRH_EOF\n")
+          PY
+
+      - name: Say Claude is on it
+        run: |
+          printf '⏳ Claude is working on **%s**...\n\n<!-- rh:working -->' "${{ steps.idee.outputs.target }}" > note.md
+          GH_TOKEN="$RUNNER_TOKEN" gh issue comment "$ISSUE" -R "$GITHUB_REPOSITORY" --body-file note.md
+
+      - name: Create the repository
+        if: steps.idee.outputs.kind == 'new'
+        run: gh repo view "${{ steps.idee.outputs.target }}" >/dev/null 2>&1 || gh repo create "${{ steps.idee.outputs.target }}" --private --add-readme
+
+      - uses: actions/checkout@v6
+        with:
+          repository: ${{ steps.idee.outputs.target }}
+          token: ${{ secrets.RH_GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Use the idea's branch
+        run: |
+          git config user.name "root-harness (Claude)"
+          git config user.email "root-harness@users.noreply.github.com"
+          B="${{ steps.idee.outputs.branch }}"
+          if git ls-remote --exit-code --heads origin "$B" >/dev/null; then git checkout -B "$B" "origin/$B"; else git checkout -b "$B"; fi
+
+      - uses: anthropics/claude-code-action@v1
+        id: claude
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.RH_GITHUB_TOKEN }}
+          prompt: ${{ steps.idee.outputs.prompt }}
+          claude_args: |
+            --allowedTools "Bash,Edit,Write,Read,Glob,Grep,WebFetch,WebSearch"
+
+      - name: Give the answer back
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import json, os
+          path = "${{ steps.claude.outputs.execution_file }}"
+          answer = ""
+          try:
+              for m in json.load(open(path)):
+                  if m.get("type") == "result" and m.get("result"):
+                      answer = m["result"]
+          except Exception:
+              pass
+          ok = "${{ steps.claude.outcome }}" == "success"
+          if not answer:
+              answer = "Done." if ok else "Something went wrong: open the run on GitHub to see why."
+          mark = "<!-- rh:done -->" if ok else "<!-- rh:failed -->"
+          open("answer.md", "w").write(("✅ " if ok else "⚠️ ") + answer + "\n\n" + mark)
+          PY
+          GH_TOKEN="$RUNNER_TOKEN" gh issue comment "$ISSUE" -R "$GITHUB_REPOSITORY" --body-file answer.md

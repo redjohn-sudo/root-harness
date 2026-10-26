@@ -25,6 +25,13 @@ import uuid
 FRESH = 300            # seconds: older orders are ignored
 FLUSH = 1.2            # seconds: events are grouped, free relays ban bursts
 MAX_TEXT = 3000        # long tool outputs are cut for the phone
+# what the phone may ask for: the same things as the window, nothing about the
+# account, the keys or this computer's settings
+CALLABLE = {"active_brain", "brains_list", "choose_brain", "models", "set_model", "efforts", "set_effort",
+            "set_mode", "commands", "send", "interrupt", "permission_answer", "question_answer",
+            "new_conversation", "current_events", "continue_from", "conversations_list", "open_conversation",
+            "read_conversation", "move_conversation", "rename_conversation", "delete_conversation",
+            "create_folder", "rename_folder", "delete_folder", "tools_list"}
 FORWARDED = {"text", "tool", "result", "error", "permission", "question", "done", "usage", "status", "remote_user"}
 
 
@@ -65,6 +72,23 @@ class Remote:
         elif op == "new":
             self.api.new_conversation()
             self._send({"op": "state", "state": self.state()})
+        elif op == "call":
+            # the phone uses the same interface: it asks for one of these, by name
+            name, args = str(msg.get("method", "")), msg.get("args") or []
+            if name not in CALLABLE or not isinstance(args, list):
+                self._send({"op": "result", "re": mid, "error": "not allowed"})
+                return
+            try:
+                if name == "send":
+                    text = str(args[0])[:20000] if args else ""
+                    if self.api._window:
+                        self.api._window.evaluate_js(f"onEvent({json.dumps({'type': 'remote_user', 'text': text, 'from': 'phone'})})")
+                    value = self.api.send(text, args[1] if len(args) > 1 else None, "phone")
+                else:
+                    value = getattr(self.api, name)(*args)
+                self._send({"op": "result", "re": mid, "value": value})
+            except Exception as e:
+                self._send({"op": "result", "re": mid, "error": f"{type(e).__name__}: {e}"[:300]})
 
     def state(self) -> dict:
         b = self.api.active_brain()

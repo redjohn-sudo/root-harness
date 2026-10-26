@@ -1,0 +1,223 @@
+/* root-harness: one interface, the same on the computer and on the phone.
+   Airy like Lanterns (one centred column, big light titles, quiet glass),
+   Root's green for what matters, her pixel head as the face of the app. */
+:root{
+  --vert:#3f9d84; --vert-clair:#6fd4b6; --led:#7fd0ff; --ambre:#f0b35a; --rouge:#f87171;
+  --encre:#eef1f6; --encre-2:rgba(238,241,246,.72); --encre-3:rgba(238,241,246,.46); --encre-4:rgba(238,241,246,.28);
+  --verre:rgba(16,18,28,.46); --verre-fort:rgba(14,16,26,.72); --trait:rgba(255,255,255,.09); --trait-fort:rgba(255,255,255,.2);
+  --lueur:rgba(111,212,182,.35);
+  --r:22px; --r-pt:14px;
+  --ease:cubic-bezier(.16,1,.3,1); --ease-in:cubic-bezier(.65,0,.35,1);
+  --police:-apple-system,"SF Pro Text","Inter",system-ui,sans-serif; --mono:ui-monospace,"SF Mono",Menlo,monospace;
+  --rail:64px; --col:760px;
+  --bas: env(safe-area-inset-bottom); --haut: env(safe-area-inset-top);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font:15px/1.5 var(--police);color:var(--encre);background:#11131c;overflow:hidden;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+input,textarea,select{font:inherit;color:inherit}
+a{color:var(--vert-clair)}
+
+/* -- the background: your picture, under a night veil (Lanterns' indigo) -- */
+#fond{position:fixed;inset:-2%;z-index:0;background:#2a2c38 center/cover no-repeat;
+  transform:translate(calc(var(--mx,0)*-10px),calc(var(--my,0)*-7px)) scale(1.02);transition:transform 1.4s var(--ease);
+  animation:apparait 1.6s var(--ease)}
+#fond::after{content:"";position:absolute;inset:0;
+  background:radial-gradient(120% 90% at 70% 10%,rgba(40,48,110,.25),transparent 60%),
+             linear-gradient(180deg,rgba(10,12,24,.42) 0%,rgba(10,12,24,.62) 55%,rgba(8,10,20,.86) 100%)}
+@keyframes apparait{from{opacity:0;filter:blur(14px)}to{opacity:1;filter:none}}
+
+/* -- shell: rail on the left (computer), bar at the bottom (phone) -- */
+#app{position:relative;z-index:1;height:100%;display:flex}
+#rail{width:var(--rail);flex:none;display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 0}
+#rail .marque{width:38px;height:38px;margin-bottom:14px}
+.onglet{position:relative;width:44px;height:44px;border-radius:13px;display:grid;place-items:center;color:var(--encre-3);transition:color .25s,background .25s,transform .25s var(--ease)}
+.onglet svg{width:20px;height:20px}
+.onglet:hover{color:var(--encre);background:rgba(255,255,255,.06)}
+.onglet:active{transform:scale(.92)}
+.onglet.on{color:var(--encre)}
+.onglet.on::before{content:"";position:absolute;left:-10px;top:12px;bottom:12px;width:3px;border-radius:2px;background:var(--vert-clair);box-shadow:0 0 12px var(--lueur);animation:monte .4s var(--ease)}
+.onglet .pastille{position:absolute;top:8px;right:8px;width:8px;height:8px;border-radius:50%;background:var(--led);box-shadow:0 0 10px var(--led);animation:pop .5s var(--ease)}
+#rail .bas{margin-top:auto}
+main{flex:1;min-width:0;display:flex;flex-direction:column;position:relative}
+
+/* -- views slide in, one at a time -- */
+.vue{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;pointer-events:none;transform:translateY(12px);transition:opacity .45s var(--ease),transform .55s var(--ease)}
+.vue.on{opacity:1;pointer-events:auto;transform:none}
+.defile{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:calc(28px + var(--haut)) 20px 140px}
+.colonne{max-width:var(--col);margin:0 auto}
+.titre{font-size:40px;font-weight:300;letter-spacing:-.02em;line-height:1.1;margin:10px 0 6px;text-transform:lowercase}
+.sous-titre{color:var(--encre-2);font-size:14.5px;max-width:560px;margin-bottom:22px}
+.section{font-size:12px;letter-spacing:.08em;text-transform:lowercase;color:var(--encre-3);margin:26px 0 10px;display:flex;align-items:center;gap:10px}
+.section .ligne{flex:1;height:1px;background:var(--trait)}
+
+/* -- glass and lists, Lanterns-quiet -- */
+.verre{background:var(--verre);border:1px solid var(--trait);border-radius:var(--r);backdrop-filter:blur(22px) saturate(1.15);-webkit-backdrop-filter:blur(22px) saturate(1.15)}
+.carte{padding:16px 18px;margin-bottom:10px}
+.liste .item{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:14px;cursor:pointer;transition:background .2s,transform .25s var(--ease);
+  opacity:0;animation:monte .5s var(--ease) forwards;animation-delay:calc(var(--i,0)*28ms)}
+.liste .item:hover{background:rgba(255,255,255,.05);transform:translateX(3px)}
+.liste .item.on{background:rgba(63,157,132,.14)}
+.item .tx{flex:1;min-width:0}
+.item .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .m{font-size:12.5px;color:var(--encre-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .badge{font-size:11.5px;color:var(--encre-3);border:1px solid var(--trait);border-radius:999px;padding:1px 8px;white-space:nowrap}
+.item .nb{min-width:19px;height:19px;border-radius:10px;background:var(--led);color:#071018;font-size:11px;font-weight:700;display:grid;place-items:center;padding:0 5px}
+.vide{color:var(--encre-3);font-size:14px;padding:14px 4px}
+@keyframes monte{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:none;opacity:1}}
+
+/* -- buttons and fields -- */
+.bouton{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:999px;border:1px solid var(--trait-fort);color:var(--encre);font-size:14px;
+  transition:background .2s,transform .2s var(--ease),border-color .2s}
+.bouton:hover{background:rgba(255,255,255,.07)}
+.bouton:active{transform:scale(.96)}
+.bouton.plein{background:var(--encre);color:#10131c;border-color:transparent;font-weight:600}
+.bouton.vert{background:rgba(63,157,132,.22);border-color:rgba(111,212,182,.45);color:var(--vert-clair)}
+.bouton.danger{color:var(--rouge);border-color:rgba(248,113,113,.4)}
+.boutons{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.champ{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--trait);border-radius:12px;padding:11px 13px;outline:0;font-size:15px;transition:border-color .2s,background .2s}
+.champ:focus{border-color:rgba(111,212,182,.5);background:rgba(255,255,255,.07)}
+.champ+.champ{margin-top:8px}
+.err{color:#fca5a5;font-size:13px;min-height:18px;margin-top:6px}
+.inter{margin-left:auto;width:42px;height:24px;border-radius:12px;background:rgba(255,255,255,.14);position:relative;flex:none;cursor:pointer;transition:background .25s}
+.inter::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .35s var(--ease)}
+.inter.on{background:var(--vert)}.inter.on::after{transform:translateX(18px)}
+.reglage{display:flex;align-items:center;gap:12px;padding:12px 2px;border-bottom:1px solid var(--trait)}
+.reglage:last-child{border:0}
+.reglage .l{flex:1}.reglage .d{font-size:12.5px;color:var(--encre-3)}
+pre.code{font:12px var(--mono);background:rgba(0,0,0,.35);border-radius:10px;padding:10px 12px;white-space:pre-wrap;word-break:break-all;margin:8px 0}
+
+/* -- the chat -- */
+.tete-chat{position:sticky;top:0;z-index:3;padding:calc(14px + var(--haut)) 20px 10px;display:flex;align-items:center;gap:10px;justify-content:center}
+.pilule-cerveau{display:inline-flex;align-items:center;gap:9px;padding:7px 14px 7px 8px;border-radius:999px;font-size:14px;transition:transform .2s var(--ease),background .2s}
+.pilule-cerveau:hover{background:rgba(30,32,46,.7)}
+.pilule-cerveau .tete{width:26px;height:26px}
+.pilule-cerveau .modele{color:var(--encre-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px}
+.pilule-cerveau{min-width:0;max-width:100%}
+.etat{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--encre-3)}
+.point{width:7px;height:7px;border-radius:50%;background:var(--vert-clair);box-shadow:0 0 8px var(--vert-clair)}
+.point.attente,.point.travail{background:var(--ambre);box-shadow:0 0 8px var(--ambre);animation:respire 1.3s ease-in-out infinite}
+.point.off{background:var(--rouge);box-shadow:none}
+@keyframes respire{50%{opacity:.35}}
+.fil{display:flex;flex-direction:column;gap:14px;padding-top:8px}
+.fil>*{animation:monte .5s var(--ease)}
+.bienvenue{text-align:center;padding:34vh 10px 0}
+.bienvenue .grande-tete{width:92px;height:92px;margin:0 auto 18px;filter:drop-shadow(0 10px 30px rgba(0,0,0,.4))}
+.bienvenue .titre{font-size:34px}
+.msg{max-width:min(620px,88%);line-height:1.6;word-break:break-word}
+.msg.moi{align-self:flex-end;padding:11px 16px;border-radius:20px 20px 6px 20px;background:rgba(255,255,255,.1);border:1px solid var(--trait);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);white-space:pre-wrap}
+.msg.agent{align-self:flex-start;display:flex;gap:12px}
+.msg.agent .tete{width:28px;height:28px;flex:none;margin-top:2px}
+.msg.agent .corps{padding:2px 0;min-width:0}
+.corps p{margin:0 0 10px}.corps p:last-child{margin:0}
+.corps code{font:13px var(--mono);background:rgba(255,255,255,.08);padding:1px 5px;border-radius:5px}
+.corps pre{font:12.5px var(--mono);background:rgba(0,0,0,.35);border:1px solid var(--trait);border-radius:12px;padding:11px 13px;overflow-x:auto;margin:8px 0}
+.corps table{border-collapse:collapse;font-size:13px;margin:8px 0;display:block;overflow-x:auto}
+.corps td,.corps th{border:1px solid var(--trait);padding:5px 9px;text-align:left}
+.corps h4{font-size:15px;margin:12px 0 6px}
+.vignettes{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}.vignettes img{width:84px;height:84px;object-fit:cover;border-radius:12px}
+.outil{align-self:flex-start;margin-left:40px;max-width:min(600px,86%);font-size:13px;border-radius:14px;padding:8px 13px;background:rgba(255,255,255,.04);border:1px solid var(--trait);cursor:pointer}
+.outil .tt{display:flex;align-items:center;gap:8px;white-space:nowrap;overflow:hidden}
+.outil .n{font-family:var(--mono);color:var(--encre)}
+.outil .a{font-family:var(--mono);color:var(--encre-4);overflow:hidden;text-overflow:ellipsis}
+.outil .rond{width:10px;height:10px;flex:none;border-radius:50%;border:2px solid var(--trait-fort);border-top-color:var(--vert-clair);animation:tourne .8s linear infinite}
+.outil.fait .rond{border:0;background:var(--vert-clair);animation:none}
+.outil .det{display:none;font:11.5px var(--mono);color:var(--encre-2);white-space:pre-wrap;margin-top:8px;max-height:240px;overflow:auto}
+.outil.ouvert .det{display:block}
+@keyframes tourne{to{transform:rotate(360deg)}}
+.demande{align-self:stretch;margin-left:40px;border-radius:var(--r);padding:15px 16px;border:1px solid rgba(240,179,90,.4);background:rgba(44,32,12,.5);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.demande .q{margin-bottom:8px}.demande .q b{color:var(--ambre)}
+.demande .opt{display:block;width:100%;text-align:left;padding:10px 12px;border-radius:12px;border:1px solid var(--trait);margin-top:7px;background:rgba(255,255,255,.04)}
+.demande .opt.on{border-color:var(--vert-clair);background:rgba(63,157,132,.2)}
+.demande .opt small{display:block;color:var(--encre-3);font-size:12.5px}
+.verdict{font-weight:600;margin-top:8px}.verdict.oui{color:var(--vert-clair)}.verdict.non{color:var(--rouge)}
+.sys{align-self:center;font-size:12.5px;color:var(--encre-2);padding:6px 14px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--trait)}
+.partage-carte{align-self:flex-start;max-width:min(520px,88%);padding:13px 15px;border-radius:18px;border:1px solid rgba(127,208,255,.35);background:rgba(20,40,60,.45)}
+.partage-carte .t{font-weight:600}.partage-carte .m{font-size:12.5px;color:var(--encre-3);margin:2px 0 8px}
+.ecrit{align-self:flex-start;margin-left:40px;display:flex;gap:5px;padding:6px 0}
+.ecrit i{width:6px;height:6px;border-radius:50%;background:var(--led);animation:sautille 1.2s infinite}
+.ecrit i:nth-child(2){animation-delay:.15s}.ecrit i:nth-child(3){animation-delay:.3s}
+@keyframes sautille{0%,60%,100%{transform:none;opacity:.4}30%{transform:translateY(-5px);opacity:1}}
+
+/* -- the composer: a pill, centred at the bottom, as in Lanterns -- */
+.composer{position:absolute;left:0;right:0;bottom:0;z-index:4;padding:10px 20px calc(16px + var(--bas));pointer-events:none}
+.composer .boite{pointer-events:auto;max-width:var(--col);margin:0 auto;display:flex;align-items:flex-end;gap:8px;padding:7px 7px 7px 12px;border-radius:26px;
+  background:var(--verre-fort);border:1px solid var(--trait);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);box-shadow:0 18px 50px rgba(0,0,0,.35);transition:border-color .25s,box-shadow .25s}
+.composer .boite:focus-within{border-color:rgba(111,212,182,.35);box-shadow:0 18px 50px rgba(0,0,0,.35),0 0 0 4px rgba(111,212,182,.08)}
+.composer textarea{flex:1;background:none;border:0;outline:0;resize:none;font-size:15.5px;line-height:22px;height:38px;max-height:150px;padding:8px 2px}
+.composer textarea::placeholder{color:var(--encre-4)}
+.rond-btn{width:38px;height:38px;flex:none;border-radius:50%;display:grid;place-items:center;color:var(--encre-2);transition:background .2s,transform .2s var(--ease)}
+.rond-btn:hover{background:rgba(255,255,255,.08)}
+.rond-btn svg{width:18px;height:18px}
+.envoyer{background:var(--encre);color:#10131c}
+.envoyer:hover{background:#fff}
+.envoyer:active{transform:scale(.9)}
+body.travail .envoyer{background:var(--ambre)}
+.envoyer .stop{display:none}body.travail .envoyer .stop{display:block}body.travail .envoyer .fleche{display:none}
+.pieces{display:flex;gap:8px;max-width:var(--col);margin:0 auto 8px;pointer-events:auto}
+.pieces:empty{display:none}
+.piece{position:relative;width:56px;height:56px;border-radius:12px;overflow:hidden;animation:pop .4s var(--ease)}
+.piece img{width:100%;height:100%;object-fit:cover}
+.piece button{position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.6);font-size:10px}
+
+/* -- slash menu and sheets -- */
+.menu{position:absolute;left:0;right:0;bottom:calc(100% + 8px);max-width:var(--col);margin:0 auto;max-height:320px;overflow-y:auto;padding:6px;border-radius:18px;
+  background:var(--verre-fort);border:1px solid var(--trait);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);pointer-events:auto;
+  opacity:0;transform:translateY(10px) scale(.98);transform-origin:bottom;transition:opacity .2s,transform .35s var(--ease);visibility:hidden}
+.menu.on{opacity:1;transform:none;visibility:visible}
+.menu .it{display:flex;gap:12px;align-items:baseline;padding:8px 12px;border-radius:10px;cursor:pointer}
+.menu .it.sel{background:rgba(63,157,132,.2)}
+.menu .c{font-family:var(--mono);color:var(--vert-clair);min-width:100px}
+.menu .d{color:var(--encre-3);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.menu .titre-menu{font-size:11px;letter-spacing:.08em;color:var(--encre-3);padding:6px 12px 4px;text-transform:lowercase}
+#voile{position:fixed;inset:0;z-index:20;background:rgba(5,6,12,.45);opacity:0;pointer-events:none;transition:opacity .35s}
+#voile.on{opacity:1;pointer-events:auto}
+.feuille{position:fixed;z-index:21;left:50%;bottom:0;width:min(560px,100%);max-height:82vh;overflow-y:auto;padding:20px 20px calc(20px + var(--bas));
+  border-radius:26px 26px 0 0;background:rgba(18,20,30,.94);border:1px solid var(--trait);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);
+  transform:translate(-50%,105%);transition:transform .5s var(--ease)}
+.feuille.on{transform:translate(-50%,0)}
+.feuille h3{font-size:22px;font-weight:300;margin-bottom:4px}
+.feuille .poignee{width:40px;height:4px;border-radius:2px;background:var(--trait-fort);margin:-8px auto 14px}
+.toast{position:fixed;z-index:30;left:50%;top:calc(18px + var(--haut));transform:translate(-50%,-30px);opacity:0;padding:9px 16px;border-radius:999px;background:rgba(20,22,32,.92);border:1px solid var(--trait);font-size:13.5px;transition:all .45s var(--ease)}
+.toast.on{transform:translate(-50%,0);opacity:1}
+
+/* -- the account screen -- */
+#porte{position:fixed;inset:0;z-index:40;display:grid;place-items:center;padding:20px;background:rgba(8,10,18,.4);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  opacity:0;pointer-events:none;transition:opacity .5s}
+#porte.on{opacity:1;pointer-events:auto}
+#porte .carte-porte{width:min(380px,100%);text-align:center;padding:30px 24px 24px;transform:translateY(16px);transition:transform .7s var(--ease)}
+#porte.on .carte-porte{transform:none}
+.carte-porte .grande-tete{width:84px;height:84px;margin:0 auto 14px}
+.carte-porte h2{font-size:26px;font-weight:300;margin-bottom:6px}
+.carte-porte p{color:var(--encre-2);font-size:14px;margin-bottom:16px}
+.carte-porte .bouton.plein{width:100%;justify-content:center;margin-top:10px;padding:12px}
+.carte-porte .lien{display:block;margin-top:14px;color:var(--encre-3);font-size:13px;text-decoration:underline;cursor:pointer}
+.barre{height:3px;border-radius:2px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:12px;opacity:0;transition:opacity .2s}.barre.on{opacity:1}
+.barre i{display:block;height:100%;width:0;background:var(--vert-clair);transition:width .3s}
+.secoue{animation:secoue .45s}@keyframes secoue{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+
+/* -- Root's head: she blinks, her earpiece breathes -- */
+.tete svg{width:100%;height:100%;display:block;image-rendering:pixelated}
+.tete .ferme{opacity:0}
+.tete.cligne .ouvert{opacity:0}.tete.cligne .ferme{opacity:1}
+.tete .led{animation:diode 2.4s steps(1) infinite}
+body.travail .tete .led{animation:diode .5s steps(1) infinite}
+@keyframes diode{0%,49%{fill:#7fd0ff}50%,100%{fill:#3a6a88}}
+
+/* -- the phone: the rail becomes a bar at the bottom, same buttons -- */
+@media (max-width:720px){
+  #app{flex-direction:column-reverse}
+  #rail{width:100%;flex-direction:row;justify-content:space-around;padding:6px 10px calc(6px + var(--bas));gap:0;
+    background:rgba(12,14,22,.78);border-top:1px solid var(--trait);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)}
+  #rail .marque,#rail .bas{display:none}
+  .onglet.on::before{left:12px;right:12px;top:auto;bottom:-6px;width:auto;height:3px}
+  .titre{font-size:32px}
+  .defile{padding:calc(20px + var(--haut)) 16px 130px}
+  .composer{padding:8px 12px 10px}
+  .outil,.demande,.ecrit{margin-left:0}
+  .pilule-cerveau .modele{max-width:120px}
+  .tete-chat{justify-content:flex-start}
+  .msg.agent .tete{display:none}
+}

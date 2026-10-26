@@ -1,0 +1,20 @@
+// Root's head, rect for rect from La chambre (generated: assets/root-head.svg).
+// She blinks now and then; her earpiece light breathes (faster while working).
+const SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="2 3 20 21" shape-rendering="crispEdges"><rect x="6" y="22" width="12" height="4" fill="#3f9d84"/><rect x="9" y="22" width="6" height="1" fill="#2c7a66"/><rect x="5" y="8" width="14" height="1" fill="#e6bd97"/><rect x="4" y="9" width="16" height="11" fill="#e6bd97"/><rect x="5" y="20" width="14" height="1" fill="#e6bd97"/><rect x="7" y="21" width="10" height="1" fill="#e6bd97"/><rect x="4" y="18" width="2" height="2" fill="#c99a72"/><rect x="18" y="18" width="2" height="2" fill="#c99a72"/><rect x="7" y="13" width="4" height="3" fill="#fff" class="ouvert"/><rect x="13" y="13" width="4" height="3" fill="#fff" class="ouvert"/><rect x="8" y="14" width="2" height="2" fill="#3b2a1e" class="ouvert"/><rect x="14" y="14" width="2" height="2" fill="#3b2a1e" class="ouvert"/><rect x="6" y="13" width="1" height="1" fill="#000" class="ouvert"/><rect x="17" y="13" width="1" height="1" fill="#000" class="ouvert"/><rect x="7" y="15" width="4" height="1" fill="#000" class="ferme"/><rect x="13" y="15" width="4" height="1" fill="#000" class="ferme"/><rect x="11" y="18" width="2" height="1" fill="#8a4438"/><rect x="5" y="16" width="2" height="2" fill="#e0a184"/><rect x="17" y="16" width="2" height="2" fill="#e0a184"/><rect x="3" y="5" width="18" height="7" fill="#5a3820"/><rect x="4" y="4" width="7" height="1" fill="#5a3820"/><rect x="12" y="4" width="6" height="1" fill="#5a3820"/><rect x="3" y="7" width="2" height="15" fill="#5a3820"/><rect x="19" y="7" width="2" height="14" fill="#5a3820"/><rect x="2" y="10" width="1" height="4" fill="#5a3820"/><rect x="21" y="9" width="1" height="5" fill="#5a3820"/><rect x="2" y="16" width="1" height="4" fill="#5a3820"/><rect x="21" y="15" width="1" height="4" fill="#5a3820"/><rect x="3" y="21" width="3" height="2" fill="#5a3820"/><rect x="18" y="20" width="3" height="3" fill="#5a3820"/><rect x="6" y="6" width="5" height="1" fill="#7d5230"/><rect x="13" y="6" width="3" height="1" fill="#7d5230"/><rect x="3" y="12" width="1" height="4" fill="#7d5230"/><rect x="20" y="12" width="1" height="4" fill="#7d5230"/><rect x="6" y="5" width="6" height="1" fill="#7d5230"/><rect x="3" y="15" width="2" height="2" fill="#d8d8de"/><rect x="3" y="15" width="1" height="1" fill="#7fd0ff" class="led"/></svg>'
+
+export function tete(cls = '') {
+  return `<span class="tete ${cls}">${SVG}</span>`
+}
+
+// every few seconds, a random head blinks (they are all the same Root)
+export function cligner() {
+  const loop = () => {
+    const tetes = document.querySelectorAll('.tete')
+    if (tetes.length) {
+      const t = tetes[Math.floor(Math.random() * tetes.length)]
+      t.classList.add('cligne'); setTimeout(() => t.classList.remove('cligne'), 140)
+    }
+    setTimeout(loop, 2200 + Math.random() * 3200)
+  }
+  setTimeout(loop, 1800)
+}
