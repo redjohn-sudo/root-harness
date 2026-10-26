@@ -16,7 +16,7 @@ const host = {
     unlock: (a) => api().account_unlock(a), lock: () => api().account_lock(), setStay: (o) => api().account_set_stay(o),
     setSync: (o) => api().account_set_sync(o), changePassword: (a, b, c) => api().account_change_password(a, b, c),
     reset: (c) => api().account_reset(c), signOut: async () => true,
-    recoveryWords: (p) => api().account_recovery_words(p), restoreWords: (w, p, a, b) => api().account_restore_words(w, p, a, b),
+    recoveryWords: (p) => api().account_recovery_words(p), setFindable: (o) => api().account_set_findable(o), restoreWords: (w, p, a, b) => api().account_restore_words(w, p, a, b),
   },
   // sign-up: what is already here, the keys you add, the extras you turn on
   setup: {
@@ -35,7 +35,7 @@ const host = {
     move: (i, f) => api().move_conversation(i, f), remove: (i) => api().delete_conversation(i), createFolder: (n) => api().create_folder(n),
   },
   friends: {
-    identity: () => api().channels_start(), overview: () => api().channels_overview(), messages: (c) => api().channel_messages(c),
+    identity: async () => ({ ...(await api().channels_start()), id: (await api().account_state()).id }), lookup: (t) => api().friend_lookup(t), overview: () => api().channels_overview(), messages: (c) => api().channel_messages(c),
     send: (c, t) => api().channel_send(c, t), share: (c, p) => api().channel_share(c, p),
     addContact: (n, m) => api().channel_add_contact(n, m), createGroup: (n, m) => api().channel_create(n, m),
   },

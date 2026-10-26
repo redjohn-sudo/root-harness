@@ -2,6 +2,7 @@
 // It only talks to a "host" (host-computer.js or host-phone.js) that knows how
 // to reach the agents, the conversations, the friends and GitHub from there.
 import { tete, cligner } from './root.js'
+import { qr } from './ident.js'
 
 let H = null                                  // the host
 const $ = (s, r = document) => r.querySelector(s)
@@ -104,7 +105,10 @@ async function porte() {
   const creer = () => {
     ecran(`${points(0)}<div class="grande-tete">${tete()}</div><h2>what should we call you?</h2><p>Any pseudo. It's how your friends see you, sealed in your messages.</p>
       <input class="champ" id="p-pseudo" placeholder="pseudo" autocomplete="username" autocapitalize="off" maxlength="32" value="${esc(I.pseudo)}">
+      <div class="rangee" style="border:0;padding-top:12px"><div style="flex:1"><div>Friends can find me by my ID</div><div class="d">You get an ID like <b>${esc((I.pseudo || 'you').toLowerCase().replace(/\s+/g, '.'))}#k7f2qa9m</b>, unique to you. Its card is public.</div></div><span class="inter${I.trouvable === false ? '' : ' on'}" id="p-trouve"></span></div>
       <div class="err" id="p-err"></div><button class="bouton plein" id="p-go">Continue</button><span class="lien" id="p-deja">I already have an account</span>`)
+    $('#p-trouve').onclick = () => { I.trouvable = $('#p-trouve').classList.toggle('on') }
+    $('#p-pseudo').oninput = () => { const b = $('.rangee b', c); if (b) b.textContent = (val('p-pseudo').trim() || 'you').normalize('NFKD').replace(/[^\x00-\x7f]/g, '').toLowerCase().split(/\s+/).filter(Boolean).join('.').replace(/[^a-z0-9._-]+/g, '').slice(0, 24) + '#k7f2qa9m' }
     const go = () => { const v = val('p-pseudo').trim(); if (!v) return erreur('Pick a pseudo.'); I.pseudo = v; motDePasse() }
     $('#p-go').onclick = go; entree(['p-pseudo'], go); $('#p-deja').onclick = connecter; $('#p-pseudo').focus()
   }
@@ -122,7 +126,7 @@ async function porte() {
       $('#p-force-t').textContent = val('p-mdp') ? ['too weak', 'weak', 'okay', 'strong', 'excellent'][Math.floor(f)] : '' }
     const go = async () => { if (force(val('p-mdp')) < 2) return erreur('Make it a bit longer: a short sentence is perfect.')
       occupe('Creating your account...'); const r = await H.account.create(I.pseudo, val('p-mdp'), val('p-mdp2')); libre()
-      if (r.error) return erreur(r.error); I.mdp = val('p-mdp'); kit() }
+      if (r.error) return erreur(r.error); I.mdp = val('p-mdp'); if (I.trouvable === false) await H.account.setFindable(false); kit() }
     $('#p-go').onclick = go; entree(['p-mdp', 'p-mdp2'], go); $('#p-ret').onclick = creer; $('#p-mdp').focus()
   }
   const kit = async () => {
@@ -172,8 +176,10 @@ async function porte() {
     })
     $('#p-go').onclick = bienvenue
   }
-  const bienvenue = () => {
-    ecran(`<div class="grande-tete">${tete()}</div><h2>all set, ${esc(I.pseudo)}</h2><p>Your account is yours, on your devices. Let's make something.</p>
+  const bienvenue = async () => {
+    const st2 = await H.account.state()
+    ecran(`<div class="grande-tete">${tete()}</div><h2>all set, ${esc(I.pseudo)}</h2><p>Your account is yours, on your devices. Here's your ID: give it to your friends and colleagues, or let them scan it.</p>
+      <div class="mon-id">${esc(st2.id || '')}</div><div class="qr">${qr(st2.id || '')}</div>
       <button class="bouton plein" id="p-go">Open root-harness</button>`)
     $('#p-go').onclick = fini
   }
@@ -470,12 +476,15 @@ async function vueAmis() {
   const v = $('#v-amis')
   if (CANAL) return vueCanal()
   v.innerHTML = `<div class="defile"><div class="colonne"><div class="titre">friends & groups</div><div class="sous-titre">Sealed end to end. Relays carry sealed blobs: not the text, not who talks to whom.</div>
-    <div class="verre carte" id="a-moi"><div class="m" style="color:var(--encre-3);font-size:12.5px">your ID, to give to friends</div><div style="font:12.5px var(--mono);word-break:break-all;margin:6px 0" id="a-npub">...</div>
-    <div class="boutons"><button class="bouton" id="a-copier">${ico('copie')} copy</button><button class="bouton" id="a-contact">+ friend</button><button class="bouton vert" id="a-groupe">+ group</button></div></div>
+    <div class="verre carte" id="a-moi"><div class="m" style="color:var(--encre-3);font-size:12.5px">your ID, to give to friends and colleagues</div><div class="mon-id" style="text-align:left;margin:6px 0 2px" id="a-id">...</div>
+    <div class="boutons"><button class="bouton" id="a-copier">${ico('copie')} copy</button><button class="bouton" id="a-qr">QR code</button><button class="bouton" id="a-contact">+ friend</button><button class="bouton vert" id="a-groupe">+ group</button></div></div>
     <div id="a-liste"><div class="vide">Connecting...</div></div></div></div>`
   const id = await H.friends.identity().catch(() => ({}))
-  $('#a-npub').textContent = id.npub || 'unlock your account first'
-  $('#a-copier').onclick = async () => { await H.copy(id.npub); toast('Copied') }
+  $('#a-id').textContent = id.id || id.npub || 'unlock your account first'
+  $('#a-copier').onclick = async () => { await H.copy(id.id || id.npub); toast('Copied') }
+  $('#a-qr').onclick = () => feuille(`<h3>your ID</h3><div class="sous-titre">Let a friend scan it with their phone's camera, then paste it in + friend.</div>
+    <div class="qr" style="max-width:260px">${qr(id.id || id.npub || '')}</div><div class="mon-id">${esc(id.id || '')}</div>
+    <div class="d" style="color:var(--encre-4);font:11px var(--mono);word-break:break-all;margin-top:10px;text-align:center">${esc(id.npub || '')}</div>`)
   $('#a-contact').onclick = () => feuilleContact()
   $('#a-groupe').onclick = feuilleGroupe
   const ov = await H.friends.overview().catch(() => ({ channels: [], contacts: [] }))
@@ -489,11 +498,20 @@ async function vueAmis() {
 }
 function pastille(on) { const b = $('.onglet[data-v="amis"]'); let p = $('.pastille', b); if (on && !p) { p = document.createElement('span'); p.className = 'pastille'; b.appendChild(p) } else if (!on && p) p.remove() }
 function feuilleContact(npub, pseudo) {
-  const f = feuille(`<h3>add a friend</h3><div class="sous-titre">Ask them for their ID (in their Friends tab).</div>
-    <input class="champ" id="k-npub" placeholder="npub1..." value="${esc(npub || '')}"><input class="champ" id="k-nom" placeholder="the name you give them" value="${esc(pseudo || '')}">
-    <div class="err" id="k-err"></div><div class="boutons"><button class="bouton plein" id="k-ok">Add</button></div>`)
-  $('#k-ok', f).onclick = async () => { const r = await H.friends.addContact($('#k-npub', f).value, $('#k-nom', f).value)
-    if (!r) return ($('#k-err', f).textContent = 'Check the ID and give a name.'); fermerFeuille(); toast('Added'); vueAmis() }
+  const f = feuille(`<h3>add a friend</h3><div class="sous-titre">Their ID (like vincent#k7f2qa9m), from their Friends tab or their QR code.</div>
+    <input class="champ" id="k-id" placeholder="name#code" autocapitalize="off" autocomplete="off" value="${esc(npub || '')}">
+    <div id="k-trouve"></div><div class="err" id="k-err"></div><div class="boutons"><button class="bouton plein" id="k-ok">Find</button></div>`)
+  let trouve = npub ? { npub, pseudo: pseudo || '' } : null
+  const montrerTrouve = () => { $('#k-trouve', f).innerHTML = `<div class="rangee"><span class="puce oui">✓</span><div style="flex:1"><div>${esc(trouve.pseudo || 'found')}</div><div class="d">${esc(trouve.id || trouve.npub.slice(0, 22) + '...')}</div>
+    <input class="champ" id="k-nom" placeholder="the name you give them" value="${esc(trouve.pseudo || '')}"></div></div>`; $('#k-ok', f).textContent = 'Add' }
+  if (trouve) montrerTrouve()
+  $('#k-id', f).oninput = () => { trouve = null; $('#k-trouve', f).innerHTML = ''; $('#k-ok', f).textContent = 'Find' }
+  $('#k-ok', f).onclick = async () => {
+    if (!trouve) { $('#k-err', f).textContent = ''; $('#k-ok', f).textContent = 'Looking...'
+      const r = await H.friends.lookup($('#k-id', f).value); if (!r || r.error) { $('#k-ok', f).textContent = 'Find'; return ($('#k-err', f).textContent = (r && r.error) || 'Check the ID.') }
+      trouve = r; return montrerTrouve() }
+    const r = await H.friends.addContact(trouve.npub, $('#k-nom', f).value || trouve.pseudo)
+    if (!r) return ($('#k-err', f).textContent = 'Give them a name.'); fermerFeuille(); toast('Added'); vueAmis() }
 }
 async function feuilleGroupe() {
   const ov = await H.friends.overview()
@@ -608,13 +626,15 @@ async function vueReglages() {
     <div class="section">account<span class="ligne"></span></div><div class="verre carte">
       <div class="reglage">${tete()}<div class="l"><div>${esc(st.pseudo || '')}</div><div class="d" style="font-family:var(--mono);word-break:break-all">${esc(st.npub || '')}</div></div></div>
       ${H.kind === 'computer' ? `<div class="reglage"><div class="l">Stay signed in<div class="d">No password when root-harness opens</div></div><span class="inter${st.stay ? ' on' : ''}" id="r-stay"></span></div>
-      <div class="reglage"><div class="l">Sync between my devices<div class="d">Your whole memory, sealed, on relays</div></div><span class="inter${st.sync ? ' on' : ''}" id="r-sync"></span></div>` : ''}
+      <div class="reglage"><div class="l">Sync between my devices<div class="d">Your whole memory, sealed, on relays</div></div><span class="inter${st.sync ? ' on' : ''}" id="r-sync"></span></div>
+      <div class="reglage"><div class="l">Findable by my ID<div class="d">${esc(st.id || '')}: a public card lets friends add you by this ID</div></div><span class="inter${st.findable !== false ? ' on' : ''}" id="r-trouve"></span></div>` : ''}
       <div class="boutons"><button class="bouton" id="r-lock">Lock</button>${H.kind === 'computer' ? '<button class="bouton" id="r-mdp">Change password</button><button class="bouton" id="r-kit">My recovery kit</button>' : '<button class="bouton danger" id="r-sortir">Sign out of this phone</button>'}</div></div>
     <div class="section">background<span class="ligne"></span></div><div class="verre carte"><div class="boutons">${H.kind === 'computer' ? '<button class="bouton vert" id="r-image">Choose a picture</button>' : ''}<button class="bouton" id="r-sans">Plain night</button></div>
       <div class="d" style="color:var(--encre-3);font-size:12.5px;margin-top:8px">${H.kind === 'phone' ? 'Your phone uses the picture of your computer.' : 'Your picture goes to your phone too, never to anyone else.'}</div></div>
     <div id="r-plus"></div></div></div>`
   $('#r-stay') && ($('#r-stay').onclick = async () => { await H.account.setStay(!st.stay); vueReglages() })
   $('#r-sync') && ($('#r-sync').onclick = async () => { await H.account.setSync(!st.sync); vueReglages() })
+  $('#r-trouve') && ($('#r-trouve').onclick = async () => { await H.account.setFindable(st.findable === false); vueReglages() })
   $('#r-lock').onclick = async () => { await H.account.lock(); location.reload() }
   $('#r-sortir') && ($('#r-sortir').onclick = async () => { await H.account.signOut(); location.reload() })
   $('#r-mdp') && ($('#r-mdp').onclick = () => { const f = feuille(`<h3>change password</h3><input class="champ" id="m-a" type="password" placeholder="current password"><input class="champ" id="m-n" type="password" placeholder="new password (10+)"><input class="champ" id="m-n2" type="password" placeholder="again"><div class="err" id="m-err"></div><div class="boutons"><button class="bouton plein" id="m-ok">Change</button></div>`)

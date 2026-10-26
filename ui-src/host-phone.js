@@ -17,6 +17,7 @@ import * as nip49 from 'nostr-tools/nip49'
 import * as nip19 from 'nostr-tools/nip19'
 import { SimplePool } from 'nostr-tools/pool'
 import { lancer } from './app.js'
+import { code, parse, handle } from './ident.js'
 
 const RELAYS = ['wss://relay.damus.io', 'wss://nos.lol', 'wss://relay.primal.net']
 const STORE = 'rh-account', CACHE = 'rh-cache'
@@ -200,7 +201,8 @@ const host = {
   async copy(t) { try { await navigator.clipboard.writeText(t) } catch { const a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); document.execCommand('copy'); a.remove() } },
 
   account: {
-    async state() { const a = compte(); return a ? { exists: true, unlocked: !!sk, pseudo: a.pseudo, npub: a.npub } : { exists: false } },
+    async state() { const a = compte(); return a ? { exists: true, unlocked: !!sk, pseudo: a.pseudo, npub: a.npub, id: me ? handle(a.pseudo, me) : '' } : { exists: false } },
+    async setFindable() {},
     async create() { return { error: 'Create your account on your computer first, then sign in here.' } },
     async restore(p, pw, progres) { try { const k = await connecter(p, pw, progres); if (!k) return { error: 'No account with this pseudo and password.' }; await ouvert(k); return {} }
       catch (e) { return { error: 'Could not reach the relays: ' + (e.message || e) } } },
@@ -231,7 +233,19 @@ const host = {
   },
 
   friends: {
-    async identity() { return { npub: compte()?.npub } },
+    async identity() { const a = compte(); return { npub: a?.npub, id: me ? handle(a?.pseudo || '', me) : '' } },
+    // someone's ID: only a card whose key matches the code counts (rootharness/directory.py)
+    async lookup(text) {
+      text = (text || '').trim()
+      if (text.startsWith('npub1')) return hexDe(text) ? { npub: text, pseudo: '', id: '' } : { error: 'Check the key.' }
+      const p = parse(text); if (!p) return { error: 'An ID looks like name#k7f2qa9m.' }
+      const evs = await pool.querySync(RELAYS, { kinds: [30078], '#d': ['rh-handle:' + p[0] + '#' + p[1]] }, { maxWait: 7000 })
+      for (const ev of evs.sort((a, b) => b.created_at - a.created_at)) {
+        if (code(ev.pubkey) !== p[1] || !ev.content || !verifyEvent(ev)) continue
+        try { const c = JSON.parse(ev.content); return { hex: ev.pubkey, npub: npubDe(ev.pubkey), pseudo: String(c.pseudo || p[0]).slice(0, 32), id: p[0] + '#' + p[1] } } catch {}
+      }
+      return { error: 'Nobody with this ID (or they are not findable).' }
+    },
     async overview() {
       const chans = Object.entries(AMIS.channels).map(([id, ch]) => { const L = LOGS[id] || [], last = L[L.length - 1]
         return { id, name: ch.name || ch.members.map(nom).join(', '), members: ch.members.map((h) => ({ hex: h, name: nom(h), npub: npubDe(h), pseudo: AMIS.pseudos[h] || '' })),

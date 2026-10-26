@@ -99,8 +99,18 @@ def state() -> dict:
     acc = _load()
     if not acc:
         return {"exists": False}
+    from . import directory
+    pub = _n().PublicKey.parse(acc["npub"]).to_hex()
     return {"exists": True, "pseudo": acc["pseudo"], "npub": acc["npub"], "stay": acc.get("stay", False),
-            "sync": acc.get("sync", True)}
+            "sync": acc.get("sync", True), "findable": acc.get("findable", True),
+            "id": directory.handle(acc["pseudo"], pub)}
+
+
+def set_findable(on: bool) -> None:
+    acc = _load()
+    if acc:
+        acc["findable"] = bool(on)
+        _save(acc)
 
 
 def set_sync(on: bool) -> None:

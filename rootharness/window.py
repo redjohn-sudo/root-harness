@@ -68,6 +68,7 @@ class Api:
             self.keys = None
         self._start_sync()
         self._start_remote()
+        self._publish_card()
         self.brain = brains.by_id(read_settings().get("brain", "")) or brains.by_id(brains.DEFAULT)
         self._new_session()
         permissions.set_asker(self._ask)
@@ -282,6 +283,7 @@ class Api:
             return {"error": why}
         self.keys = keys
         self._publish_login(pseudo, password)
+        self._publish_card()
         self._start_sync()
         self._start_remote()
         return self.account_state()
@@ -301,6 +303,7 @@ class Api:
         self.keys = keys
         self._start_sync()
         self._start_remote()
+        self._publish_card()
         return self.account_state()
 
     def account_recovery_words(self, password: str):
@@ -319,6 +322,7 @@ class Api:
         self._publish_login(account.state()["pseudo"], password)
         self._start_sync()
         self._start_remote()
+        self._publish_card()
         return self.account_state()
 
     def setup_detect(self):
@@ -354,10 +358,49 @@ class Api:
         self.keys = keys
         self._start_sync()
         self._start_remote()
+        self._publish_card()
         if len(password) >= account.MIN_PASSWORD:
             self._publish_login(account.state()["pseudo"], password)   # keeps the vault fresh on the relays
             return self.account_state()
         return {**self.account_state(), "weak": True}
+
+    def _publish_card(self, old_pseudo: str | None = None):
+        """Your public card (ID -> public key), if you chose to be findable."""
+        from . import directory
+        st, keys = account.state(), self.keys
+        if not keys or not st.get("exists"):
+            return
+
+        def work():
+            try:
+                if old_pseudo and old_pseudo != st["pseudo"]:
+                    asyncio.run(directory.withdraw(keys, old_pseudo))
+                if st.get("findable", True):
+                    asyncio.run(directory.publish(keys, st["pseudo"]))
+            except Exception:
+                pass
+        threading.Thread(target=work, daemon=True).start()
+
+    def account_set_findable(self, on: bool):
+        from . import directory
+        account.set_findable(bool(on))
+        if on:
+            self._publish_card()
+        elif self.keys:
+            st, keys = account.state(), self.keys
+            threading.Thread(target=lambda: asyncio.run(directory.withdraw(keys, st["pseudo"])), daemon=True).start()
+        return self.account_state()
+
+    def friend_lookup(self, text: str):
+        """A friend's ID (name#code) or public key, as typed."""
+        from . import directory
+        text = (text or "").strip()
+        if text.startswith("npub1"):
+            return {"npub": text, "pseudo": "", "id": ""}
+        try:
+            return asyncio.run(directory.lookup(text)) or {"error": "Nobody with this ID (or they are not findable)."}
+        except Exception:
+            return {"error": "Could not reach the relays."}
 
     def _publish_login(self, pseudo: str, password: str, forget=None):
         """Let other machines find this account; `forget` = (old pseudo, old
@@ -465,6 +508,7 @@ class Api:
         (SETTINGS.parent / self.REMOTE_FILE).write_text(json.dumps({"on": bool(on)}))
         if on:
             self._start_remote()
+            self._publish_card()
         else:
             self._stop_remote()
         return self.remote_state()
@@ -489,6 +533,7 @@ class Api:
         old = account.state()["pseudo"]
         if not account.set_pseudo(pseudo):
             return {"error": "Choose a pseudo."}
+        self._publish_card(old_pseudo=old)
         self._publish_login(account.state()["pseudo"], password, forget=(old, password))
         if self.channels:
             self.channels.pseudo = account.state()["pseudo"]
