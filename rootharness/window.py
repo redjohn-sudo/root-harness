@@ -445,6 +445,8 @@ class Api:
         hook = self.sync.dirty
         conversations.on_change = hook
         glossary.on_change = hook
+        from . import push
+        push.on_change = hook
         sys.modules[__name__].on_change = hook
         from . import channels as ch_mod
         ch_mod.on_change = hook
@@ -550,6 +552,27 @@ class Api:
             p.close()
             self.pairing = None
         return True
+
+    # -- notifications on your phones (push.py) ------------------------------------
+
+    def push_key(self):
+        from . import push
+        return push.public_key()
+
+    def push_register(self, sub: dict, device: str = ""):
+        from . import push
+        return push.register(sub, device)
+
+    def _notify(self, event: dict):
+        """Your agent needs you, or finished something long: tell your phones."""
+        from . import push
+        t, name = event.get("type"), self.brain.get("name", "Your agent")
+        if t == "permission":
+            push.notify_later(f"{name} needs you", "Wants to: " + str(event.get("title", "do something")), "permission", True)
+        elif t == "question":
+            push.notify_later(f"{name} has a question", "Open root-harness to answer.", "question", True)
+        elif t == "done" and time.time() - getattr(self, "_turn_started", time.time()) > 25:
+            push.notify_later(f"{name} is done", "Your answer is ready.", "done")
 
     def remote_state(self):
         return {"on": self._remote_on(), "running": self.remote is not None,
@@ -964,6 +987,8 @@ class Api:
     # -- internals ---------------------------------------------------------
 
     def _emit(self, event: dict):
+        if event.get("type") in ("permission", "question", "done"):
+            self._notify(event)
         if event.get("type") in ("text", "tool", "result", "error"):
             self.log["events"].append(event)      # to show it again later
         if self.remote:
@@ -992,6 +1017,7 @@ class Api:
         if not self._busy.acquire(blocking=False):
             self._emit({"type": "error", "text": "Still working on the last message."})
             return
+        self._turn_started = time.time()
         try:
             if images:
                 self.session.run_turn(prompt, self._emit, images)

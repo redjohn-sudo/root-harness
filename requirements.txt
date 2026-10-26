@@ -5,3 +5,5 @@ nostr-sdk>=0.45,<0.46
 keyring>=25
 # the 24-word recovery kit (BIP39 encoding of your key)
 mnemonic>=0.21
+# notifications on your phone (Web Push: VAPID + RFC 8291 encryption)
+pywebpush>=2.0

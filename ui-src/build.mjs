@@ -22,6 +22,7 @@ for (const c of cibles) {
   writeFileSync(c.out + '/index.html', page(c.head))
   copyFileSync('assets/root-head.svg', c.out + '/root-head.svg')
   if (c.entry === 'host-computer.js') copyFileSync('../mobile/dist/icon-512.png', c.out + '/icon.png')
+  else copyFileSync('assets/sw.js', c.out + '/sw.js')
 }
 writeFileSync('../mobile/dist/manifest.webmanifest', JSON.stringify({ name: 'root-harness', short_name: 'root-harness', start_url: './', display: 'standalone',
   background_color: '#11131c', theme_color: '#11131c', icons: [{ src: 'icon-192.png', sizes: '192x192', type: 'image/png' }, { src: 'icon-512.png', sizes: '512x512', type: 'image/png' }] }))
@@ -35,6 +36,8 @@ writeFileSync('../mobile/dist/_headers', `/*
 /app.js
   Cache-Control: no-cache
 /index.html
+  Cache-Control: no-cache
+/sw.js
   Cache-Control: no-cache
 `)
 console.log('built: rootharness/ui and mobile/dist')

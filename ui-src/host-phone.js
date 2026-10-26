@@ -344,6 +344,39 @@ const host = {
   },
 }
 
+// -- notifications: your computer pushes them when your agent needs you (push.py) --------
+const b64u = (s) => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - s.length % 4) % 4)), (c) => c.charCodeAt(0))
+const appareil = () => /iPhone/.test(navigator.userAgent) ? 'iPhone' : /iPad/.test(navigator.userAgent) ? 'iPad' : /Android/.test(navigator.userAgent) ? 'Android' : 'phone'
+const SW = window.isSecureContext && 'serviceWorker' in navigator ? navigator.serviceWorker.register('sw.js').catch(() => null) : Promise.resolve(null)
+async function notifEtat() {
+  if (!window.isSecureContext) return { why: 'Notifications need root-harness opened over https (its online address or your private link). Here it is opened over plain http on your Wi-Fi.' }
+  if (/iPhone|iPad/.test(navigator.userAgent) && !navigator.standalone) return { why: 'On iPhone, add root-harness to your Home Screen first (Share, Add to Home Screen), then open it from there.' }
+  const reg = await SW
+  if (!reg || !('PushManager' in window) || !('Notification' in window)) return { why: 'This browser cannot receive notifications.' }
+  if (Notification.permission === 'denied') return { why: 'Notifications are blocked for root-harness in this phone\'s settings.' }
+  return { ok: true, on: Notification.permission === 'granted' && !!(await reg.pushManager.getSubscription()) }
+}
+async function notifActiver(on) {
+  const reg = await SW, old = await reg.pushManager.getSubscription()
+  if (!on) { if (old) await old.unsubscribe(); return }          // your computer forgets it at the next send
+  if (await Notification.requestPermission() !== 'granted') throw new Error('Notifications were not allowed.')
+  const key = b64u(await appel('push_key'))
+  if (old) await old.unsubscribe()
+  const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key })
+  if (!await appel('push_register', sub.toJSON(), appareil())) throw new Error('Your computer did not accept this phone.')
+}
+host.reglagesEnPlus = async function plus(el, outils) {
+  const st = await notifEtat()
+  el.innerHTML = `<div class="section">this phone<span class="ligne"></span></div><div class="verre carte">
+    <div class="reglage" style="border:0"><div class="l">Notifications<div class="d">${outils.esc(st.ok ? 'When your agent needs you or finishes a long task. Your conversation never shows on the lock screen.' : st.why)}</div></div>${st.ok ? `<span class="inter${st.on ? ' on' : ''}" id="r-notif"></span>` : ''}</div></div>`
+  const t = el.querySelector('#r-notif')
+  if (t) t.onclick = async () => {
+    t.style.opacity = .5
+    try { await notifActiver(!st.on); outils.toast(st.on ? 'Notifications off on this phone.' : 'Notifications on. Your computer will tell you.') } catch (e) { outils.toast(e.message) }
+    plus(el, outils)
+  }
+}
+
 // unlocked: listen, load the memory, say hello to the computer
 async function ouvert(key) {
   sk = key; me = getPublicKey(sk)
