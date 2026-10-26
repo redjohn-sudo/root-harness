@@ -25,4 +25,16 @@ for (const c of cibles) {
 }
 writeFileSync('../mobile/dist/manifest.webmanifest', JSON.stringify({ name: 'root-harness', short_name: 'root-harness', start_url: './', display: 'standalone',
   background_color: '#11131c', theme_color: '#11131c', icons: [{ src: 'icon-192.png', sizes: '192x192', type: 'image/png' }, { src: 'icon-512.png', sizes: '512x512', type: 'image/png' }] }))
+// online (Cloudflare Pages): a few safety headers for the phone app
+writeFileSync('../mobile/dist/_headers', `/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: no-referrer
+  Permissions-Policy: camera=(self), microphone=(), geolocation=()
+  Strict-Transport-Security: max-age=31536000
+/app.js
+  Cache-Control: no-cache
+/index.html
+  Cache-Control: no-cache
+`)
 console.log('built: rootharness/ui and mobile/dist')
