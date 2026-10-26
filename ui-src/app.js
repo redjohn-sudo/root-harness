@@ -460,7 +460,7 @@ let PROJET = null
 async function vueVibe() {
   const v = $('#v-vibe')
   if (PROJET) return vueProjet()
-  v.innerHTML = `<div class="defile"><div class="colonne"><div class="titre">vibe code</div><div class="sous-titre">Have an idea? Claude Code builds it in any of your GitHub repositories, on GitHub's machines, with your plan. Your computer can stay off.</div>
+  v.innerHTML = `<div class="defile"><div class="colonne"><div class="titre">vibe code</div><div class="sous-titre">Have an idea? Claude Agent builds it in any of your GitHub repositories, on GitHub's machines, with your plan. Your computer can stay off.</div>
     <div id="g-corps"><div class="vide">Looking at GitHub...</div></div></div></div>`
   const st = await H.vibe.status().catch((e) => ({ ready: false, why: String(e.message || e) }))
   if (!st.ready) { $('#g-corps').innerHTML = `<div class="verre carte"><div style="margin-bottom:6px">${esc(st.why || 'Not set up yet.')}</div>${H.kind === 'computer' ? '<button class="bouton vert" id="g-reglages">Set it up in Settings</button>' : '<div class="m" style="color:var(--encre-3);font-size:13px">Set it up once from root-harness on your computer: Settings, Vibe code.</div>'}</div>`
@@ -488,7 +488,7 @@ let SUIVI = null
 async function vueProjet() {
   const v = $('#v-vibe'), p = PROJET
   const nom = p.repo.startsWith('new:') ? 'new: ' + p.repo.slice(4) : p.repo
-  v.innerHTML = `<div class="tete-chat"><button class="rond-btn" id="p-retour">${ico('retour')}</button><span class="pilule-cerveau verre">${tete()}<span>Claude on GitHub</span><span class="modele">${esc(nom)}</span></span>
+  v.innerHTML = `<div class="tete-chat"><button class="rond-btn" id="p-retour">${ico('retour')}</button><span class="pilule-cerveau verre">${tete()}<span>Claude Agent</span><span class="modele">${esc(nom)}</span></span>
     <span class="etat"><span class="point" id="p-point"></span><span id="p-etat"></span></span></div>
     <div class="defile"><div class="colonne fil" id="p-fil"></div></div>
     <div class="composer"><div class="boite"><textarea id="p-entree" rows="1" placeholder="${p.number ? 'Ask for changes...' : 'Describe your idea...'}"></textarea>

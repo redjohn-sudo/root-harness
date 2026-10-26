@@ -2,8 +2,8 @@
 
 # root-harness
 
-One simple place for all your AI agents, the same on your computer and on your
-phone. Talk to them, let them work, vibe code on GitHub from anywhere, and share
+**root-harness, powered by Claude.** One simple place for all your AI agents,
+the same on your computer and on your phone. Talk to them, let them work, vibe code on GitHub from anywhere, and share
 what they did with your friends, sealed end to end.
 
 Open source (MIT). No server of ours: your account, your memory and your
@@ -11,11 +11,12 @@ messages live on your devices, and travel sealed.
 
 ## What you can do
 
-- **Work with your agents.** Claude (the real Claude Code, on your Pro/Max
-  plan), Codex, DeepSeek, Kimi, GLM, Ollama... Every model, effort and slash
+- **Work with your agents.** Claude Agent (it runs the Claude Code installed on
+  your computer, signed in with your own account), Codex, DeepSeek, Kimi, GLM,
+  Ollama... Every model, effort and slash
   command; permission cards before anything risky; images; Esc to stop.
 - **Vibe code from your phone, computer off.** Have an idea outside? Pick any of
-  your GitHub repositories (or a new one), describe it: Claude Code builds it on
+  your GitHub repositories (or a new one), describe it: Claude Agent builds it on
   GitHub's machines with your plan and opens a pull request you review.
 - **Friends and groups.** Add friends with their ID, make groups, talk,
   sealed end to end (relays see neither the text nor who talks to whom).
@@ -64,6 +65,10 @@ and turn on *GitHub on my phone* to vibe code from the phone.
 | Friends and groups (NIP-17 / NIP-59 sealed messages) | `rootharness/channels.py` |
 | The phone as a remote (sealed orders to yourself) | `rootharness/remote.py` |
 | Vibe code (one workshop repository, Claude Code GitHub Action) | `rootharness/vibe.py`, `rootharness/github/` |
+
+root-harness is an independent project, not made or endorsed by Anthropic. It
+never handles your Claude sign-in: you sign in to the official Claude Code
+yourself, and each person uses their own account or API key.
 
 Honest limits: free relays promise no storage and may rate-limit; they see
 your IP and when you connect. A stolen identity key would open past messages.

@@ -34,7 +34,7 @@ USER_BRAINS = HOME / "brains.json"
 # /model and /effort (or the brain panel). "models" empty = asked live.
 CATALOG: list[dict] = [
     # -- subscriptions: no key --------------------------------------------
-    {"id": "claude", "name": "Claude", "kind": "claude", "group": "Subscriptions",
+    {"id": "claude", "name": "Claude Agent", "kind": "claude", "group": "Subscriptions",
      "note": "Your Claude Pro/Max plan, no key.",
      "models": [{"id": "sonnet", "label": "Sonnet"}, {"id": "opus", "label": "Opus"},
                 {"id": "haiku", "label": "Haiku"}],
