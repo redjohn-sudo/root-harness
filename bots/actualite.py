@@ -35,30 +35,41 @@ RACINE = ICI.parent
 BOTS = Path(os.environ.get("RH_BOTS_HOME") or Path.home() / ".root-harness-bots")
 UA = "Mozilla/5.0 (root-harness news bot; +https://github.com/redjohn-sudo)"
 
+# feeds marked True are about AI already; the others are filtered on AI words
 COMPTES = {
     "veilletech": {
         "pseudo": "veilletech", "at": "veilletech", "name": "Veille Tech France", "lang": "French", "community": "actu-tech",
-        "about": "L'actu tech en France, résumée en deux phrases, toujours avec la source. Compte automatique officiel de root-harness.",
+        "about": "L'actualité de l'IA en France, résumée en deux phrases, toujours avec la source. Compte automatique officiel de root-harness.",
         "lien": "Lire sur {source}",
-        "feeds": {"Numerama": "https://www.numerama.com/feed/", "Next": "https://next.ink/feed/", "Frandroid": "https://www.frandroid.com/feed",
-                  "Siècle Digital": "https://siecledigital.fr/feed/", "01net": "https://www.01net.com/actualites/feed/"},
+        "feeds": {"ActuIA": ("https://www.actuia.com/feed/", True), "Numerama": ("https://www.numerama.com/feed/", False),
+                  "Next": ("https://next.ink/feed/", False), "Siècle Digital": ("https://siecledigital.fr/feed/", False),
+                  "Frandroid": ("https://www.frandroid.com/feed", False), "Blog du Modérateur": ("https://www.blogdumoderateur.com/feed/", False),
+                  "01net": ("https://www.01net.com/actualites/feed/", False)},
     },
     "eutechbrief": {
         "pseudo": "eutechbrief", "at": "eutechbrief", "name": "Europe Tech Brief", "lang": "English", "community": "tech-news",
-        "about": "European tech news in two sentences, always with the source. An official automated root-harness account.",
+        "about": "AI news from Europe in two sentences, always with the source. An official automated root-harness account.",
         "lien": "Read on {source}",
-        "feeds": {"Sifted": "https://sifted.eu/feed", "Tech.eu": "https://tech.eu/feed/", "The Next Web": "https://thenextweb.com/feed",
-                  "EU-Startups": "https://www.eu-startups.com/feed/"},
+        "feeds": {"The Decoder": ("https://the-decoder.com/feed/", True), "Sifted": ("https://sifted.eu/sector/artificial-intelligence/feed", True),
+                  "Tech.eu": ("https://tech.eu/feed/", False), "EU-Startups": ("https://www.eu-startups.com/feed/", False),
+                  "The Next Web": ("https://thenextweb.com/feed", False)},
     },
     "globaltechbrief": {
         "pseudo": "globaltechbrief", "at": "globaltechbrief", "name": "Global Tech Brief", "lang": "English", "community": "tech-news",
-        "about": "The world's tech news in two sentences, always with the source. An official automated root-harness account.",
+        "about": "The world's AI news in two sentences, always with the source. An official automated root-harness account.",
         "lien": "Read on {source}",
-        "feeds": {"The Verge": "https://www.theverge.com/rss/index.xml", "TechCrunch": "https://techcrunch.com/feed/",
-                  "Ars Technica": "https://feeds.arstechnica.com/arstechnica/index", "MIT Technology Review": "https://www.technologyreview.com/feed/",
-                  "Hacker News": "https://hnrss.org/best"},
+        "feeds": {"The Verge": ("https://www.theverge.com/rss/ai-artificial-intelligence/index.xml", True),
+                  "TechCrunch": ("https://techcrunch.com/category/artificial-intelligence/feed/", True),
+                  "Ars Technica": ("https://arstechnica.com/ai/feed/", True),
+                  "MIT Technology Review": ("https://www.technologyreview.com/topic/artificial-intelligence/feed", True),
+                  "OpenAI": ("https://openai.com/news/rss.xml", True), "Google DeepMind": ("https://deepmind.google/blog/rss.xml", True),
+                  "Hugging Face": ("https://huggingface.co/blog/feed.xml", True)},
     },
 }
+# what makes a story about AI, in French and in English
+IA = re.compile(r"\b(IA|AI|A\.I\.|intelligences? artificielles?|artificial intelligence|LLMs?|GPT[-\w.]*|ChatGPT|OpenAI|Anthropic|Claude|Gemini|"
+                r"Mistral|DeepMind|DeepSeek|Copilot|Llama|Grok|Hugging ?Face|agents? (?:IA|d'IA|AI)|AI agents?|machine learning|apprentissage automatique|"
+                r"neural|neuronal|chatbots?|modèles? de langage|language models?|Nvidia|GPU|data ?cent(?:er|re)s?|génératives?|generative)\b", re.I)
 
 CONSIGNE = """You write posts for {name}, a professional tech news account. Write in {lang}.
 From the headline and the short intro below (and nothing else), write:
@@ -97,6 +108,36 @@ def propre(t: str) -> str:
     return " ".join(t.split())
 
 
+MRSS = "{http://search.yahoo.com/mrss/}"
+
+
+def image_du_flux(it) -> str:
+    """The picture the newsroom gives with the story in its feed (media:content, media:thumbnail, enclosure)."""
+    for tag in (MRSS + "content", MRSS + "thumbnail"):
+        for m in it.iter(tag):
+            u, typ = m.get("url", ""), m.get("type", "") or m.get("medium", "")
+            if u.startswith("https://") and ("image" in typ or not typ or re.search(r"\.(jpe?g|png|webp)", u, re.I)):
+                return u
+    e = it.find("enclosure")
+    if e is not None and e.get("url", "").startswith("https://") and "image" in e.get("type", ""):
+        return e.get("url")
+    return ""
+
+
+def image_de_la_page(lien: str) -> str:
+    """Otherwise the preview picture the article declares itself (og:image), shown as it is, from its site."""
+    try:
+        req = urllib.request.Request(lien, headers={"User-Agent": UA})
+        with urllib.request.urlopen(req, timeout=15) as r:
+            tete = r.read(200_000).decode("utf-8", "replace")
+    except Exception:
+        return ""
+    m = re.search(r'<meta[^>]+(?:property|name)=["\'](?:og:image|twitter:image)["\'][^>]*content=["\']([^"\']+)', tete, re.I) \
+        or re.search(r'<meta[^>]+content=["\']([^"\']+)["\'][^>]*(?:property|name)=["\'](?:og:image|twitter:image)', tete, re.I)
+    u = html.unescape(m.group(1)) if m else ""
+    return u if u.startswith("https://") else ""
+
+
 def lire_flux(source: str, url: str) -> list[dict]:
     req = urllib.request.Request(url, headers={"User-Agent": UA})
     with urllib.request.urlopen(req, timeout=20) as r:
@@ -105,12 +146,13 @@ def lire_flux(source: str, url: str) -> list[dict]:
     out = []
     for it in racine.iter("item"):
         lien = (it.findtext("link") or "").strip()
+        image = image_du_flux(it)
         date = it.findtext("pubDate") or ""
         try:
             quand = parsedate_to_datetime(date).timestamp()
         except Exception:
             quand = 0
-        out.append({"source": source, "titre": propre(it.findtext("title")), "lien": lien, "intro": propre(it.findtext("description"))[:700], "quand": quand})
+        out.append({"source": source, "titre": propre(it.findtext("title")), "lien": lien, "intro": propre(it.findtext("description"))[:700], "quand": quand, "image": image})
     for it in racine.findall("a:entry", ns):
         l = it.find("a:link[@rel='alternate']", ns) or it.find("a:link", ns)
         lien = l.get("href", "") if l is not None else ""
@@ -120,7 +162,7 @@ def lire_flux(source: str, url: str) -> list[dict]:
         except Exception:
             quand = 0
         intro = it.findtext("a:summary", default="", namespaces=ns) or it.findtext("a:content", default="", namespaces=ns)
-        out.append({"source": source, "titre": propre(it.findtext("a:title", default="", namespaces=ns)), "lien": lien, "intro": propre(intro)[:700], "quand": quand})
+        out.append({"source": source, "titre": propre(it.findtext("a:title", default="", namespaces=ns)), "lien": lien, "intro": propre(intro)[:700], "quand": quand, "image": ""})
     return [x for x in out if x["titre"] and x["lien"].startswith("https://")]
 
 
@@ -175,9 +217,10 @@ def un(ident: str, quoi: str, n_max: int = 1) -> None:
         etat_f = dossier(ident) / "vus.json"
         vus = set(json.loads(etat_f.read_text()) if etat_f.exists() else [])
         arts = []
-        for source, url in compte["feeds"].items():
+        for source, (url, deja_ia) in compte["feeds"].items():
             try:
-                arts += lire_flux(source, url)
+                L = lire_flux(source, url)
+                arts += L if deja_ia else [a for a in L if IA.search(a["titre"] + " " + a["intro"])]
             except Exception as e:
                 print(ident, "feed failed:", source, type(e).__name__)
         nouveaux = sorted((a for a in arts if a["lien"] not in vus and time.time() - a["quand"] < 2 * 86400), key=lambda a: -a["quand"])
@@ -194,8 +237,11 @@ def un(ident: str, quoi: str, n_max: int = 1) -> None:
             if not r:
                 continue
             texte = f"**{r['titre']}**\n\n{r['resume']}\n\n[{compte['lien'].format(source=a['source'])}]({a['lien']})"
-            sent = net.post(texte, community=compte["community"])
-            print(ident, "posted", sent.get("id", "")[:10], "|", r["titre"])
+            image = a.get("image") or image_de_la_page(a["lien"])
+            ext = (re.search(r"\.(png|webp|gif)(?:\?|$)", image, re.I) or [None, "jpeg"])[1].lower()
+            media = [{"url": image, "mime": "image/" + ("jpeg" if ext == "jpg" else ext)}] if image else []
+            sent = net.post(texte, media=media, community=compte["community"])
+            print(ident, "posted", sent.get("id", "")[:10], "| image" if media else "| no image", "|", r["titre"])
             postes += 1
             sources_du_jour.add(a["source"])
         etat_f.write_text(json.dumps(sorted(vus)[-3000:]))
