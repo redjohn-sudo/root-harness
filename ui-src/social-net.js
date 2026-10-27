@@ -239,6 +239,9 @@ export function reseau({ pool, relays, sk, me, pseudo, store, activite, expire =
       if (agent) tags.push(['rh-agent', String(agent).slice(0, 40)])
       media.forEach((m) => tags.push(['imeta', 'url ' + m.url, 'm ' + (m.mime || 'image/jpeg'), ...(m.dim ? ['dim ' + m.dim] : [])]))
       if (replyTo && replyTo.id) tags.push(['e', replyTo.id, relays[0], 'root'], ['p', replyTo.author || me])
+      // @names in the text: each one that someone really owns tags that person (they get a notification)
+      const noms = [...new Set([...text.matchAll(/(?<![\w@])@([A-Za-z0-9_]{3,20})/g)].map((m) => m[1].toLowerCase()))]
+      if (noms.length) { const own = await proprios(new Set(noms)); for (const a of noms.sort()) { const h = own[a]; if (h && h !== me && !tags.some((t) => t[0] === 'p' && t[1] === h)) tags.push(['p', h, '', 'mention']) } }
       return envoyer(signer(K.post, text + (media.length ? '\n' + media.map((m) => m.url).join('\n') : ''), tags))
     },
     async republier(post) {

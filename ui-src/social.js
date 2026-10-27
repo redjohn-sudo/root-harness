@@ -105,6 +105,32 @@ const SCENES = {
   tete: `<div class="media scene"><div class="scene-tete">${tete()}</div></div>`,
 }
 
+// @names in a post become links to that person's page
+const liensAt = (html) => html.replace(/(^|[\s(>])@([A-Za-z0-9_]{3,20})\b/g, '$1<a class="at" data-at="$2">@$2</a>')
+
+// while you type @, the people you know come up: tap one to write their @
+let CONNUS = null
+async function connus(H) {
+  if (CONNUS) return CONNUS
+  try { const m = await H.network.wall(''); const L = [...new Set([...(m.following || []), ...(m.followers || [])])]; CONNUS = (await H.network.people(L)).filter((g) => g.at || g.pseudo) }
+  catch { CONNUS = [] }
+  return CONNUS
+}
+function suggererAt(ta, H) {
+  const boite = document.createElement('div'); boite.className = 'suggest-at'; ta.insertAdjacentElement('afterend', boite)
+  const fermer = () => { boite.innerHTML = ''; boite.classList.remove('on') }
+  ta.addEventListener('input', async () => {
+    const avant = ta.value.slice(0, ta.selectionStart), m = avant.match(/(?:^|\s)@([A-Za-z0-9_]{0,20})$/)
+    if (!m) return fermer()
+    const q = m[1].toLowerCase(), L = (await connus(H)).filter((g) => [g.at, g.pseudo, g.name].some((x) => (x || '').toLowerCase().startsWith(q))).slice(0, 5)
+    if (!L.length) return fermer()
+    boite.innerHTML = L.map((g, i) => `<button class="sa" data-i="${i}">${avatar(g, 24)}<b>${esc(nom(g))}</b><span>@${esc(g.at || g.pseudo)}</span></button>`).join(''); boite.classList.add('on')
+    $$('.sa', boite).forEach((b) => b.onmousedown = (e) => { e.preventDefault(); const g = L[+b.dataset.i], mot = '@' + (g.at || g.pseudo) + ' '
+      const debut = avant.length - m[1].length - 1; ta.value = ta.value.slice(0, debut) + mot + ta.value.slice(ta.selectionStart); const c = debut + mot.length; ta.setSelectionRange(c, c); ta.focus(); fermer() })
+  })
+  ta.addEventListener('blur', () => setTimeout(fermer, 150))
+}
+
 // -- a post ------------------------------------------------------------------------------------
 const medias = (p) => p.scene ? SCENES[p.scene] : (p.media || []).map((m) => `<div class="media">${(m.mime || '').startsWith('video') ? `<video src="${esc(m.url)}" controls playsinline preload="metadata"></video>` : `<img src="${esc(m.url)}" alt="" loading="lazy">`}</div>`).join('')
 function carte(p, i) {
@@ -112,7 +138,7 @@ function carte(p, i) {
   return `<article class="post" data-id="${esc(p.id)}" style="--i:${Math.min(i, 12)}">${avatar(a)}
     <div class="pc">${rb ? `<div class="pagent" style="margin:0 0 6px">${ico('republier')}reposted by ${esc(nom(rb))}</div>` : ''}
       <div class="ph"><b class="qui" data-hex="${esc(a.hex || '')}">${esc(nom(a))}</b>${niveau(a.level, a.level_label)}<span class="m">${esc(sousNom(a))} · ${quand(p.at)}${p.community ? ' · ' + esc(nomCommu(p.community)) : ''}${p.reply_to ? ' · reply' : ''}</span></div>
-      <div class="ptx">${riche(p.text)}</div>${medias(p)}
+      <div class="ptx">${liensAt(riche(p.text))}</div>${medias(p)}
       ${p.agent ? `<div class="pagent">${ico('etincelle')}written with ${esc(p.agent)}</div>` : ''}
       ${p.exemple ? '<div class="pagent" style="color:var(--ambre)">an example</div>' : ''}
       <div class="pact"><button data-a="rep" title="answer">${ico('repondre')}<span>${p.counts.replies || ''}</span></button>
@@ -124,6 +150,8 @@ function brancher(el, posts, H, apres) {
   $$('.post', el).forEach((a) => {
     const p = posts.find((x) => x.id === a.dataset.id); if (!p) return
     $('.qui', a).onclick = (e) => { e.stopPropagation(); if (p.author.hex) ouvrirPage(H, p.author.hex) }
+    $$('.at', a).forEach((el) => el.onclick = async (e) => { e.stopPropagation()
+      try { const g = await H.network.lookup('@' + el.dataset.at); if (!g) return toast('Nobody has @' + el.dataset.at + ' yet.'); ouvrirPage(H, g.hex) } catch (err) { toast(err.message || 'Not found.') } })
     $('.ptx', a).onclick = () => { if (!p.exemple) ouvrirFil(p, H) }
     $$('[data-a]', a).forEach((b) => b.onclick = async (e) => {
       e.stopPropagation()
@@ -172,7 +200,8 @@ async function ouvrirFil(p, H, repondre = false) {
     } catch (e) { toast(e.message || 'Not sent.') }
     $('#t-go', f).disabled = false
   }
-  $('#t-go', f).onclick = go; $('#t-q', f).onkeydown = (e) => { if (e.key === 'Enter') go() }
+  $('#t-go', f).onclick = go; $('#t-q', f).onkeydown = (e) => { if (e.key === 'Enter' && !$('.suggest-at.on', f)) go() }
+  suggererAt($('#t-q', f), H)
   if (repondre) setTimeout(() => $('#t-q', f).focus(), 300)
 }
 
@@ -208,6 +237,7 @@ export async function vueFil(H) {
     <div class="boutons" id="f-onglets">${[['for-you', 'for you'], ['friends', 'friends']].map(([k, t]) => `<button class="bouton${k === FIL ? ' vert' : ''}" data-f="${k}">${t}</button>`).join('')}</div>
     <div class="boite-btw" style="margin-top:10px"><input class="champ" id="f-cherche" placeholder="find someone: @name, pseudo#code or npub" autocomplete="off"><button class="rond-btn" id="f-go" title="find">${ico('loupe')}</button></div>
     <div id="f-liste"><div class="vide">Loading...</div></div></div></div>`
+  suggererAt($('#f-t'), H)
   $('#f-img').onchange = (e) => { FICHIER = e.target.files[0] || null; const u = FICHIER && URL.createObjectURL(FICHIER)
     $('#f-apercu').innerHTML = FICHIER ? `<div class="media">${FICHIER.type.startsWith('video') ? `<video src="${u}" controls playsinline></video>` : `<img src="${u}" alt="">`}</div>` : '' }
   $('#f-agent').onclick = async () => {

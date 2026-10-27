@@ -470,6 +470,14 @@ class Network:
             tags.append(["imeta", f"url {m['url']}", f"m {m.get('mime', 'image/jpeg')}"] + ([f"dim {m['dim']}"] if m.get("dim") else []))
         if reply_to and reply_to.get("id"):
             tags += [["e", reply_to["id"], RELAYS[0], "root"], ["p", reply_to.get("author", self.me)]]
+        # @names in the text: each one that someone really owns tags that person (they get a notification)
+        names = {m.lower() for m in re.findall(r"(?<![\w@])@([A-Za-z0-9_]{3,20})", text)}
+        if names:
+            owners = self._do(self._at_owners(names))
+            for a in sorted(names):
+                h = owners.get(a)
+                if h and h != self.me and not any(t[:2] == ["p", h] for t in tags):
+                    tags.append(["p", h, "", "mention"])
         content = text + ("\n" + "\n".join(m["url"] for m in media) if media else "")
         sent = self._do(self._send(self._event(K_POST, content, tags)))
         self.on_event({"type": "network_posted", "id": sent["id"]})

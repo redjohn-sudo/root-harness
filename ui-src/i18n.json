@@ -4745,6 +4745,15 @@
  },
  "patterns": [
   {
+   "en": "^Nobody has @(\\S+) yet\\.$",
+   "de": "Niemand hat @$1 bisher.",
+   "es": "Nadie tiene @$1 todavía.",
+   "fr": "Personne n'a encore @$1.",
+   "ja": "@$1 はまだ誰も使っていません。",
+   "pt": "Ninguém tem @$1 ainda.",
+   "zh": "还没有人使用 @$1。"
+  },
+  {
    "en": "^Block (.+)$",
    "de": "$1 blockieren",
    "es": "Bloquear a $1",

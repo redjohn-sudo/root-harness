@@ -427,6 +427,16 @@ label.bouton,label.rond-btn{cursor:pointer}
 @media (max-width:720px){.grille-commus{grid-template-columns:1fr}}
 .sans-anim .commu{animation:none!important;opacity:1!important}
 
+/* @names: links in posts, suggestions while typing */
+.ptx .at{color:var(--vert-clair);cursor:pointer;text-decoration:none}
+.ptx .at:hover{text-decoration:underline;text-underline-offset:3px}
+.suggest-at{display:none;flex-direction:column;gap:2px;margin-top:6px;padding:4px;border-radius:14px;background:var(--verre-fort);border:1px solid var(--trait);box-shadow:0 14px 40px rgba(0,0,0,.4)}
+.suggest-at.on{display:flex}
+.suggest-at .sa{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:10px;text-align:left;transition:background .15s}
+.suggest-at .sa:hover{background:rgba(255,255,255,.07)}
+.suggest-at .sa b{font-weight:600}
+.suggest-at .sa span{color:var(--encre-3);font-size:13px}
+
 /* a quiet refresh: no entrance animation */
 .sans-anim .post,.sans-anim .tr,.sans-anim .notif,.sans-anim .p-badges>span,.sans-anim .gb{animation:none!important;opacity:1!important}
 
