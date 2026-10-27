@@ -4973,6 +4973,14 @@
    "ja": "写真またはGIF",
    "pt": "foto ou GIF",
    "zh": "照片或 GIF"
+  },
+  "Cancel": {
+   "de": "Abbrechen",
+   "es": "Cancelar",
+   "fr": "Annuler",
+   "ja": "キャンセル",
+   "pt": "Cancelar",
+   "zh": "取消"
   }
  },
  "patterns": [
