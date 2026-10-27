@@ -180,6 +180,9 @@ def profile_set(fields: dict) -> dict:
         p["communities"] = sorted({slug(c) for c in fields["communities"] if slug(c)})[:30]
     if "bot" in fields:
         p["bot"] = bool(fields["bot"])          # an automated account says so (NIP-24)
+    for k in ("picture_frame", "banner_frame"):    # how an animated picture is framed (size %, x %, y %): GIFs are never cut
+        if k in fields:
+            p[k] = cadre(fields[k])
     _write(PROFILE, p)
     return p
 
@@ -232,6 +235,17 @@ def github_showcase() -> list[dict]:
             out.append({"kind": "project", "title": title[:60], "text": (texts[i] if i < len(texts) else "")[:200], "when": "",
                         "live": False, "url": (links[i] or [""])[0] if i < len(links) else "", "image": src})
     return out
+
+
+def cadre(f) -> dict | None:
+    """A framing, kept to sane numbers: {"size": 100..800, "x": 0..100, "y": 0..100}."""
+    if not isinstance(f, dict):
+        return None
+    try:
+        return {"size": round(min(800.0, max(100.0, float(f.get("size", 100)))), 1),
+                "x": round(min(100.0, max(0.0, float(f.get("x", 50)))), 1), "y": round(min(100.0, max(0.0, float(f.get("y", 50)))), 1)}
+    except (TypeError, ValueError):
+        return None
 
 
 def work_suggest() -> list[dict]:
@@ -366,6 +380,7 @@ class Network:
         extras = {"v": 1, "id": directory.handle(self.pseudo, self.me), "pseudo": self.pseudo, "name": p["name"], "show": p["show"],
                   "school": p["school"], "role": p["role"], "state": p["state"], "level": act["level"], "days": act["days"],
                   "work": p["work"], "communities": p["communities"], "at": p.get("at", ""), "bot": bool(p.get("bot")),
+                  "picture_frame": p.get("picture_frame"), "banner_frame": p.get("banner_frame"),
                   # a picture pasted as data stays small here (relays cap events near 100 KB); uploaded ones are just links
                   "picture": p["picture"][:48000], "banner": p["banner"][:48000]}
 
@@ -423,6 +438,7 @@ class Network:
              "communities": [slug(c) for c in (extras.get("communities") or []) if slug(c)][:30],
              "at": at_norm(extras.get("at", "")),
              "bot": bool(meta.get("bot") or extras.get("bot")), "verified": hexkey in VERIFIED,
+             "picture_frame": cadre(extras.get("picture_frame")), "banner_frame": cadre(extras.get("banner_frame")),
              "mine": hexkey == self.me}
         v["level_label"] = level_label(v["level"])
         if hexkey == self.me and not (meta or extras):

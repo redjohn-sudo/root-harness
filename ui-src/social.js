@@ -84,7 +84,8 @@ const nom = (p) => (p.show === 'name' || p.show === 'both') && p.name ? p.name :
 const marques = (p) => (p.verified ? `<span class="coche" title="Official root-harness account"><svg viewBox="0 0 24 24"><path d="M12 2.5l2.4 1.8 3-.2.9 2.9 2.4 1.8-.9 2.9.9 2.9-2.4 1.8-.9 2.9-3-.2L12 21.5l-2.4-1.8-3 .2-.9-2.9-2.4-1.8.9-2.9-.9-2.9 2.4-1.8.9-2.9 3 .2z" fill="currentColor"/><path d="M8.3 12.3l2.5 2.5 5-5.2" fill="none" stroke="#0e1b17" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>` : '')
   + (p.bot ? '<span class="auto" title="Posts by itself">automated</span>' : '')
 const sousNom = (p) => '@' + (p.at || p.id || (p.npub ? p.npub.slice(0, 14) + '...' : 'unknown')) + (p.show === 'both' && p.name && p.pseudo ? ' · ' + p.pseudo : '')
-const avatar = (p, t = 44) => p.picture ? `<span class="av" style="width:${t}px;height:${t}px;background-image:url('${esc(p.picture)}')"></span>`
+const cadrage = (f) => f ? `;background-size:${+f.size}% auto;background-position:${+f.x}% ${+f.y}%` : ''
+const avatar = (p, t = 44) => p.picture ? `<span class="av" style="width:${t}px;height:${t}px;background-image:url('${esc(p.picture)}')${cadrage(p.picture_frame)}"></span>`
   : p.mine ? `<span class="av racine" style="width:${t}px;height:${t}px">${tete()}</span>`
   : `<span class="av lettre" style="width:${t}px;height:${t}px;--h:${p.hue ?? hue(p.hex)}">${esc((nom(p)[0] || '?').toUpperCase())}</span>`
 const COMMUS_BASE = [['agents', 'Agents'], ['security-ctf', 'Security & CTF'], ['42-paris', '42 Paris'], ['hackathons', 'Hackathons'], ['local-llms', 'Local LLMs'], ['design', 'Design'], ['tech-news', 'Tech news'], ['actu-tech', 'Actu tech']]
@@ -355,7 +356,7 @@ const travail = (work) => (work || []).map((t, i) => `<div class="verre tr" styl
 function rendrePage(v, mur, H) {
   const p = mur.profile, mine = !!p.mine, badges = mur.badges || [], epingles = badges.filter((b) => b.pinned), montres = epingles.length ? epingles : badges.slice(0, 6)
   v.innerHTML = `<div class="defile" style="padding-top:0"><div class="colonne">
-    <div class="couverture"${p.banner ? ` style="background-image:url('${esc(p.banner)}')"` : ''}></div>
+    <div class="couverture"${p.banner ? ` style="background-image:url('${esc(p.banner)}')${cadrage(p.banner_frame)}"` : ''}></div>
     <div class="p-haut">${avatar(p, 104)}<div class="boutons" style="margin:0 0 6px auto">${mine ? `<button class="rond-btn" id="p-reglages" title="Settings">${ico('reglages')}</button><button class="bouton" id="p-qr">Share my ID</button><button class="bouton plein" id="p-edit">Edit profile</button>`
       : `<button class="bouton" id="p-retour">${ico('retour')} my page</button><button class="rond-btn" id="p-plus" title="more">${ico('points')}</button><button class="bouton" id="p-ami">Add as a friend</button><button class="bouton${mur.i_follow ? '' : ' plein'}" id="p-suivre">${mur.i_follow ? 'Following' : 'Follow'}</button>`}</div></div>
     <div class="p-nom">${esc(nom(p))}${marques(p)}${!mine && mur.follows_me ? '<span class="suit-toi">follows you</span>' : ''}</div><div class="p-id">${esc(sousNom(p))}</div>
@@ -514,9 +515,9 @@ function tousBadges(H, mur) {
 }
 
 function editer(H, p) {
-  let work = (p.work || []).map((w) => ({ ...w })), photo = p.picture, couv = p.banner, montrer = p.show || 'pseudo', etat = p.state || 'etudie', fPhoto = null, fCouv = null
+  let work = (p.work || []).map((w) => ({ ...w })), photo = p.picture, couv = p.banner, montrer = p.show || 'pseudo', etat = p.state || 'etudie', fPhoto = null, fCouv = null, cPhoto = p.picture_frame || null, cCouv = p.banner_frame || null
   const f = feuille(`<h3>edit your profile</h3><div class="sous-titre" style="margin-bottom:10px">Everyone can see it.</div>
-    <div class="ed-photo">${avatar(p, 64)}<label class="bouton">photo<input type="file" id="e-photo" accept="image/*" hidden></label><label class="bouton">cover<input type="file" id="e-couv" accept="image/*" hidden></label>${p.picture ? '<button class="bouton" id="e-sansphoto">Root\'s head</button>' : ''}</div>
+    <div class="ed-photo">${avatar(p, 64)}<label class="bouton">photo or GIF<input type="file" id="e-photo" accept="image/*" hidden></label><label class="bouton">cover<input type="file" id="e-couv" accept="image/*" hidden></label>${p.picture ? '<button class="bouton" id="e-sansphoto">Root\'s head</button>' : ''}</div>
     <div class="d" style="font-size:13px;color:var(--encre-3);margin:4px 0 6px">your @: the first to take a name keeps it</div>
     <div class="boite-btw" style="margin-bottom:10px"><input class="champ" id="e-at" placeholder="@yourname" value="${p.at ? '@' + esc(p.at) : ''}" autocomplete="off" autocapitalize="none"><button class="bouton" id="e-at-ok">Take it</button></div>
     <input class="champ" id="e-nom" placeholder="first and last name (optional)" value="${esc(p.name || '')}">
@@ -551,9 +552,13 @@ function editer(H, p) {
     if (!add.length) return toast('Nothing new to suggest.'); work.push(...add); lignes(); toast(add.length + ' line(s) from your conversations: keep what you want.') }
   const choix = (sel, attr, set) => $$(sel + ' [data-' + attr + ']', f).forEach((b) => b.onclick = () => { set(b.dataset[attr]); $$(sel + ' .bouton', f).forEach((x) => x.classList.toggle('vert', x === b)) })
   choix('#e-montrer', 'm', (x) => montrer = x); choix('#e-etat', 'e', (x) => etat = x)
-  $('#e-photo', f).onchange = (e) => { fPhoto = e.target.files[0] || null; toast(fPhoto ? 'Photo ready: it is uploaded when you save.' : '') }
-  $('#e-couv', f).onchange = (e) => { fCouv = e.target.files[0] || null; toast(fCouv ? 'Cover ready: it is uploaded when you save.' : '') }
-  $('#e-sansphoto', f) && ($('#e-sansphoto', f).onclick = () => { photo = ''; fPhoto = null; toast('Back to Root\'s head.') })
+  // a picture is framed first: still ones are cut to the frame, GIFs keep their animation and their framing travels with them
+  $('#e-photo', f).onchange = async (e) => { const fi = e.target.files[0]; e.target.value = ''; if (!fi) return
+    const r = await recadrer(fi, 'rond'); if (!r) return; fPhoto = r.file; cPhoto = r.frame
+    $('.ed-photo .av', f).outerHTML = avatar({ picture: r.apercu, picture_frame: r.frame }, 64); toast('Photo ready: it is uploaded when you save.') }
+  $('#e-couv', f).onchange = async (e) => { const fi = e.target.files[0]; e.target.value = ''; if (!fi) return
+    const r = await recadrer(fi, 'large'); if (!r) return; fCouv = r.file; cCouv = r.frame; toast('Cover ready: it is uploaded when you save.') }
+  $('#e-sansphoto', f) && ($('#e-sansphoto', f).onclick = () => { photo = ''; fPhoto = null; cPhoto = null; toast('Back to Root\'s head.') })
   H.network.posting().then((s) => { $('#e-suggest', f).classList.toggle('on', !!s.suggest); $('#e-auto', f).classList.toggle('on', !!s.auto)
     $('#e-suggest', f).onclick = async () => { const r = await H.network.posting(!s.suggest, null); s.suggest = r.suggest; $('#e-suggest', f).classList.toggle('on', !!r.suggest) }
     $('#e-auto', f).onclick = async () => { const r = await H.network.posting(null, !s.auto); s.auto = r.auto; $('#e-auto', f).classList.toggle('on', !!r.auto); if (r.auto) toast('Your agent will post about long tasks by itself.') } }).catch(() => {})
@@ -563,7 +568,7 @@ function editer(H, p) {
       if (fPhoto) { const u = await H.network.upload(fPhoto); if (!u || u.error) throw new Error((u && u.error) || 'Photo upload failed.'); photo = u.url }
       if (fCouv) { const u = await H.network.upload(fCouv); if (!u || u.error) throw new Error((u && u.error) || 'Cover upload failed.'); couv = u.url }
       const r = await H.network.update({ name: $('#e-nom', f).value.trim(), show: montrer, state: etat, school: $('#e-ecole', f).value.trim(), role: $('#e-poste', f).value.trim(),
-        about: $('#e-bio', f).value.trim(), picture: photo, banner: couv, work: work.filter((w) => (w.title || '').trim()) })
+        about: $('#e-bio', f).value.trim(), picture: photo, banner: couv, picture_frame: cPhoto, banner_frame: cCouv, work: work.filter((w) => (w.title || '').trim()) })
       if (r && r.error) throw new Error(r.error)
       MOI = null; fermerFeuille(); toast('Profile published.'); vueProfil(H)
       H.network.checkBadges().then((n) => { if (Array.isArray(n) && n.length) toast('New badge: ' + n.map((id) => (CATALOGUE.find((c) => c.id === id) || { nom: id }).nom).join(', ')) }).catch(() => {})
@@ -768,4 +773,45 @@ export async function vueRecherche(H) {
   $('#s-q').onkeydown = (e) => { if (e.key === 'Enter') montrer(true) }
   $('#s-go').onclick = () => montrer(true)
   montrer(false); setTimeout(() => $('#s-q') && $('#s-q').focus(), 300)
+}
+
+
+// =====================================================================================
+// framing a picture: drag to place it, zoom with the slider; a round frame for the photo, a wide one for the cover
+// =====================================================================================
+function recadrer(fichier, forme) {
+  return new Promise((fini) => {
+    const anime = fichier.type === 'image/gif', W = Math.min(forme === 'rond' ? 280 : 540, innerWidth - 84), Hh = forme === 'rond' ? W : Math.round(W / 3)
+    const url = URL.createObjectURL(fichier), img = new Image()
+    const o = document.createElement('div'); o.className = 'recadrage'
+    o.innerHTML = `<div class="rc-boite verre"><h3>${forme === 'rond' ? 'frame your photo' : 'frame your cover'}</h3>
+      <div class="sous-titre">Drag to place it, zoom with the slider.${anime ? ' Your GIF stays animated.' : ''}</div>
+      <div class="rc-cadre ${forme}" style="width:${W}px;height:${Hh}px"><img alt="" draggable="false"></div>
+      <input type="range" class="rc-zoom" min="1" max="4" step="0.01" value="1">
+      <div class="boutons"><button class="bouton" data-r="non">Cancel</button><button class="bouton plein" data-r="oui">Use it</button></div></div>`
+    document.body.appendChild(o)
+    const cadreEl = o.querySelector('.rc-cadre'), im = o.querySelector('img'), zoomEl = o.querySelector('.rc-zoom')
+    let s0 = 1, z = 1, ox = 0, oy = 0, nw = 1, nh = 1
+    const borner = () => { const s = s0 * z; ox = Math.min(0, Math.max(W - nw * s, ox)); oy = Math.min(0, Math.max(Hh - nh * s, oy)) }
+    const dessiner = () => { borner(); const s = s0 * z; im.style.width = nw * s + 'px'; im.style.height = nh * s + 'px'; im.style.transform = `translate(${ox}px,${oy}px)` }
+    img.onload = () => { nw = img.naturalWidth; nh = img.naturalHeight; s0 = Math.max(W / nw, Hh / nh); ox = (W - nw * s0) / 2; oy = (Hh - nh * s0) / 2; im.src = url; dessiner() }
+    img.src = url
+    let tire = null
+    cadreEl.onpointerdown = (e) => { tire = { x: e.clientX, y: e.clientY, ox, oy }; cadreEl.setPointerCapture(e.pointerId) }
+    cadreEl.onpointermove = (e) => { if (!tire) return; ox = tire.ox + e.clientX - tire.x; oy = tire.oy + e.clientY - tire.y; dessiner() }
+    cadreEl.onpointerup = cadreEl.onpointercancel = () => { tire = null }
+    cadreEl.onwheel = (e) => { e.preventDefault(); zoomEl.value = Math.min(4, Math.max(1, z * (e.deltaY < 0 ? 1.06 : 0.94))); zoomEl.oninput() }
+    zoomEl.oninput = () => { const c = { x: (W / 2 - ox) / (s0 * z), y: (Hh / 2 - oy) / (s0 * z) }; z = +zoomEl.value; ox = W / 2 - c.x * s0 * z; oy = Hh / 2 - c.y * s0 * z; dessiner() }
+    const fermer = (r) => { o.remove(); URL.revokeObjectURL(url); fini(r) }
+    o.querySelector('[data-r="non"]').onclick = () => fermer(null)
+    o.querySelector('[data-r="oui"]').onclick = () => {
+      const s = s0 * z
+      // the framing as CSS: how wide the picture is against the frame, and where it sits
+      const frame = { size: Math.round((nw * s / W) * 1000) / 10, x: nw * s > W ? Math.round((-ox / (nw * s - W)) * 1000) / 10 : 50, y: nh * s > Hh ? Math.round((-oy / (nh * s - Hh)) * 1000) / 10 : 50 }
+      if (anime) return fermer({ file: fichier, frame, apercu: URL.createObjectURL(fichier) })
+      const OW = forme === 'rond' ? 640 : 1500, OH = Math.round(OW * Hh / W), c = document.createElement('canvas'); c.width = OW; c.height = OH
+      c.getContext('2d').drawImage(img, -ox / s, -oy / s, W / s, Hh / s, 0, 0, OW, OH)
+      c.toBlob((b) => { const f2 = new File([b], (forme === 'rond' ? 'photo' : 'cover') + '.jpg', { type: 'image/jpeg' }); fermer({ file: f2, frame: null, apercu: URL.createObjectURL(b) }) }, 'image/jpeg', 0.9)
+    }
+  })
 }

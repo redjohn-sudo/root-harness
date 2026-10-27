@@ -18,6 +18,8 @@ export const slug = (t) => (t || '').toLowerCase().replace(/[^a-z0-9-]+/g, '-').
 const travailPropre = (w) => ({ kind: ['project', 'hackathon', 'progress'].includes(w.kind) ? w.kind : 'project', title: String(w.title).slice(0, 60), text: String(w.text || '').slice(0, 200),
   when: String(w.when || '').slice(0, 24), live: !!w.live, url: /^https?:\/\//.test(String(w.url || '')) ? String(w.url).slice(0, 200) : '',
   image: String(w.image || '').startsWith('https://') ? String(w.image).slice(0, 300) : '' })
+export const cadre = (f) => { if (!f || typeof f !== 'object') return null; const n = (v, a, b, d) => { v = parseFloat(v); return Math.round(Math.min(b, Math.max(a, isNaN(v) ? d : v)) * 10) / 10 }
+  return { size: n(f.size, 100, 800, 100), x: n(f.x, 0, 100, 50), y: n(f.y, 0, 100, 50) } }
 export const niveauLabel = (n) => ({ 3: 'actively active', 2: 'very active', 1: 'active' })[n] || ''
 const first = (tags, name, d = '') => { const t = tags.find((x) => x[0] === name); return t && t[1] !== undefined ? t[1] : d }
 const hexOk = (h) => /^[0-9a-f]{64}$/.test(h || '')
@@ -38,6 +40,7 @@ export function extrasPropres(p, fields) {
   for (const k of ['name', 'about', 'picture', 'banner', 'school', 'role']) if (k in fields) p[k] = String(fields[k] || '').slice(0, k === 'picture' || k === 'banner' ? 2000 : 160)
   if (MONTRER.includes(fields.show)) p.show = fields.show
   if ('at' in fields) p.at = atNorm(fields.at)
+  for (const k of ['picture_frame', 'banner_frame']) if (k in fields) p[k] = cadre(fields[k])   // how an animated picture is framed: GIFs are never cut
   if (ETATS.includes(fields.state)) p.state = fields.state
   if (Array.isArray(fields.work)) p.work = fields.work.filter((w) => w && w.title).slice(0, 12).map((w) => ({
     id: String(w.id || Math.random().toString(36).slice(2, 10)), kind: ['project', 'hackathon', 'progress'].includes(w.kind) ? w.kind : 'project',
@@ -78,7 +81,7 @@ export function reseau({ pool, relays, sk, me, pseudo, store, activite, expire =
       school: String(ex.school || '').slice(0, 60), role: String(ex.role || '').slice(0, 80), state: ETATS.includes(ex.state) ? ex.state : '',
       level: Math.min(3, Math.max(0, parseInt(ex.level, 10) || 0)), work: (ex.work || []).filter((w) => w && w.title).slice(0, 12).map(travailPropre),
       communities: (ex.communities || []).map(slug).filter(Boolean).slice(0, 30), at: atNorm(ex.at), mine: hex === me,
-      bot: !!(meta.bot || ex.bot), verified: Object.prototype.hasOwnProperty.call(VERIFIED, hex) }
+      bot: !!(meta.bot || ex.bot), verified: Object.prototype.hasOwnProperty.call(VERIFIED, hex), picture_frame: cadre(ex.picture_frame), banner_frame: cadre(ex.banner_frame) }
     v.level_label = niveauLabel(v.level)
     profils.set(hex, v)
     return v
@@ -118,7 +121,7 @@ export function reseau({ pool, relays, sk, me, pseudo, store, activite, expire =
     const shown = { pseudo, name: p.name || pseudo, both: p.name ? `${p.name} (${pseudo})` : pseudo }[p.show]
     const meta = { name: slug(pseudo).replace(/-/g, '.'), display_name: shown, about: p.about, picture: p.picture.startsWith('https://') ? p.picture : '', banner: p.banner.startsWith('https://') ? p.banner : '' }
     const ex = { v: 1, id: handle(pseudo, me), pseudo, name: p.name, show: p.show, school: p.school, role: p.role, state: p.state, level: act.level, days: act.days,
-      work: p.work, communities: p.communities, at: p.at || '', picture: p.picture.slice(0, 48000), banner: p.banner.slice(0, 48000) }   // relays cap events near 100 KB
+      work: p.work, communities: p.communities, at: p.at || '', picture_frame: p.picture_frame || null, banner_frame: p.banner_frame || null, picture: p.picture.slice(0, 48000), banner: p.banner.slice(0, 48000) }   // relays cap events near 100 KB
     const a = await envoyer(signer(K.profil, JSON.stringify(Object.fromEntries(Object.entries(meta).filter(([, v]) => v))), []))
     const b = await envoyer(signer(K.extras, JSON.stringify(ex), [['d', EXTRAS]]))
     profils.delete(me)

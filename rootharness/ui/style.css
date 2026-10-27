@@ -451,6 +451,15 @@ label.bouton,label.rond-btn{cursor:pointer}
 .puce-g button{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:11px;color:var(--encre-3)}
 .puce-g button:hover{background:rgba(255,255,255,.1);color:var(--encre)}
 
+/* framing a picture: a dark veil, the frame, the slider */
+.recadrage{position:fixed;inset:0;z-index:60;display:grid;place-items:center;background:rgba(6,8,14,.66);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);padding:16px}
+.rc-boite{padding:20px 22px;border-radius:var(--r);max-width:100%;animation:pop .35s var(--ease)}
+.rc-boite h3{font-size:22px;font-weight:300;margin-bottom:4px}
+.rc-cadre{position:relative;overflow:hidden;margin:14px auto 12px;max-width:100%;touch-action:none;cursor:grab;background:#0b0d16;border:1px solid var(--trait-fort)}
+.rc-cadre.rond{border-radius:50%}.rc-cadre.large{border-radius:14px}
+.rc-cadre img{position:absolute;left:0;top:0;max-width:none;user-select:none;-webkit-user-drag:none;pointer-events:none}
+.rc-zoom{width:100%;accent-color:var(--vert-clair)}
+
 /* a quiet refresh: no entrance animation */
 .sans-anim .post,.sans-anim .tr,.sans-anim .notif,.sans-anim .p-badges>span,.sans-anim .gb{animation:none!important;opacity:1!important}
 

@@ -4925,6 +4925,54 @@
    "ja": "開始できませんでした。",
    "pt": "Não foi possível começar.",
    "zh": "无法开始。"
+  },
+  "frame your photo": {
+   "de": "foto zuschneiden",
+   "es": "encuadra tu foto",
+   "fr": "cadre ta photo",
+   "ja": "写真を調整",
+   "pt": "enquadre sua foto",
+   "zh": "调整你的头像"
+  },
+  "frame your cover": {
+   "de": "titelbild zuschneiden",
+   "es": "encuadra tu portada",
+   "fr": "cadre ta bannière",
+   "ja": "カバーを調整",
+   "pt": "enquadre sua capa",
+   "zh": "调整你的封面"
+  },
+  "Drag to place it, zoom with the slider.": {
+   "de": "Zum Platzieren ziehen, mit dem Regler zoomen.",
+   "es": "Arrastra para colocarla, haz zoom con el control.",
+   "fr": "Fais glisser pour la placer, zoome avec le curseur.",
+   "ja": "ドラッグで位置を決め、スライダーで拡大。",
+   "pt": "Arraste para posicionar, dê zoom com o controle.",
+   "zh": "拖动来摆放,用滑块缩放。"
+  },
+  "Drag to place it, zoom with the slider. Your GIF stays animated.": {
+   "de": "Zum Platzieren ziehen, mit dem Regler zoomen. Dein GIF bleibt animiert.",
+   "es": "Arrastra para colocarla, haz zoom con el control. Tu GIF sigue animado.",
+   "fr": "Fais glisser pour la placer, zoome avec le curseur. Ton GIF reste animé.",
+   "ja": "ドラッグで位置を決め、スライダーで拡大。GIFはアニメーションのままです。",
+   "pt": "Arraste para posicionar, dê zoom com o controle. Seu GIF continua animado.",
+   "zh": "拖动来摆放,用滑块缩放。你的 GIF 会保持动态。"
+  },
+  "Use it": {
+   "de": "Übernehmen",
+   "es": "Usar",
+   "fr": "Utiliser",
+   "ja": "使う",
+   "pt": "Usar",
+   "zh": "使用"
+  },
+  "photo or GIF": {
+   "de": "Foto oder GIF",
+   "es": "foto o GIF",
+   "fr": "photo ou GIF",
+   "ja": "写真またはGIF",
+   "pt": "foto ou GIF",
+   "zh": "照片或 GIF"
   }
  },
  "patterns": [
