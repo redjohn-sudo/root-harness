@@ -282,7 +282,7 @@ class Network:
         out = await _aw(self.client.send_event(ev))
         return {"id": ev.id().to_hex(), "at": ev.created_at().as_secs(), "relays": len(out.success)}
 
-    async def _fetch(self, filters: list, seconds: int = 6) -> list:
+    async def _fetch(self, filters: list, seconds: int = 4) -> list:
         n = _n()
         evs = await _aw(self.client.fetch_events(n.ReqTarget.auto(filters), timeout=timedelta(seconds=seconds)))
         return evs.to_vec() if hasattr(evs, "to_vec") else list(evs)
@@ -496,8 +496,13 @@ class Network:
         posts.sort(key=lambda p: -p["at"])
         posts = posts[:limit]
         ids = [p["id"] for p in posts]
+
+        async def counts_of():
+            return await self._fetch([self._f().kinds([n.Kind(K_POST), n.Kind(K_REPOST), n.Kind(K_REACTION)]).events([self._eid(i) for i in ids]).limit(2000)], 6) if ids else []
+        # the counts and the authors at the same time
+        counts, authors = await asyncio.gather(counts_of(), self._profiles_of(
+            {p["author"]["hex"] for p in posts} | {p["reposted_by"]["hex"] for p in posts if p.get("reposted_by")}))
         if ids:
-            counts = await self._fetch([self._f().kinds([n.Kind(K_POST), n.Kind(K_REPOST), n.Kind(K_REACTION)]).events([self._eid(i) for i in ids]).limit(2000)], 6)
             for ev in counts:
                 tags = _tags(ev)
                 kind = ev.kind().as_u16()
@@ -509,7 +514,6 @@ class Network:
                         if ev.author().to_hex() == self.me:
                             p["mine"]["repost" if kind == K_REPOST else "reaction" if kind == K_REACTION else "reply"] = True
                         break
-        authors = await self._profiles_of({p["author"]["hex"] for p in posts} | {p["reposted_by"]["hex"] for p in posts if p.get("reposted_by")})
         for p in posts:
             p["author"] = authors.get(p["author"]["hex"], p["author"])
             if p.get("reposted_by"):
@@ -566,12 +570,16 @@ class Network:
     async def _wall(self, hexkey: str, limit: int) -> dict:
         n = _n()
         pk = self._pk(hexkey)
-        evs = await self._fetch([self._f().kinds([n.Kind(K_POST), n.Kind(K_REPOST)]).author(pk).limit(limit)])
-        posts = await self._hydrate(evs, limit)
-        profile = (await self._profiles_of({hexkey}))[hexkey]
-        badges = await self._badges_of(hexkey)
-        following, followers = await self._follows_of(hexkey), await self._followers_of(hexkey)
-        mine = await self._follows_of(self.me) if hexkey != self.me else following
+        async def posts_of():
+            return await self._hydrate(await self._fetch([self._f().kinds([n.Kind(K_POST), n.Kind(K_REPOST)]).author(pk).limit(limit)]), limit)
+
+        async def mine_of():
+            return await self._follows_of(self.me) if hexkey != self.me else None
+        # everything at once: the page waits for the slowest answer, not for the sum of them
+        posts, profiles, badges, following, followers, mine = await asyncio.gather(
+            posts_of(), self._profiles_of({hexkey}), self._badges_of(hexkey), self._follows_of(hexkey), self._followers_of(hexkey), mine_of())
+        profile = profiles[hexkey]
+        mine = following if mine is None else mine
         return {"profile": profile, "badges": badges,
                 "following": following, "followers": followers,
                 "i_follow": hexkey in mine, "follows_me": self.me in following,

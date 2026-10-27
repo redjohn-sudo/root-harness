@@ -408,6 +408,9 @@ label.bouton,label.rond-btn{cursor:pointer}
   #rail .onglet{flex:1;width:auto;max-width:46px;min-width:0}
 }
 
+/* a quiet refresh: no entrance animation */
+.sans-anim .post,.sans-anim .tr,.sans-anim .notif,.sans-anim .p-badges>span,.sans-anim .gb{animation:none!important;opacity:1!important}
+
 /* -- the phone: the rail becomes a bar at the bottom, same buttons -- */
 @media (max-width:720px){
   #app{flex-direction:column-reverse}

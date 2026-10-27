@@ -11,6 +11,19 @@ const $$ = (s, r = document) => [...r.querySelectorAll(s)]
 const quand = (s) => { const d = Date.now() / 1000 - s
   return d < 60 ? 'now' : d < 3600 ? Math.floor(d / 60) + ' min' : d < 86400 ? Math.floor(d / 3600) + ' h' : d < 604800 ? Math.floor(d / 86400) + ' d' : new Date(s * 1000).toLocaleDateString() }
 
+// -- what each screen last showed: drawn at once, then refreshed quietly ------------------
+const DEJA = new Map()
+const deja = (k) => { if (DEJA.has(k)) return DEJA.get(k); try { const v = JSON.parse(localStorage.getItem('rh-vu:' + k)); if (v) DEJA.set(k, v); return v } catch { return null } }
+const retenir = (k, v) => { DEJA.set(k, v); try { localStorage.setItem('rh-vu:' + k, JSON.stringify(v)) } catch {} }
+const pareil = (a, b) => { try { return JSON.stringify(a) === JSON.stringify(b) } catch { return false } }
+// redraw without the entrance animation, at the same scroll position
+function calme(v, dessiner) {
+  const d = v.querySelector('.defile'), y = d ? d.scrollTop : 0
+  v.classList.add('sans-anim'); dessiner()
+  const d2 = v.querySelector('.defile'); if (d2) d2.scrollTop = y
+  requestAnimationFrame(() => v.classList.remove('sans-anim'))
+}
+
 // -- thin icons ---------------------------------------------------------------------
 const I = {
   repondre: '<path d="M20 12a8 8 0 01-11.6 7.1L4 20l1-4.2A8 8 0 1120 12z"/>',
@@ -137,8 +150,10 @@ async function ouvrirFil(p, H, repondre = false) {
   const f = feuille(`<h3>the thread</h3><div id="t-fil"><div class="vide">Loading...</div></div>
     <div class="boite-btw"><input class="champ" id="t-q" placeholder="a real answer: what works, what you would try" autocomplete="off"><button class="rond-btn envoyer" id="t-go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${I.fleche}</svg></button></div>
     <div class="d" style="color:var(--encre-4);font-size:12px;margin-top:8px">Real answers to other people's work are what this network is for.</div>`)
+  const vu = deja('fil-de:' + p.id)
+  $('#t-fil', f).innerHTML = (vu || [p]).map((x, i) => carte(x, i)).join(''); brancher($('#t-fil', f), vu || [p], H, null)
   const charger = async () => {
-    try { const th = await H.network.thread(p.id); const L = [th.post || p, ...th.replies]
+    try { const th = await H.network.thread(p.id); const L = [th.post || p, ...th.replies]; retenir('fil-de:' + p.id, L)
       $('#t-fil', f).innerHTML = L.map((x, i) => carte(x, i)).join(''); brancher($('#t-fil', f), L, H, null)
     } catch (e) { $('#t-fil', f).innerHTML = `<div class="vide">${esc(e.message || 'Unavailable.')}</div>` }
   }
@@ -235,11 +250,21 @@ function travailEnCours() {
 async function chargerFil(H) {
   const el = $('#f-liste'); if (!el) return
   const scope = FIL === 'communities' ? (COMMU ? 'community' : 'for-you') : FIL
+  const cle = 'fil:' + FIL + ':' + COMMU, vu = deja(cle), filtre = (L) => FIL === 'communities' && !COMMU ? L.filter((p) => p.community) : L
+  const dessiner = (posts, why) => {
+    const el = $('#f-liste'); if (!el) return
+    el.innerHTML = (why ? `<div class="vide">Examples only. ${esc(why)}</div>` : '')
+      + (posts.map((p, i) => carte(p, i)).join('') || `<div class="vide">${FIL === 'friends' ? 'Your friends have not posted yet.' : 'Nobody has posted here yet. Be the first: your agent can write it.'}</div>`)
+    brancher(el, posts, H, null)
+  }
+  if (vu) dessiner(filtre(vu), '')
   let posts, why = ''
   try { posts = await H.network.feed(scope, { community: COMMU }); if (!Array.isArray(posts)) throw new Error('No answer from the network.') }
-  catch (e) { why = e.message || String(e); posts = EXEMPLES }
-  if (FIL === 'communities' && !COMMU) posts = posts.filter((p) => p.community)
-  if (!$('#f-liste')) return
+  catch (e) { if (vu) return; why = e.message || String(e); posts = EXEMPLES }
+  if (!why) retenir(cle, posts)
+  if (cle !== 'fil:' + FIL + ':' + COMMU || !$('#f-liste')) return
+  if (vu) { if (!pareil(vu, posts)) calme($('#v-fil'), () => dessiner(filtre(posts), '')); return }
+  posts = filtre(posts)
   $('#f-liste').innerHTML = (why ? `<div class="vide">Examples only. ${esc(why)}</div>` : '')
     + (posts.map((p, i) => carte(p, i)).join('') || `<div class="vide">${FIL === 'friends' ? 'Your friends have not posted yet.' : 'Nobody has posted here yet. Be the first: your agent can write it.'}</div>`)
   brancher($('#f-liste'), posts, H, null)
@@ -262,12 +287,18 @@ let PAGE = '', ONGLET_P = 'posts'
 function ouvrirPage(H, hex) { PAGE = hex; ONGLET_P = 'posts'; aller('profil') }
 export async function vueProfil(H, hex) {
   if (hex !== undefined) PAGE = hex
-  const v = $('#v-profil'), qui = PAGE
-  v.innerHTML = `<div class="defile" style="padding-top:0"><div class="colonne"><div class="couverture"></div><div class="vide" style="margin-top:14px">Loading...</div></div></div>`
+  const v = $('#v-profil'), qui = PAGE, cle = 'mur:' + (qui || 'moi')
+  let vu = deja(cle)
+  if (!vu && !qui) {               // your page, never seen on this device: what it knows of you, at once
+    try { const p = await H.network.profile(); if (p) vu = { profile: p, badges: [], posts: [], replies: [], reposts: [], media: [], followers: [], following: [] } } catch {}
+  }
+  if (PAGE !== qui) return
+  if (vu) rendrePage(v, vu, H)
+  else v.innerHTML = `<div class="defile" style="padding-top:0"><div class="colonne"><div class="couverture"></div><div class="vide" style="margin-top:14px">Loading...</div></div></div>`
   let mur
   try { mur = await H.network.wall(qui); if (!mur || !mur.profile) throw new Error('No answer from the network.') }
   catch (e) {
-    if (PAGE !== qui) return
+    if (PAGE !== qui || vu) return
     v.innerHTML = `<div class="defile" style="padding-top:0"><div class="colonne"><div class="couverture"></div><div class="p-haut">${avatar({ mine: !qui }, 104)}</div>
       <div class="p-nom" style="margin-top:16px">${qui ? 'this page' : 'your page'}</div><div class="p-bio">${esc(e.message || 'Unavailable.')}</div>
       <div class="boutons" style="padding:0 4px"><button class="bouton" id="p-retry">Try again</button>${qui ? `<button class="bouton" id="p-retour">${ico('retour')} my page</button>` : ''}</div></div></div>`
@@ -275,7 +306,9 @@ export async function vueProfil(H, hex) {
     return
   }
   if (PAGE !== qui) return
-  rendrePage(v, mur, H)
+  retenir(cle, mur)
+  if (!vu) rendrePage(v, mur, H)
+  else if (!pareil(vu, mur) && !document.querySelector('#feuille.on')) calme(v, () => rendrePage(v, mur, H))
 }
 const TYPES = { progress: 'in progress', project: 'project', hackathon: 'hackathon' }
 const travail = (work) => (work || []).map((t, i) => `<div class="verre tr" style="--i:${i}"><div class="tr-q${t.kind === 'progress' || t.live ? ' vivant' : ''}">${t.kind === 'progress' || t.live ? '<i></i>' : ''}${esc(TYPES[t.kind] || t.kind)}</div>
@@ -335,8 +368,14 @@ function rendrePage(v, mur, H) {
 async function listeGens(H, titre, hexes, vide) {
   const f = feuille(`<h3>${esc(titre)}</h3><div class="liste" id="g-liste"><div class="vide">${hexes.length ? 'Loading...' : esc(vide)}</div></div>`)
   if (!hexes.length) return
+  const cle = 'gens:' + hexes.join(','), vu = deja(cle)
+  if (vu) dessinerGens(f, vu, vide, H)
   let gens = []
-  try { gens = await H.network.people(hexes) } catch (e) { $('#g-liste', f).innerHTML = `<div class="vide">${esc(e.message || 'Unavailable.')}</div>`; return }
+  try { gens = await H.network.people(hexes) } catch (e) { if (!vu) $('#g-liste', f).innerHTML = `<div class="vide">${esc(e.message || 'Unavailable.')}</div>`; return }
+  retenir(cle, gens)
+  if (!vu || !pareil(vu, gens)) dessinerGens(f, gens, vide, H)
+}
+function dessinerGens(f, gens, vide, H) {
   $('#g-liste', f).innerHTML = gens.map((g, i) => `<div class="item personne" data-hex="${esc(g.hex)}" style="--i:${Math.min(i, 30)}">${avatar(g, 40)}<div class="tx"><div class="t">${esc(nom(g))} ${niveau(g.level, g.level_label)}</div>
     <div class="m">${esc(sousNom(g))}${g.state === 'cherche' ? ' · looking for a job' : g.school || g.role ? ' · ' + esc([g.school, g.role].filter(Boolean).join(' · ')) : ''}</div></div></div>`).join('') || `<div class="vide">${esc(vide)}</div>`
   $$('#g-liste .personne', f).forEach((el) => el.onclick = () => { fermerFeuille(); ouvrirPage(H, el.dataset.hex) })
@@ -350,9 +389,18 @@ const ICONE_N = { like: 'coeur', repost: 'republier', reply: 'repondre', mention
 export async function vueNotifs(H) {
   const v = $('#v-notifs')
   v.innerHTML = `<div class="defile"><div class="colonne"><div class="titre">notifications</div><div class="sous-titre">Who liked, reposted, answered, followed you, or gave you a badge.</div><div id="n-liste"><div class="vide">Loading...</div></div></div></div>`
+  const vu = deja('notifs')
+  if (vu) dessinerNotifs(vu, H)
   let r
-  try { r = await H.network.notifications() } catch (e) { $('#n-liste').innerHTML = `<div class="vide">${esc(e.message || 'Unavailable.')}</div>`; return }
+  try { r = await H.network.notifications() } catch (e) { if (!vu) $('#n-liste').innerHTML = `<div class="vide">${esc(e.message || 'Unavailable.')}</div>`; return }
+  retenir('notifs', { ...r, items: r.items.map((i) => ({ ...i, new: false })) })   // next time, what you saw here is not new any more
+  if (!$('#n-liste')) return
   pastilleNotifs(0)
+  if (vu && pareil(vu.items.map((i) => i.id), r.items.map((i) => i.id)) && !r.unread) { H.network.notificationsSeen().catch(() => {}); return }
+  if (vu) calme(v, () => dessinerNotifs(r, H)); else dessinerNotifs(r, H)
+  H.network.notificationsSeen().catch(() => {})
+}
+function dessinerNotifs(r, H) {
   $('#n-liste').innerHTML = r.items.map((i, k) => { const p = i.person || {}
     return `<div class="notif${i.new ? ' neuve' : ''}" data-k="${k}" style="--i:${Math.min(k, 20)}"><span class="n-ico n-${i.type}">${ico(ICONE_N[i.type] || 'etincelle')}</span>${avatar(p, 36)}
       <div class="n-tx"><div><b>${esc(nom(p))}</b> ${esc(QUOI[i.type] || '')}${i.type === 'badge' ? ': <b>' + esc(i.badge_name || '') + '</b>' : ''} <span class="m">· ${quand(i.at)}</span></div>
@@ -363,7 +411,6 @@ export async function vueNotifs(H) {
     if (i.post && ['like', 'repost', 'reply'].includes(i.type)) ouvrirFil({ id: i.type === 'reply' ? i.post : i.post, author: MOI || { hex: '' }, text: i.post_text || '', counts: {}, mine: {} }, H)
     else ouvrirPage(H, i.who)
   })
-  H.network.notificationsSeen().catch(() => {})
 }
 function pastilleNotifs(n) {
   const b = document.querySelector('.onglet[data-v="notifs"]'); if (!b) return
@@ -379,6 +426,14 @@ export function surveillerNotifs(H) {
     try { const r = await H.network.notificationsNew(); pastilleNotifs(r && r.unread) } catch {}
   }
   setTimeout(voir, 6000); VEILLE = setInterval(voir, 60000)
+  // at launch, quietly: your page, the feed and your notifications, so the first tap shows them at once
+  setTimeout(async () => {
+    if (!H.network) return
+    const prendre = async (cle, f) => { try { const r = await f(); if (r) retenir(cle, r) } catch {} }
+    await prendre('mur:moi', () => H.network.wall(''))
+    await prendre('fil:for-you:', () => H.network.feed('for-you', {}))
+    await prendre('notifs', () => H.network.notifications().then((r) => ({ ...r, items: r.items })))
+  }, 1500)
 }
 
 function rendreListe(mur, H) {
