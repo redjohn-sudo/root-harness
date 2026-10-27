@@ -362,7 +362,7 @@
    "de": "deine agenten",
    "es": "tus agentes",
    "fr": "tes agents",
-   "ja": "エージェント",
+   "ja": "あなたのエージェント",
    "pt": "seus agentes",
    "zh": "你的智能体"
   },
@@ -4132,7 +4132,7 @@
    "fr": "retirer",
    "ja": "削除",
    "pt": "remover",
-   "zh": "删除"
+   "zh": "移除"
   },
   "Nothing yet.": {
    "de": "Noch nichts.",
@@ -4741,9 +4741,202 @@
    "ja": "あなたの@(早い者勝ち)",
    "pt": "seu @: quem pega um nome primeiro fica com ele",
    "zh": "你的 @:先到先得"
+  },
+  "Search": {
+   "de": "Suche",
+   "es": "Buscar",
+   "fr": "Recherche",
+   "ja": "検索",
+   "pt": "Buscar",
+   "zh": "搜索"
+  },
+  "search": {
+   "de": "suche",
+   "es": "buscar",
+   "fr": "recherche",
+   "ja": "検索",
+   "pt": "buscar",
+   "zh": "搜索"
+  },
+  "People by their @, their ID or their name, and communities.": {
+   "de": "Personen nach @, ID oder Name, und Communities.",
+   "es": "Personas por su @, su ID o su nombre, y comunidades.",
+   "fr": "Des gens par leur @, leur identifiant ou leur nom, et des communautés.",
+   "ja": "@、ID、名前で人を探す。コミュニティも。",
+   "pt": "Pessoas pelo @, ID ou nome, e comunidades.",
+   "zh": "按 @、ID 或名字找人,也能找社区。"
+  },
+  "@name, a name, a community": {
+   "de": "@name, ein Name, eine Community",
+   "es": "@nombre, un nombre, una comunidad",
+   "fr": "@nom, un nom, une communauté",
+   "ja": "@名前、名前、コミュニティ",
+   "pt": "@nome, um nome, uma comunidade",
+   "zh": "@名字、名字、社区"
+  },
+  "people": {
+   "de": "personen",
+   "es": "personas",
+   "fr": "personnes",
+   "ja": "人",
+   "pt": "pessoas",
+   "zh": "用户"
+  },
+  "Nobody found. Try their exact @ and press Enter.": {
+   "de": "Niemand gefunden. Gib das genaue @ ein und drücke Enter.",
+   "es": "Nadie encontrado. Prueba su @ exacto y pulsa Intro.",
+   "fr": "Personne trouvé. Essaie son @ exact et appuie sur Entrée.",
+   "ja": "見つかりません。正確な@を入力してEnterを押してください。",
+   "pt": "Ninguém encontrado. Tente o @ exato e aperte Enter.",
+   "zh": "没找到。试试准确的 @ 并按回车。"
+  },
+  "Type a name or an @.": {
+   "de": "Gib einen Namen oder ein @ ein.",
+   "es": "Escribe un nombre o un @.",
+   "fr": "Tape un nom ou un @.",
+   "ja": "名前か@を入力してください。",
+   "pt": "Digite um nome ou um @.",
+   "zh": "输入名字或 @。"
+  },
+  "No community with that name.": {
+   "de": "Keine Community mit diesem Namen.",
+   "es": "Ninguna comunidad con ese nombre.",
+   "fr": "Aucune communauté de ce nom.",
+   "ja": "その名前のコミュニティはありません。",
+   "pt": "Nenhuma comunidade com esse nome.",
+   "zh": "没有这个名字的社区。"
+  },
+  "Messages": {
+   "de": "Nachrichten",
+   "es": "Mensajes",
+   "fr": "Messages",
+   "ja": "メッセージ",
+   "pt": "Mensagens",
+   "zh": "消息"
+  },
+  "messages": {
+   "de": "nachrichten",
+   "es": "mensajes",
+   "fr": "messages",
+   "ja": "メッセージ",
+   "pt": "mensagens",
+   "zh": "消息"
+  },
+  "Sealed end to end: only the people in a conversation can read it.": {
+   "de": "Ende-zu-Ende versiegelt: nur die Personen im Gespräch können es lesen.",
+   "es": "Cifrado de extremo a extremo: solo las personas de la conversación pueden leerlo.",
+   "fr": "Chiffré de bout en bout : seules les personnes de la conversation peuvent la lire.",
+   "ja": "エンドツーエンドで暗号化。会話の参加者だけが読めます。",
+   "pt": "Criptografado de ponta a ponta: só as pessoas da conversa podem ler.",
+   "zh": "端到端加密:只有对话中的人能读到。"
+  },
+  "New message": {
+   "de": "Neue Nachricht",
+   "es": "Nuevo mensaje",
+   "fr": "Nouveau message",
+   "ja": "新しいメッセージ",
+   "pt": "Nova mensagem",
+   "zh": "新消息"
+  },
+  "new message": {
+   "de": "neue nachricht",
+   "es": "nuevo mensaje",
+   "fr": "nouveau message",
+   "ja": "新しいメッセージ",
+   "pt": "nova mensagem",
+   "zh": "新消息"
+  },
+  "My ID": {
+   "de": "Meine ID",
+   "es": "Mi ID",
+   "fr": "Mon identifiant",
+   "ja": "マイID",
+   "pt": "Meu ID",
+   "zh": "我的 ID"
+  },
+  "Give your @, or let someone scan this with their phone.": {
+   "de": "Gib dein @ weiter oder lass diesen Code mit dem Telefon scannen.",
+   "es": "Da tu @, o deja que alguien escanee esto con su teléfono.",
+   "fr": "Donne ton @, ou laisse quelqu'un scanner ceci avec son téléphone.",
+   "ja": "あなたの@を伝えるか、スマホでこれをスキャンしてもらいましょう。",
+   "pt": "Passe seu @ ou deixe alguém escanear isto com o celular.",
+   "zh": "告诉别人你的 @,或让对方用手机扫描。"
+  },
+  "requests": {
+   "de": "anfragen",
+   "es": "solicitudes",
+   "fr": "demandes",
+   "ja": "リクエスト",
+   "pt": "pedidos",
+   "zh": "请求"
+  },
+  "No message yet. Start one with a friend, or with several people at once.": {
+   "de": "Noch keine Nachricht. Starte eine mit einer Person oder mit mehreren auf einmal.",
+   "es": "Aún no hay mensajes. Empieza uno con un amigo o con varias personas a la vez.",
+   "fr": "Pas encore de message. Lance-en un avec un ami, ou avec plusieurs personnes à la fois.",
+   "ja": "まだメッセージはありません。友達や複数の人と始めましょう。",
+   "pt": "Ainda não há mensagens. Comece uma com um amigo ou com várias pessoas de uma vez.",
+   "zh": "还没有消息。和朋友或几个人一起开始聊天吧。"
+  },
+  "One person or several. Type their @, their ID, or pick from the people you know.": {
+   "de": "Eine Person oder mehrere. Gib ihr @ oder ihre ID ein, oder wähle aus deinen Kontakten.",
+   "es": "Una persona o varias. Escribe su @, su ID o elige entre la gente que conoces.",
+   "fr": "Une personne ou plusieurs. Tape leur @, leur identifiant, ou choisis parmi les gens que tu connais.",
+   "ja": "1人でも複数でも。@かIDを入力するか、知り合いから選んでください。",
+   "pt": "Uma pessoa ou várias. Digite o @, o ID, ou escolha entre as pessoas que você conhece.",
+   "zh": "一个人或几个人。输入 @、ID,或从认识的人里选。"
+  },
+  "@name, pseudo#code or npub": {
+   "de": "@name, pseudo#code oder npub",
+   "es": "@nombre, pseudo#código o npub",
+   "fr": "@nom, pseudo#code ou npub",
+   "ja": "@名前、pseudo#code、npub",
+   "pt": "@nome, pseudo#código ou npub",
+   "zh": "@名字、pseudo#code 或 npub"
+  },
+  "group name (optional)": {
+   "de": "Gruppenname (optional)",
+   "es": "nombre del grupo (opcional)",
+   "fr": "nom du groupe (facultatif)",
+   "ja": "グループ名(任意)",
+   "pt": "nome do grupo (opcional)",
+   "zh": "群组名称(可选)"
+  },
+  "Start": {
+   "de": "Starten",
+   "es": "Empezar",
+   "fr": "Démarrer",
+   "ja": "開始",
+   "pt": "Começar",
+   "zh": "开始"
+  },
+  "Not among the people you know: press Add to look them up.": {
+   "de": "Nicht unter deinen Kontakten: drücke Hinzufügen, um zu suchen.",
+   "es": "No está entre la gente que conoces: pulsa Añadir para buscarlo.",
+   "fr": "Pas parmi les gens que tu connais : appuie sur Ajouter pour le chercher.",
+   "ja": "知り合いにいません。追加を押して検索してください。",
+   "pt": "Não está entre as pessoas que você conhece: aperte Adicionar para buscar.",
+   "zh": "不在你认识的人里:点添加去查找。"
+  },
+  "Could not start it.": {
+   "de": "Konnte nicht gestartet werden.",
+   "es": "No se pudo empezar.",
+   "fr": "Impossible de la démarrer.",
+   "ja": "開始できませんでした。",
+   "pt": "Não foi possível começar.",
+   "zh": "无法开始。"
   }
  },
  "patterns": [
+  {
+   "en": "^Could not add (.+)\\.$",
+   "de": "$1 konnte nicht hinzugefügt werden.",
+   "es": "No se pudo añadir a $1.",
+   "fr": "Impossible d'ajouter $1.",
+   "ja": "$1 を追加できませんでした。",
+   "pt": "Não foi possível adicionar $1.",
+   "zh": "无法添加 $1。"
+  },
   {
    "en": "^Nobody has @(\\S+) yet\\.$",
    "de": "Niemand hat @$1 bisher.",

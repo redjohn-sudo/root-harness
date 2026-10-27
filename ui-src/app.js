@@ -4,7 +4,7 @@
 import { tete, cligner } from './root.js'
 import { qr } from './ident.js'
 import { LANGUES, langue, appliquer } from './langue.js'
-import { vueFil, vueProfil, vueNotifs, vueCommus, surveillerNotifs, evenementReseau, feuilleBloques } from './social.js'
+import { vueFil, vueProfil, vueNotifs, vueCommus, vueRecherche, choisirGens, surveillerNotifs, evenementReseau, feuilleBloques } from './social.js'
 
 let H = null                                  // the host
 const $ = (s, r = document) => r.querySelector(s)
@@ -18,6 +18,8 @@ const I = {
   chat: '<path d="M20 12a8 8 0 01-11.6 7.1L4 20l1-4.2A8 8 0 1120 12z"/>',
   fil: '<path d="M4 10.5L12 4l8 6.5V19a1.5 1.5 0 01-1.5 1.5h-13A1.5 1.5 0 014 19z"/><path d="M9.5 20.5v-6h5v6"/>',
   profil: '<circle cx="12" cy="8.5" r="3.6"/><path d="M4.5 20c.8-3.8 3.8-6 7.5-6s6.7 2.2 7.5 6"/>',
+  loupe: '<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/>',
+  messages: '<path d="M4 6.5A2.5 2.5 0 016.5 4h11A2.5 2.5 0 0120 6.5v7a2.5 2.5 0 01-2.5 2.5H10l-4.5 4v-4H6.5A2.5 2.5 0 014 13.5z"/><path d="M8.5 9h7M8.5 12h4.5"/>',
   diese: '<path d="M9.5 4L7.5 20M16.5 4l-2 16M4.5 9h16M3.5 15h16"/>',
   cloche: '<path d="M6 16.5V11a6 6 0 0112 0v5.5l1.5 2H4.5z"/><path d="M10 20.5a2 2 0 004 0"/>',
   dossiers: '<path d="M3.5 7.5a2 2 0 012-2h4l2 2h7a2 2 0 012 2v8a2 2 0 01-2 2h-13a2 2 0 01-2-2z"/>',
@@ -32,8 +34,8 @@ const I = {
 const ico = (n, w = 1.7) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">${I[n]}</svg>`
 
 // -- the shell ----------------------------------------------------------------------
-const ONGLETS = [['chat', 'Your agents'], ['fil', 'The feed'], ['commus', 'Communities'], ['notifs', 'Notifications'], ['profil', 'My profile'], ['discussions', 'Conversations'], ['amis', 'Friends & groups'], ['vibe', 'Vibe code'], ['encyclo', 'Encyclopedia']]
-const ICONE = { chat: 'chat', fil: 'fil', commus: 'diese', profil: 'profil', notifs: 'cloche', discussions: 'dossiers', amis: 'amis', vibe: 'vibe', encyclo: 'livre', reglages: 'reglages' }
+const ONGLETS = [['chat', 'Your agents'], ['fil', 'The feed'], ['recherche', 'Search'], ['commus', 'Communities'], ['notifs', 'Notifications'], ['amis', 'Messages'], ['profil', 'My profile'], ['vibe', 'Vibe code'], ['encyclo', 'Encyclopedia']]
+const ICONE = { chat: 'chat', fil: 'fil', recherche: 'loupe', commus: 'diese', profil: 'profil', notifs: 'cloche', discussions: 'dossiers', amis: 'messages', vibe: 'vibe', encyclo: 'livre', reglages: 'reglages' }
 
 function coquille() {
   document.body.innerHTML = `<div id="fond"></div>
@@ -43,7 +45,7 @@ function coquille() {
       <button class="onglet bas" data-v="reglages" title="Settings">${ico('reglages')}</button>
     </nav>
     <main>
-      <section class="vue" id="v-chat"></section><section class="vue" id="v-fil"></section><section class="vue" id="v-profil"></section><section class="vue" id="v-notifs"></section><section class="vue" id="v-commus"></section><section class="vue" id="v-discussions"></section>
+      <section class="vue" id="v-chat"></section><section class="vue" id="v-fil"></section><section class="vue" id="v-profil"></section><section class="vue" id="v-notifs"></section><section class="vue" id="v-commus"></section><section class="vue" id="v-recherche"></section><section class="vue" id="v-discussions"></section>
       <section class="vue" id="v-amis"></section><section class="vue" id="v-vibe"></section><section class="vue" id="v-encyclo"></section><section class="vue" id="v-reglages"></section>
     </main>
   </div>
@@ -62,7 +64,7 @@ export function aller(v) {
   VUE = v
   $$('.onglet').forEach((b) => b.classList.toggle('on', b.dataset.v === v))
   $$('.vue').forEach((s) => s.classList.toggle('on', s.id === 'v-' + v))
-  ;({ chat: vueChat, fil: () => vueFil(H), profil: () => vueProfil(H), notifs: () => vueNotifs(H), commus: () => vueCommus(H), discussions: vueDiscussions, amis: vueAmis, vibe: vueVibe, encyclo: vueEncyclo, reglages: vueReglages })[v]()
+  ;({ chat: vueChat, fil: () => vueFil(H), profil: () => vueProfil(H), notifs: () => vueNotifs(H), commus: () => vueCommus(H), recherche: () => vueRecherche(H), discussions: vueDiscussions, amis: vueAmis, vibe: vueVibe, encyclo: vueEncyclo, reglages: vueReglages })[v]()
 }
 
 export { feuille, fermerFeuille, qr }
@@ -261,13 +263,14 @@ function vueChat() {
     v.dataset.fait = 1
     v.innerHTML = `<div class="tete-chat"><button class="pilule-cerveau verre" id="c-cerveau">${tete()}<span id="c-nom">...</span><span class="modele" id="c-modele"></span></button>
       <span class="etat" id="c-etat"><span class="point" id="c-point"></span><span id="c-etat-t"></span></span>
-      <button class="rond-btn" id="c-partager" title="Share with a friend">${ico('partage')}</button><button class="rond-btn" id="c-nouveau" title="New chat">${ico('plus')}</button></div>
+      <button class="rond-btn" id="c-convs" title="Conversations">${ico('dossiers')}</button><button class="rond-btn" id="c-partager" title="Share with a friend">${ico('partage')}</button><button class="rond-btn" id="c-nouveau" title="New chat">${ico('plus')}</button></div>
       <div class="defile" id="c-defile"><div class="colonne fil" id="c-fil"></div></div>
       <div class="composer"><div class="pieces" id="c-pieces"></div><div class="menu" id="c-menu"></div>
         <div class="boite"><button class="rond-btn" id="c-img" title="Add an image">${ico('image')}</button><input type="file" accept="image/*" id="c-fichier" hidden multiple>
         <textarea id="c-entree" rows="1" placeholder="Ask your agent, or / for commands"></textarea>
         <button class="rond-btn envoyer" id="c-envoyer"><svg class="fleche" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${I.fleche}</svg><svg class="stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2.5" fill="currentColor"/></svg></button></div></div>`
     $('#c-cerveau').onclick = feuilleCerveau
+    $('#c-convs').onclick = () => aller('discussions')
     $('#c-nouveau').onclick = async () => { const r = await H.agent.newChat(); if (r) { viderFil(); badge(r) } }
     $('#c-partager').onclick = () => feuillePartage()
     $('#c-envoyer').onclick = () => EN_COURS ? H.agent.stop() : envoyer()
@@ -471,10 +474,11 @@ const pastilleAgent = (nom, modele) => { const c = couleur(nom, modele)
   return `<span class="point-agent" style="background:${c};box-shadow:0 0 0 1px rgba(255,255,255,.28),0 0 8px ${c}55"></span>` }
 async function vueDiscussions() {
   const v = $('#v-discussions')
-  v.innerHTML = `<div class="defile"><div class="colonne"><div class="titre">conversations</div><div class="sous-titre">Each one with its agent.</div>
+  v.innerHTML = `<div class="defile"><div class="colonne"><div class="boutons" style="margin:0 0 6px"><button class="bouton" id="d-retour">${ico('retour')} your agents</button></div><div class="titre">conversations</div><div class="sous-titre">Each one with its agent.</div>
     <input class="champ" id="d-cherche" placeholder="search a conversation, an agent, a model"><div class="boutons" id="d-agents"></div><div id="d-liste"><div class="vide">Loading...</div></div></div></div>`
   let D
-  try { D = await H.convs.list() } catch { $('#d-liste').innerHTML = `<div class="vide">${H.kind === 'phone' ? 'Your conversations show here once your computer has synced them.' : 'Unavailable.'}</div>`; return }
+  $('#d-retour').onclick = () => aller('chat')
+  try { D = await H.convs.list(); D = { folders: [], conversations: [], ...(D || {}) } } catch { $('#d-liste').innerHTML = `<div class="vide">${H.kind === 'phone' ? 'Your conversations show here once your computer has synced them.' : 'Unavailable.'}</div>`; return }
   const agents = {}; D.conversations.forEach((c) => { agents[c.brain_name] = (agents[c.brain_name] || 0) + 1 })
   if (AGENT_FILTRE && !agents[AGENT_FILTRE]) AGENT_FILTRE = ''
   $('#d-agents').innerHTML = `<button class="bouton${AGENT_FILTRE ? '' : ' vert'}" data-a="">all · ${D.conversations.length}</button>`
@@ -520,26 +524,39 @@ let CANAL = null
 async function vueAmis() {
   const v = $('#v-amis')
   if (CANAL) return vueCanal()
-  v.innerHTML = `<div class="defile"><div class="colonne"><div class="titre">friends & groups</div><div class="sous-titre">Sealed end to end. Relays carry sealed blobs: not the text, not who talks to whom.</div>
-    <div class="verre carte" id="a-moi"><div class="m" style="color:var(--encre-3);font-size:12.5px">your ID, to give to friends and colleagues</div><div class="mon-id" style="text-align:left;margin:6px 0 2px" id="a-id">...</div>
-    <div class="boutons"><button class="bouton" id="a-copier">${ico('copie')} copy</button><button class="bouton" id="a-qr">QR code</button><button class="bouton" id="a-contact">+ friend</button><button class="bouton vert" id="a-groupe">+ group</button></div></div>
+  v.innerHTML = `<div class="defile"><div class="colonne"><div class="titre">messages</div><div class="sous-titre">Sealed end to end: only the people in a conversation can read it.</div>
+    <div class="boutons" style="margin:0 0 6px"><button class="bouton plein" id="a-nouveau">${ico('plus')} New message</button><button class="bouton" id="a-moi">My ID</button></div>
     <div id="a-liste"><div class="vide">Connecting...</div></div></div></div>`
-  const id = await H.friends.identity().catch(() => ({}))
-  $('#a-id').textContent = id.id || id.npub || 'unlock your account first'
-  $('#a-copier').onclick = async () => { await H.copy(id.id || id.npub); toast('Copied') }
-  $('#a-qr').onclick = () => feuille(`<h3>your ID</h3><div class="sous-titre">Let a friend scan it with their phone's camera, then paste it in + friend.</div>
-    <div class="qr" style="max-width:260px">${qr(id.id || id.npub || '')}</div><div class="mon-id">${esc(id.id || '')}</div>
-    <div class="d" style="color:var(--encre-4);font:11px var(--mono);word-break:break-all;margin-top:10px;text-align:center">${esc(id.npub || '')}</div>`)
-  $('#a-contact').onclick = () => feuilleContact()
-  $('#a-groupe').onclick = feuilleGroupe
+  $('#a-nouveau').onclick = nouveauMessage
+  $('#a-moi').onclick = async () => { const id = await H.friends.identity().catch(() => ({})), st = await H.account.state().catch(() => ({}))
+    const montre = st.at ? '@' + st.at : id.id || id.npub || ''
+    const f = feuille(`<h3>your ID</h3><div class="sous-titre">Give your @, or let someone scan this with their phone.</div>
+      <div class="qr" style="max-width:260px">${qr(id.id || id.npub || '')}</div><div class="mon-id">${esc(montre)}</div><div class="d" style="color:var(--encre-3);font:12px var(--mono);text-align:center;margin-top:4px">${esc(id.id || '')}</div>
+      <div class="boutons" style="justify-content:center"><button class="bouton" id="a-copier">${ico('copie')} copy</button></div>`)
+    $('#a-copier', f).onclick = async () => { await H.copy(montre); toast('Copied') } }
   const ov = await H.friends.overview().catch(() => ({ channels: [], contacts: [] }))
-  const dem = ov.channels.filter((c) => c.request), ok = ov.channels.filter((c) => !c.request)
-  const ligne = (c, i) => `<div class="item" data-c="${esc(c.id)}" style="--i:${i}">${tete()}<div class="tx"><div class="t">${esc(c.name)}</div><div class="m">${esc(c.preview || 'no message yet')}</div></div>${c.unread ? `<span class="nb">${c.unread}</span>` : ''}</div>`
-  $('#a-liste').innerHTML = (dem.length ? `<div class="section">requests from people you have not added<span class="ligne"></span></div><div class="liste">${dem.map(ligne).join('')}</div>` : '')
-    + `<div class="section">your channels<span class="ligne"></span></div><div class="liste">${ok.map(ligne).join('') || '<div class="vide">Add a friend with their ID, then talk or make a group.</div>'}</div>`
+  const dem = ov.channels.filter((c) => c.request), ok = ov.channels.filter((c) => !c.request).sort((a, b) => (b.last || 0) - (a.last || 0))
+  const ligne = (c, i) => `<div class="item" data-c="${esc(c.id)}" style="--i:${i}">${tete()}<div class="tx"><div class="t">${esc(c.name)}${c.members.length > 1 ? `<span class="badge" style="margin-left:8px">${c.members.length + 1}</span>` : ''}</div><div class="m">${esc(c.preview || 'no message yet')}</div></div>${c.unread ? `<span class="nb">${c.unread}</span>` : ''}</div>`
+  $('#a-liste').innerHTML = (dem.length ? `<div class="section">requests<span class="ligne"></span></div><div class="liste">${dem.map(ligne).join('')}</div>` : '')
+    + `<div class="section">conversations<span class="ligne"></span></div><div class="liste">${ok.map(ligne).join('') || '<div class="vide">No message yet. Start one with a friend, or with several people at once.</div>'}</div>`
   $$('#a-liste .item').forEach((el) => { $('.tete', el).style.cssText = 'width:30px;height:30px;flex:none'
     el.onclick = () => { const c = ov.channels.find((x) => x.id === el.dataset.c); if (c.request) return feuilleContact(c.members[0]?.npub, c.members[0]?.pseudo); CANAL = c; vueCanal() } })
   pastille(ov.channels.some((c) => c.unread))
+}
+// a new message: one person or several, by their @; an existing conversation with the same people opens instead
+function nouveauMessage() {
+  choisirGens(H, { titre: 'new message', bouton: 'Start' }, async (gens, nomGroupe) => {
+    for (const g of gens) { const r = await H.friends.addContact(g.npub, (g.name && g.show !== 'pseudo' ? g.name : '') || g.at || g.pseudo || g.display || 'friend'); if (!r) throw new Error('Could not add ' + (g.at || g.pseudo || 'them') + '.') }
+    const hexes = gens.map((g) => g.hex), ov = await H.friends.overview()
+    const meme = ov.channels.find((c) => c.members.length === hexes.length && c.members.every((m) => hexes.includes(m.hex)))
+    fermerFeuille()
+    if (meme) { CANAL = meme; return vueCanal() }
+    const nomC = nomGroupe || gens.map((g) => (g.name && g.show !== 'pseudo' ? g.name : '') || g.at || g.pseudo || 'friend').join(', ')
+    const cid = await H.friends.createGroup(nomC, hexes)
+    if (!cid) return toast('Could not start it.')
+    const o2 = await H.friends.overview(); CANAL = o2.channels.find((c) => c.id === cid) || { id: cid, name: nomC, members: gens.map((g) => ({ hex: g.hex, name: g.at || g.pseudo, npub: g.npub })) }
+    vueCanal()
+  })
 }
 function pastille(on) { const b = $('.onglet[data-v="amis"]'); let p = $('.pastille', b); if (on && !p) { p = document.createElement('span'); p.className = 'pastille'; b.appendChild(p) } else if (!on && p) p.remove() }
 function feuilleContact(npub, pseudo) {
@@ -557,18 +574,6 @@ function feuilleContact(npub, pseudo) {
       trouve = r; return montrerTrouve() }
     const r = await H.friends.addContact(trouve.npub, $('#k-nom', f).value || trouve.pseudo)
     if (!r) return ($('#k-err', f).textContent = 'Give them a name.'); fermerFeuille(); toast('Added'); vueAmis() }
-}
-async function feuilleGroupe() {
-  const ov = await H.friends.overview()
-  if (!ov.contacts.length) return feuilleContact()
-  const f = feuille(`<h3>new group</h3><input class="champ" id="g-nom" placeholder="group name (sent sealed)">
-    <div class="liste" style="margin-top:8px">${ov.contacts.map((c, i) => `<label class="item" style="--i:${i}"><input type="checkbox" value="${esc(c.hex)}"> <div class="tx"><div class="t">${esc(c.name)}</div></div></label>`).join('')}</div>
-    <div class="err" id="g-err"></div><div class="boutons"><button class="bouton plein" id="g-ok">Create</button></div>`)
-  $('#g-ok', f).onclick = async () => { const m = $$('input[type=checkbox]:checked', f).map((x) => x.value); if (!m.length) return ($('#g-err', f).textContent = 'Pick at least one friend.')
-    const meme = ov.channels.find((c) => c.members.length === m.length && c.members.every((x) => m.includes(x.hex)))
-    if (meme) { fermerFeuille(); toast('You already talk with these people here.'); CANAL = meme; return vueCanal() }
-    const cid = await H.friends.createGroup($('#g-nom', f).value || ov.contacts.filter((c) => m.includes(c.hex)).map((c) => c.name).join(', '), m)
-    fermerFeuille(); if (!cid) return toast('Could not create it.'); const o2 = await H.friends.overview(); CANAL = o2.channels.find((c) => c.id === cid); vueCanal() }
 }
 async function vueCanal() {
   const v = $('#v-amis'), c = CANAL

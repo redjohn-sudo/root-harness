@@ -693,3 +693,79 @@ export async function feuilleBloques(H) {
   }
   dessiner()
 }
+
+// =====================================================================================
+// people you may mean: those you follow, who follow you, and who posts in your feed
+// =====================================================================================
+async function gensConnus(H) {
+  const vus = new Map()
+  for (const g of await connus(H)) vus.set(g.hex, g)
+  for (const cle of ['fil:for-you:', 'fil:friends:']) for (const p of deja(cle) || []) { if (p.author && p.author.hex && !p.author.mine) vus.set(p.author.hex, p.author) }
+  return [...vus.values()]
+}
+const correspond = (g, q) => !q || [g.at, g.pseudo, g.name, g.display].some((x) => (x || '').toLowerCase().includes(q))
+
+// pick one person or several (by their @, their ID, or from the people you know), then go
+export function choisirGens(H, { titre = 'new message', bouton = 'Start' } = {}, ok) {
+  const choisis = new Map()
+  const f = feuille(`<h3>${esc(titre)}</h3><div class="sous-titre" style="margin-bottom:10px">One person or several. Type their @, their ID, or pick from the people you know.</div>
+    <div class="puces-gens" id="cg-puces"></div>
+    <div class="boite-btw"><input class="champ" id="cg-q" placeholder="@name, pseudo#code or npub" autocomplete="off" autocapitalize="none"><button class="bouton" id="cg-add">Add</button></div>
+    <div class="liste" id="cg-liste" style="margin-top:8px"></div>
+    <input class="champ" id="cg-nom" placeholder="group name (optional)" style="display:none;margin-top:10px">
+    <div class="err" id="cg-err"></div><div class="boutons"><button class="bouton plein" id="cg-ok" disabled>${esc(bouton)}</button></div>`)
+  const puces = () => {
+    $('#cg-puces', f).innerHTML = [...choisis.values()].map((g) => `<span class="puce-g" data-h="${esc(g.hex)}">${avatar(g, 22)}${esc(nom(g))}<button title="remove">✕</button></span>`).join('')
+    $$('#cg-puces .puce-g button', f).forEach((b) => b.onclick = () => { choisis.delete(b.parentElement.dataset.h); puces() })
+    $('#cg-nom', f).style.display = choisis.size > 1 ? '' : 'none'; $('#cg-ok', f).disabled = !choisis.size
+  }
+  const ajouter = (g) => { if (!g || !g.hex || g.mine) return; choisis.set(g.hex, g); $('#cg-q', f).value = ''; puces(); lister() }
+  const lister = async () => {
+    const q = $('#cg-q', f).value.trim().replace(/^@/, '').toLowerCase()
+    const L = (await gensConnus(H)).filter((g) => !choisis.has(g.hex) && correspond(g, q)).slice(0, 8)
+    $('#cg-liste', f).innerHTML = L.map((g, i) => `<div class="item personne" data-h="${esc(g.hex)}" style="--i:${i}">${avatar(g, 34)}<div class="tx"><div class="t">${esc(nom(g))}${marques(g)}</div><div class="m">${esc(sousNom(g))}</div></div></div>`).join('')
+      || (q ? '<div class="vide">Not among the people you know: press Add to look them up.</div>' : '')
+    $$('#cg-liste .personne', f).forEach((el) => el.onclick = () => ajouter(L.find((g) => g.hex === el.dataset.h)))
+  }
+  const chercher = async () => {
+    const t = $('#cg-q', f).value.trim(); if (!t) return
+    $('#cg-add', f).textContent = '...'; $('#cg-err', f).textContent = ''
+    try { const g = await H.network.lookup(t.includes('#') || t.startsWith('npub') || t.startsWith('@') ? t : '@' + t); if (!g) throw new Error('Nobody found with that.'); ajouter(g) }
+    catch (e) { $('#cg-err', f).textContent = e.message || 'Not found.' }
+    $('#cg-add', f).textContent = 'Add'
+  }
+  $('#cg-q', f).oninput = lister; $('#cg-q', f).onkeydown = (e) => { if (e.key === 'Enter') chercher() }; $('#cg-add', f).onclick = chercher
+  $('#cg-ok', f).onclick = async () => { $('#cg-ok', f).disabled = true; try { await ok([...choisis.values()], $('#cg-nom', f).value.trim()) } catch (e) { $('#cg-err', f).textContent = e.message || 'Not done.'; $('#cg-ok', f).disabled = false } }
+  lister(); setTimeout(() => $('#cg-q', f).focus(), 250)
+}
+
+// =====================================================================================
+// search: people (by @, ID, name) and communities, in one place
+// =====================================================================================
+let RECH = ''
+export async function vueRecherche(H) {
+  const v = $('#v-recherche')
+  v.innerHTML = `<div class="defile"><div class="colonne"><div class="titre">search</div><div class="sous-titre">People by their @, their ID or their name, and communities.</div>
+    <div class="boite-btw"><input class="champ" id="s-q" placeholder="@name, a name, a community" autocomplete="off" autocapitalize="none" value="${esc(RECH)}"><button class="rond-btn" id="s-go">${ico('loupe')}</button></div>
+    <div id="s-res"></div></div></div>`
+  let minuteur = 0
+  const montrer = async (exact) => {
+    const q = $('#s-q').value.trim(); RECH = q
+    const qq = q.replace(/^@/, '').toLowerCase()
+    const [gens, commus] = await Promise.all([gensConnus(H), H.network.communities().catch(() => deja('commus') || [])])
+    let P = gens.filter((g) => correspond(g, qq)).slice(0, 12)
+    if (exact && q) { try { const g = await H.network.lookup(q.includes('#') || q.startsWith('npub') || q.startsWith('@') ? q : '@' + q); if (g && !P.some((x) => x.hex === g.hex)) P = [g, ...P] } catch {} }
+    const tout = new Map(); COMMUS_BASE.forEach(([slug, name]) => tout.set(slug, { slug, name })); (commus || []).forEach((c) => tout.set(c.slug, { ...tout.get(c.slug), ...c }))
+    const C = [...tout.values()].filter((c) => !qq || (c.name || '').toLowerCase().includes(qq) || c.slug.includes(qq.replace(/\s+/g, '-'))).slice(0, 12)
+    if (!$('#s-res')) return
+    $('#s-res').innerHTML = `<div class="section">people<span class="ligne"></span></div><div class="liste">${P.map((g, i) => `<div class="item personne" data-h="${esc(g.hex)}" style="--i:${i}">${avatar(g, 38)}<div class="tx"><div class="t">${esc(nom(g))}${marques(g)}</div><div class="m">${esc(sousNom(g))}${g.state === 'cherche' ? ' · looking for a job' : ''}</div></div></div>`).join('')
+        || `<div class="vide">${q ? 'Nobody found. Try their exact @ and press Enter.' : 'Type a name or an @.'}</div>`}</div>
+      <div class="section">communities<span class="ligne"></span></div><div class="liste">${C.map((c, i) => `<div class="item" data-c="${esc(c.slug)}" style="--i:${i}"><div class="commu-ico" style="width:34px;height:34px">${ico('diese')}</div><div class="tx"><div class="t">${esc(c.name || nomCommu(c.slug))}</div>${c.description ? `<div class="m">${esc(c.description)}</div>` : ''}</div></div>`).join('') || '<div class="vide">No community with that name.</div>'}</div>`
+    $$('#s-res [data-h]').forEach((el) => el.onclick = () => ouvrirPage(H, el.dataset.h))
+    $$('#s-res [data-c]').forEach((el) => el.onclick = () => { COMMU_OUVERTE = el.dataset.c; aller('commus') })
+  }
+  $('#s-q').oninput = () => { clearTimeout(minuteur); minuteur = setTimeout(() => montrer(false), 200) }
+  $('#s-q').onkeydown = (e) => { if (e.key === 'Enter') montrer(true) }
+  $('#s-go').onclick = () => montrer(true)
+  montrer(false); setTimeout(() => $('#s-q') && $('#s-q').focus(), 300)
+}

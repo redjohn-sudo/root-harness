@@ -445,6 +445,12 @@ label.bouton,label.rond-btn{cursor:pointer}
 .auto{display:inline-block;font-size:12px;color:var(--encre-3);border:1px solid var(--trait);border-radius:999px;padding:0 7px;margin-left:6px;line-height:18px;vertical-align:1px}
 .p-nom .auto{font-size:12.5px;line-height:20px;vertical-align:5px}
 
+/* picking people for a message: chips, then the people you know */
+.puces-gens{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.puce-g{display:inline-flex;align-items:center;gap:7px;padding:4px 6px 4px 4px;border-radius:999px;background:rgba(111,212,182,.14);border:1px solid rgba(111,212,182,.35);font-size:14px}
+.puce-g button{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:11px;color:var(--encre-3)}
+.puce-g button:hover{background:rgba(255,255,255,.1);color:var(--encre)}
+
 /* a quiet refresh: no entrance animation */
 .sans-anim .post,.sans-anim .tr,.sans-anim .notif,.sans-anim .p-badges>span,.sans-anim .gb{animation:none!important;opacity:1!important}
 
