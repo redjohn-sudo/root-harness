@@ -31,6 +31,24 @@ class Ids(unittest.TestCase):
         self.assertEqual(len(network.slug("x" * 100)), 40)
 
 
+class At(unittest.TestCase):
+    def test_names(self):
+        self.assertEqual(network.at_norm("@Root"), "root")
+        self.assertEqual(network.at_norm("root_42"), "root_42")
+        for bad in ("ro", "a" * 21, "ro ot", "r!oot", "", "@"):
+            self.assertEqual(network.at_norm(bad), "")
+
+
+class Work(unittest.TestCase):
+    def test_images_are_web_links_only(self):
+        w = network._work_item({"title": "Root", "image": "https://raw.githubusercontent.com/x/x/main/demos/root.gif", "url": "javascript:alert(1)"})
+        self.assertTrue(w["image"].startswith("https://"))
+        self.assertEqual(w["url"], "")
+        self.assertEqual(network._work_item({"title": "x", "image": "http://insecure/x.gif"})["image"], "")
+        p = network.profile_set({"work": [{"title": "Root", "image": "data:image/gif;base64,AAAA"}]})
+        self.assertEqual(p["work"][0]["image"], "")
+
+
 class Activity(unittest.TestCase):
     def test_levels(self):
         _index([])

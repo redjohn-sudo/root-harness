@@ -43,7 +43,7 @@ a{color:var(--vert-clair)}
 main{flex:1;min-width:0;display:flex;flex-direction:column;position:relative}
 
 /* -- views slide in, one at a time -- */
-.vue{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;pointer-events:none;transform:translateY(12px);transition:opacity .45s var(--ease),transform .55s var(--ease)}
+.vue{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;pointer-events:none;transform:translateY(8px);transition:opacity .28s var(--ease),transform .34s var(--ease);will-change:opacity,transform}
 .vue.on{opacity:1;pointer-events:auto;transform:none}
 .defile{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:calc(28px + var(--haut)) 20px 140px}
 .colonne{max-width:var(--col);margin:0 auto}
@@ -353,7 +353,6 @@ label.bouton,label.rond-btn{cursor:pointer}
 .p-badges>span{display:inline-grid;line-height:0;animation:pop .5s var(--ease) both;animation-delay:calc(var(--i,0)*50ms)}
 .p-badges .pix:hover{transform:translateY(-2px)}
 .p-badges .bouton{padding:8px 13px;font-size:13px;margin-left:4px}
-.p-travail{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .tr{display:flex;flex-direction:column;padding:14px 16px;border-radius:var(--r-pt);opacity:0;animation:monte .5s var(--ease) forwards;animation-delay:calc(var(--i,0)*45ms)}
 .tr-q{display:flex;align-items:center;gap:7px;font-size:12px;letter-spacing:.04em;color:var(--encre-3)}
 .tr-q.vivant{color:var(--led)}
@@ -408,6 +407,26 @@ label.bouton,label.rond-btn{cursor:pointer}
   #rail .onglet{flex:1;width:auto;max-width:46px;min-width:0}
 }
 
+/* my work: a row that scrolls sideways, each card with its picture or GIF */
+.p-travail{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:2px 2px 6px;margin:0 -2px;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+.p-travail::-webkit-scrollbar{display:none}
+.p-travail .tr{flex:0 0 300px;scroll-snap-align:start;display:flex;flex-direction:column;overflow:hidden}
+.tr-img{margin:-14px -16px 12px;aspect-ratio:16/9;background:#0c0e16 center/cover no-repeat;border-bottom:1px solid var(--trait)}
+@media (max-width:720px){.p-travail .tr{flex-basis:78%}}
+
+/* communities: one card each, # icon, join on the right */
+.grille-commus{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.commu{display:flex;align-items:center;gap:12px;padding:14px 14px 14px 16px;border-radius:var(--r-pt);cursor:pointer;opacity:0;animation:monte .45s var(--ease) forwards;animation-delay:calc(var(--i,0)*30ms);transition:background .2s,transform .25s var(--ease)}
+.commu:hover{transform:translateY(-1px)}
+.commu-ico{flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:rgba(111,212,182,.12);color:var(--vert-clair)}
+.commu-ico svg{width:19px;height:19px}
+.commu-tx{flex:1;min-width:0}
+.commu-n{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.commu-d{font-size:13px;color:var(--encre-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.commu .bouton{flex:none;padding:6px 13px;font-size:13px}
+@media (max-width:720px){.grille-commus{grid-template-columns:1fr}}
+.sans-anim .commu{animation:none!important;opacity:1!important}
+
 /* a quiet refresh: no entrance animation */
 .sans-anim .post,.sans-anim .tr,.sans-anim .notif,.sans-anim .p-badges>span,.sans-anim .gb{animation:none!important;opacity:1!important}
 
@@ -441,6 +460,5 @@ label.bouton,label.rond-btn{cursor:pointer}
   .pact{margin-left:-4px;max-width:none}
   .couverture{height:120px;margin-top:calc(16px + var(--haut))}
   .p-haut{flex-wrap:wrap;gap:10px 12px;padding:0 10px}
-  .p-travail{grid-template-columns:1fr}
   .grille-badges{grid-template-columns:repeat(2,minmax(0,1fr))}
 }

@@ -240,7 +240,7 @@ const host = {
   async copy(t) { try { await navigator.clipboard.writeText(t) } catch { const a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); document.execCommand('copy'); a.remove() } },
 
   account: {
-    async state() { const a = compte(); return a ? { exists: true, unlocked: !!sk, pseudo: a.pseudo, npub: a.npub, id: me ? handle(a.pseudo, me) : '' } : { exists: false } },
+    async state() { const a = compte(); return a ? { exists: true, unlocked: !!sk, pseudo: a.pseudo, npub: a.npub, id: me ? handle(a.pseudo, me) : '', at: ((cache.get('rh-net-profile') || {}).at) || '' } : { exists: false } },
     async setFindable() {},
     async create() { return { error: 'Create your account on your computer first, then sign in here.' } },
     pairing: !!PAIR,
@@ -401,9 +401,10 @@ host.network = {
     return net().fil(s, { community: o.community || '', friends, days: o.days || 7, limit: o.limit || 60 })
   },
   thread: (id) => net().thread(id), wall: (h) => net().mur(h || me),
-  async lookup(t) { const h = hexDe(t); if (h) return net().profilDe(h); const r = await host.friends.lookup(t); return r && r.hex ? net().profilDe(r.hex) : null },
+  async lookup(t) { if (/^@/.test(t.trim())) { const o = await net().proprioAt(t); return o ? net().profilDe(o) : null }
+    const h = hexDe(t); if (h) return net().profilDe(h); const r = await host.friends.lookup(t); return r && r.hex ? net().profilDe(r.hex) : null },
   upload: (file) => net().envoyerMedia(file),
-  follow: (h, on) => net().suivre(h, on), people: (L) => net().gens(L),
+  follow: (h, on) => net().suivre(h, on), people: (L) => net().gens(L), claimAt: (n) => net().reserverAt(n),
   notifications: () => net().notifications(), notificationsSeen: async () => net().notifsVues(), notificationsNew: () => net().notifsNouvelles(),
   posting: (s, a) => appel('settings_posting', s === undefined ? null : s, a === undefined ? null : a),
   badges: (h) => net().badgesDe(h || me), pin: (c) => net().epingler(c), defineBadge: (i, n, d, img) => net().badgeDefinir(i, n, d, img || ''), award: (a, r) => net().badgeDonner(a, r), checkBadges: () => net().verifierBadges(),

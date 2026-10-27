@@ -58,7 +58,7 @@ const host = {
     feed: (s, o = {}) => api().net_feed(s, o.community || '', o.days || 7, o.limit || 60), thread: (id) => api().net_thread(id), wall: (h) => api().net_wall(h || ''), lookup: (t) => api().net_lookup(t),
     upload: async (file) => api().net_upload(await dataUrl(file), file.name || 'file'),
     posting: (s, a) => api().settings_posting(s, a),
-    follow: (h, on) => api().net_follow(h, on), people: (L) => api().net_people(L),
+    follow: (h, on) => api().net_follow(h, on), people: (L) => api().net_people(L), claimAt: (n) => api().net_claim_at(n),
     notifications: () => api().net_notifications(), notificationsSeen: () => api().net_notifications_seen(), notificationsNew: () => api().net_notifications_new(),
     badges: (h) => api().net_badges(h || ''), pin: (c) => api().net_badges_pin(c), defineBadge: (i, n, d, img) => api().net_badge_define(i, n, d, img || ''), award: (a, r) => api().net_badge_award(a, r), checkBadges: () => api().net_badges_check(),
     communities: () => api().net_communities(), createCommunity: (n, d) => api().net_community_create(n, d || ''), join: (s, on) => api().net_community_join(s, on),
@@ -67,11 +67,11 @@ const host = {
   // what only the computer can set: your phone, and the vibe-code workshop
   async reglagesEnPlus(el, { feuille, fermerFeuille, toast, esc }) {
     const r = await api().remote_state(), v = await api().vibe_status(), t = await api().vibe_phone_token_state()
-    el.innerHTML = `<div class="section">your phone<span class="ligne"></span></div><div class="verre carte">
-      <div class="reglage"><div class="l">Use from my phone<div class="d">Your phone becomes this computer's remote, through sealed messages</div></div><span class="inter${r.on ? ' on' : ''}" id="r-tel"></span></div>
-      ${r.on ? `<div class="reglage"><div class="l">On your phone (same Wi-Fi), open in Safari<div class="d" style="font-family:var(--mono)">${esc((r.url || '').replace('https://', 'http://'))}</div><div class="d">then Share, Add to Home Screen. Type http:// in full.</div></div></div>` : ''}
-      <div class="boutons" style="margin:4px 0 6px"><button class="bouton vert" id="r-relier">Link a phone with a QR code</button></div>
-      <div class="reglage"><div class="l">GitHub on my phone<div class="d">Vibe code from the phone with your GitHub sign-in, kept in your sealed memory</div></div><span class="inter${t.on ? ' on' : ''}" id="r-ghtel"></span></div></div>
+    el.innerHTML = `<div class="section">phone<span class="ligne"></span></div><div class="verre carte">
+      <div class="reglage"><div class="l">Use from my phone<div class="d">Your phone drives this computer</div></div><span class="inter${r.on ? ' on' : ''}" id="r-tel"></span></div>
+      ${r.on ? `<div class="reglage"><div class="l">Same Wi-Fi: open in Safari<div class="d" style="font-family:var(--mono)">${esc((r.url || '').replace('https://', 'http://'))}</div></div></div>` : ''}
+      <div class="reglage"><div class="l">GitHub on my phone<div class="d">Vibe code from the phone</div></div><span class="inter${t.on ? ' on' : ''}" id="r-ghtel"></span></div>
+      <div class="boutons"><button class="bouton" id="r-relier">Link a phone (QR code)</button></div></div>
       <div class="section">vibe code<span class="ligne"></span></div><div class="verre carte" id="r-vibe">${vibeEtat(v, esc)}</div>`
     el.querySelector('#r-relier').onclick = relierTelephone
     el.querySelector('#r-tel').onclick = async () => { await api().remote_set(!r.on); host.reglagesEnPlus(el, { feuille, fermerFeuille, toast, esc }) }

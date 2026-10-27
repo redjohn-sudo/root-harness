@@ -295,7 +295,8 @@ class Api:
     # -- your account: pseudo + password, on this machine only (account.py) -----
 
     def account_state(self):
-        return {**account.state(), "unlocked": self.keys is not None}
+        from . import network as net_mod
+        return {**account.state(), "unlocked": self.keys is not None, "at": net_mod.profile_local().get("at", "")}
 
     def account_create(self, pseudo: str, password: str, again: str):
         keys, why = account.create(pseudo, password, again)
@@ -608,6 +609,9 @@ class Api:
             except Exception:
                 pass
         return net.feed(scope, community, people, int(days), int(limit))
+
+    def net_claim_at(self, name: str):
+        return self._net().claim_at(name)
 
     def net_follow(self, hexkey: str, on: bool = True):
         return self._net().follow(hexkey, bool(on))

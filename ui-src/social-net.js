@@ -6,6 +6,8 @@ import * as nip19 from 'nostr-tools/nip19'
 import { getToken } from 'nostr-tools/nip98'
 import { handle } from './ident.js'
 
+export const AT = 'rh-at:'
+export const atNorm = (n) => { n = String(n || '').trim().replace(/^@/, '').toLowerCase(); return /^[a-z0-9_]{3,20}$/.test(n) ? n : '' }
 export const TAG = 'root-harness', EXTRAS = 'rh-profile', MEDIA_HOST = 'https://nostr.build/api/v2/nip96/upload', MEDIA_MAX = 20 * 1024 * 1024
 const K = { profil: 0, post: 1, suivis: 3, suppr: 5, repost: 6, reaction: 7, award: 8, epingles: 30008, badge: 30009, commu: 34550, extras: 30078, auth: 27235 }
 const ETATS = ['etudie', 'travaille', 'cherche'], MONTRER = ['pseudo', 'name', 'both']
@@ -13,7 +15,8 @@ const now = () => Math.floor(Date.now() / 1000)
 export const slug = (t) => (t || '').toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40)
 // a work line from somebody's extras: only web links are kept
 const travailPropre = (w) => ({ kind: ['project', 'hackathon', 'progress'].includes(w.kind) ? w.kind : 'project', title: String(w.title).slice(0, 60), text: String(w.text || '').slice(0, 200),
-  when: String(w.when || '').slice(0, 24), live: !!w.live, url: /^https?:\/\//.test(String(w.url || '')) ? String(w.url).slice(0, 200) : '' })
+  when: String(w.when || '').slice(0, 24), live: !!w.live, url: /^https?:\/\//.test(String(w.url || '')) ? String(w.url).slice(0, 200) : '',
+  image: String(w.image || '').startsWith('https://') ? String(w.image).slice(0, 300) : '' })
 export const niveauLabel = (n) => ({ 3: 'actively active', 2: 'very active', 1: 'active' })[n] || ''
 const first = (tags, name, d = '') => { const t = tags.find((x) => x[0] === name); return t && t[1] !== undefined ? t[1] : d }
 const hexOk = (h) => /^[0-9a-f]{64}$/.test(h || '')
@@ -28,15 +31,17 @@ export const AUTO = {
 
 // extras you keep on this phone (the same shape as network.py's profile.json)
 export function extrasVides() {
-  return { name: '', show: 'pseudo', about: '', picture: '', banner: '', school: '', role: '', state: 'etudie', work: [], pinned: [], communities: [] }
+  return { name: '', show: 'pseudo', about: '', picture: '', banner: '', school: '', role: '', state: 'etudie', work: [], pinned: [], communities: [], at: '' }
 }
 export function extrasPropres(p, fields) {
   for (const k of ['name', 'about', 'picture', 'banner', 'school', 'role']) if (k in fields) p[k] = String(fields[k] || '').slice(0, k === 'picture' || k === 'banner' ? 2000 : 160)
   if (MONTRER.includes(fields.show)) p.show = fields.show
+  if ('at' in fields) p.at = atNorm(fields.at)
   if (ETATS.includes(fields.state)) p.state = fields.state
   if (Array.isArray(fields.work)) p.work = fields.work.filter((w) => w && w.title).slice(0, 12).map((w) => ({
     id: String(w.id || Math.random().toString(36).slice(2, 10)), kind: ['project', 'hackathon', 'progress'].includes(w.kind) ? w.kind : 'project',
-    title: String(w.title).slice(0, 60), text: String(w.text || '').slice(0, 200), when: String(w.when || '').slice(0, 24), live: !!w.live, url: String(w.url || '').slice(0, 200) }))
+    title: String(w.title).slice(0, 60), text: String(w.text || '').slice(0, 200), when: String(w.when || '').slice(0, 24), live: !!w.live, url: String(w.url || '').slice(0, 200),
+    image: String(w.image || '').startsWith('https://') ? String(w.image).slice(0, 300) : '' }))
   if (Array.isArray(fields.pinned)) p.pinned = fields.pinned.filter((a) => typeof a === 'string' && a.startsWith(K.badge + ':')).slice(0, 8)
   if (Array.isArray(fields.communities)) p.communities = [...new Set(fields.communities.map(slug).filter(Boolean))].sort().slice(0, 30)
   return p
@@ -70,10 +75,20 @@ export function reseau({ pool, relays, sk, me, pseudo, store, activite, expire =
       picture: String(ex.picture || meta.picture || '').slice(0, 120000), banner: String(ex.banner || meta.banner || '').slice(0, 160000),
       school: String(ex.school || '').slice(0, 60), role: String(ex.role || '').slice(0, 80), state: ETATS.includes(ex.state) ? ex.state : '',
       level: Math.min(3, Math.max(0, parseInt(ex.level, 10) || 0)), work: (ex.work || []).filter((w) => w && w.title).slice(0, 12).map(travailPropre),
-      communities: (ex.communities || []).map(slug).filter(Boolean).slice(0, 30), mine: hex === me }
+      communities: (ex.communities || []).map(slug).filter(Boolean).slice(0, 30), at: atNorm(ex.at), mine: hex === me }
     v.level_label = niveauLabel(v.level)
     profils.set(hex, v)
     return v
+  }
+  async function proprios(names) {
+    names = [...names].filter(Boolean); if (!names.length) return {}
+    const best = {}
+    for (const ev of await lire([{ kinds: [K.extras], '#d': names.map((a) => AT + a), limit: 500 }])) {
+      const a = first(ev.tags, 'd').slice(AT.length); let ok = false
+      try { ok = names.includes(a) && JSON.parse(ev.content || '{}').at === a } catch {}
+      if (ok && (!best[a] || ev.created_at < best[a][0] || (ev.created_at === best[a][0] && ev.pubkey < best[a][1]))) best[a] = [ev.created_at, ev.pubkey]
+    }
+    return Object.fromEntries(Object.entries(best).map(([a, v]) => [a, v[1]]))
   }
   async function profilsDe(hexes) {
     const manque = [...hexes].filter((h) => !profils.has(h))
@@ -85,6 +100,9 @@ export function reseau({ pool, relays, sk, me, pseudo, store, activite, expire =
         ;(ev.kind === K.profil ? metas : exs)[ev.pubkey] = d
       }
       manque.forEach((h) => { const v = vue(h, metas[h] || {}, exs[h] || {}); if (!metas[h] && !exs[h]) profils.delete(h) })   // an empty answer is not kept
+      // an @ shows only if that person really owns it (the first claim)
+      const ats = manque.filter((h) => profils.get(h) && profils.get(h).at)
+      if (ats.length) { const own = await proprios(new Set(ats.map((h) => profils.get(h).at))); ats.forEach((h) => { if (own[profils.get(h).at] !== h) profils.get(h).at = '' }) }
     }
     const out = Object.fromEntries([...hexes].map((h) => [h, profils.get(h) || vue(h, {}, {})]))
     for (const h of hexes) if (profils.get(h) && !profils.get(h).pseudo && !profils.get(h).about) profils.delete(h)
@@ -97,7 +115,7 @@ export function reseau({ pool, relays, sk, me, pseudo, store, activite, expire =
     const shown = { pseudo, name: p.name || pseudo, both: p.name ? `${p.name} (${pseudo})` : pseudo }[p.show]
     const meta = { name: slug(pseudo).replace(/-/g, '.'), display_name: shown, about: p.about, picture: p.picture.startsWith('https://') ? p.picture : '', banner: p.banner.startsWith('https://') ? p.banner : '' }
     const ex = { v: 1, id: handle(pseudo, me), pseudo, name: p.name, show: p.show, school: p.school, role: p.role, state: p.state, level: act.level, days: act.days,
-      work: p.work, communities: p.communities, picture: p.picture.slice(0, 48000), banner: p.banner.slice(0, 48000) }   // relays cap events near 100 KB
+      work: p.work, communities: p.communities, at: p.at || '', picture: p.picture.slice(0, 48000), banner: p.banner.slice(0, 48000) }   // relays cap events near 100 KB
     const a = await envoyer(signer(K.profil, JSON.stringify(Object.fromEntries(Object.entries(meta).filter(([, v]) => v))), []))
     const b = await envoyer(signer(K.extras, JSON.stringify(ex), [['d', EXTRAS]]))
     profils.delete(me)
@@ -198,6 +216,16 @@ export function reseau({ pool, relays, sk, me, pseudo, store, activite, expire =
     async majProfil(fields) { store.set('rh-net-profile', extrasPropres(extras(), fields)); const sent = await publierProfil(); if ('pinned' in fields) await this.epingler(extras().pinned); return { profile: this.profilLocal(), sent } },
     publierProfil,
     async profilDe(hex) { profils.delete(hex); return (await profilsDe(new Set([hex])))[hex] },
+    async proprioAt(name) { const a = atNorm(name); return a ? (await proprios(new Set([a])))[a] || null : null },
+    async reserverAt(name) {
+      const a = atNorm(name); if (!a) return { error: '3 to 20 letters, digits or _.' }
+      const owner = await this.proprioAt(a); if (owner && owner !== me) return { error: '@' + a + ' is taken.' }
+      const old = extras().at || ''
+      const sent = await envoyer(finalizeEvent({ kind: K.extras, created_at: now(), content: JSON.stringify({ at: a }), tags: [['d', AT + a]] }, sk))
+      if (old && old !== a) await envoyer(finalizeEvent({ kind: K.extras, created_at: now(), content: '', tags: [['d', AT + old]] }, sk))
+      const p = extras(); p.at = a; store.set('rh-net-profile', p); profils.delete(me); await publierProfil()
+      return { ...sent, at: a }
+    },
 
     // posting
     async poster(text, { media = [], community = '', agent = '', replyTo = null } = {}) {

@@ -1,0 +1,5221 @@
+{
+ "langs": [
+  [
+   "de",
+   "Deutsch"
+  ],
+  [
+   "en",
+   "English"
+  ],
+  [
+   "zh",
+   "中文"
+  ],
+  [
+   "es",
+   "Español"
+  ],
+  [
+   "fr",
+   "Français"
+  ],
+  [
+   "ja",
+   "日本語"
+  ],
+  [
+   "pt",
+   "Português"
+  ]
+ ],
+ "strings": {
+  "Your agents": {
+   "de": "Deine Agenten",
+   "es": "Tus agentes",
+   "fr": "Tes agents",
+   "ja": "エージェント",
+   "pt": "Seus agentes",
+   "zh": "你的智能体"
+  },
+  "The feed": {
+   "de": "Der Feed",
+   "es": "El feed",
+   "fr": "Le fil",
+   "ja": "フィード",
+   "pt": "O feed",
+   "zh": "动态"
+  },
+  "My profile": {
+   "de": "Mein Profil",
+   "es": "Mi perfil",
+   "fr": "Mon profil",
+   "ja": "プロフィール",
+   "pt": "Meu perfil",
+   "zh": "我的主页"
+  },
+  "Notifications": {
+   "de": "Mitteilungen",
+   "es": "Notificaciones",
+   "fr": "Notifications",
+   "ja": "通知",
+   "pt": "Notificações",
+   "zh": "通知"
+  },
+  "Conversations": {
+   "de": "Unterhaltungen",
+   "es": "Conversaciones",
+   "fr": "Conversations",
+   "ja": "会話",
+   "pt": "Conversas",
+   "zh": "对话"
+  },
+  "Friends & groups": {
+   "de": "Freunde & Gruppen",
+   "es": "Amigos y grupos",
+   "fr": "Amis et groupes",
+   "ja": "友達とグループ",
+   "pt": "Amigos e grupos",
+   "zh": "好友和群组"
+  },
+  "Vibe code": {
+   "de": "Vibe Coding",
+   "es": "Vibe code",
+   "fr": "Vibe code",
+   "ja": "バイブコーディング",
+   "pt": "Vibe code",
+   "zh": "Vibe 编程"
+  },
+  "Encyclopedia": {
+   "de": "Lexikon",
+   "es": "Enciclopedia",
+   "fr": "Encyclopédie",
+   "ja": "事典",
+   "pt": "Enciclopédia",
+   "zh": "百科"
+  },
+  "Settings": {
+   "de": "Einstellungen",
+   "es": "Ajustes",
+   "fr": "Réglages",
+   "ja": "設定",
+   "pt": "Configurações",
+   "zh": "设置"
+  },
+  "Close": {
+   "de": "Schließen",
+   "es": "Cerrar",
+   "fr": "Fermer",
+   "ja": "閉じる",
+   "pt": "Fechar",
+   "zh": "关闭"
+  },
+  "now": {
+   "de": "jetzt",
+   "es": "ahora",
+   "fr": "à l'instant",
+   "ja": "たった今",
+   "pt": "agora",
+   "zh": "刚刚"
+  },
+  "what should we call you?": {
+   "de": "wie sollen wir dich nennen?",
+   "es": "¿cómo te llamamos?",
+   "fr": "comment on t'appelle?",
+   "ja": "なんと呼べばいい?",
+   "pt": "como devemos te chamar?",
+   "zh": "怎么称呼你?"
+  },
+  "Any pseudo. It's how your friends see you, sealed in your messages.": {
+   "de": "Irgendein Pseudonym. So sehen dich deine Freunde, versiegelt in deinen Nachrichten.",
+   "es": "Cualquier seudónimo. Así te ven tus amigos, sellado en tus mensajes.",
+   "fr": "N'importe quel pseudo. C'est ce que tes amis voient, scellé dans tes messages.",
+   "ja": "好きなニックネームでOK。友達にはこの名前で表示され、メッセージ内で暗号化されます。",
+   "pt": "Qualquer apelido. É assim que seus amigos te veem, selado nas suas mensagens.",
+   "zh": "任意昵称。好友看到的就是它,加密封存在你的消息里。"
+  },
+  "pseudo": {
+   "de": "Pseudonym",
+   "es": "seudónimo",
+   "fr": "pseudo",
+   "ja": "ニックネーム",
+   "pt": "apelido",
+   "zh": "昵称"
+  },
+  "Friends can find me by my ID": {
+   "de": "Freunde können mich über meine ID finden",
+   "es": "Mis amigos pueden encontrarme por mi ID",
+   "fr": "Mes amis peuvent me trouver par mon ID",
+   "ja": "IDで友達に見つけてもらう",
+   "pt": "Amigos podem me encontrar pelo meu ID",
+   "zh": "好友可以通过 ID 找到我"
+  },
+  "You get an ID like": {
+   "de": "Du bekommst eine ID wie",
+   "es": "Recibes un ID como",
+   "fr": "Tu reçois un ID comme",
+   "ja": "あなたのIDの例:",
+   "pt": "Você recebe um ID como",
+   "zh": "你会获得一个 ID,例如"
+  },
+  ", unique to you. Its card is public.": {
+   "de": ", nur für dich. Ihre Karte ist öffentlich.",
+   "es": ", único para ti. Su tarjeta es pública.",
+   "fr": ", unique à toi. Sa fiche est publique.",
+   "ja": "。あなただけのIDで、カードは公開されます。",
+   "pt": ", exclusivo seu. O cartão dele é público.",
+   "zh": ",独一无二。它的名片是公开的。"
+  },
+  "Continue": {
+   "de": "Weiter",
+   "es": "Continuar",
+   "fr": "Continuer",
+   "ja": "続ける",
+   "pt": "Continuar",
+   "zh": "继续"
+  },
+  "I already have an account": {
+   "de": "Ich habe schon ein Konto",
+   "es": "Ya tengo una cuenta",
+   "fr": "J'ai déjà un compte",
+   "ja": "すでにアカウントがあります",
+   "pt": "Já tenho uma conta",
+   "zh": "我已有账号"
+  },
+  "Pick a pseudo.": {
+   "de": "Wähle ein Pseudonym.",
+   "es": "Elige un seudónimo.",
+   "fr": "Choisis un pseudo.",
+   "ja": "ニックネームを入力してください。",
+   "pt": "Escolha um apelido.",
+   "zh": "请选一个昵称。"
+  },
+  "a strong password": {
+   "de": "ein starkes Passwort",
+   "es": "una contraseña segura",
+   "fr": "un mot de passe solide",
+   "ja": "強いパスワード",
+   "pt": "uma senha forte",
+   "zh": "设置强密码"
+  },
+  "It locks your account on every device. A short sentence you remember works best.": {
+   "de": "Es sperrt dein Konto auf jedem Gerät. Am besten ein kurzer Satz, den du dir merkst.",
+   "es": "Bloquea tu cuenta en todos tus dispositivos. Lo mejor es una frase corta que recuerdes.",
+   "fr": "Il verrouille ton compte sur chaque appareil. Une petite phrase dont tu te souviens, c'est l'idéal.",
+   "ja": "すべての端末でアカウントを守ります。覚えやすい短い文がおすすめです。",
+   "pt": "Ela protege sua conta em todos os dispositivos. Uma frase curta que você lembre funciona melhor.",
+   "zh": "它在每台设备上锁住你的账号。最好用一句你记得住的短句。"
+  },
+  "password (10+ characters)": {
+   "de": "Passwort (10+ Zeichen)",
+   "es": "contraseña (10+ caracteres)",
+   "fr": "mot de passe (10 caractères ou plus)",
+   "ja": "パスワード(10文字以上)",
+   "pt": "senha (10+ caracteres)",
+   "zh": "密码(至少 10 个字符)"
+  },
+  "same password again": {
+   "de": "Passwort wiederholen",
+   "es": "repite la contraseña",
+   "fr": "le même mot de passe",
+   "ja": "もう一度パスワード",
+   "pt": "repita a senha",
+   "zh": "再次输入密码"
+  },
+  "Create my account": {
+   "de": "Konto erstellen",
+   "es": "Crear mi cuenta",
+   "fr": "Créer mon compte",
+   "ja": "アカウントを作成",
+   "pt": "Criar minha conta",
+   "zh": "创建账号"
+  },
+  "Back": {
+   "de": "Zurück",
+   "es": "Atrás",
+   "fr": "Retour",
+   "ja": "戻る",
+   "pt": "Voltar",
+   "zh": "返回"
+  },
+  "too weak": {
+   "de": "zu schwach",
+   "es": "demasiado débil",
+   "fr": "trop faible",
+   "ja": "弱すぎます",
+   "pt": "fraca demais",
+   "zh": "太弱"
+  },
+  "weak": {
+   "de": "schwach",
+   "es": "débil",
+   "fr": "faible",
+   "ja": "弱い",
+   "pt": "fraca",
+   "zh": "弱"
+  },
+  "okay": {
+   "de": "okay",
+   "es": "aceptable",
+   "fr": "correct",
+   "ja": "まあまあ",
+   "pt": "razoável",
+   "zh": "一般"
+  },
+  "strong": {
+   "de": "stark",
+   "es": "segura",
+   "fr": "solide",
+   "ja": "強い",
+   "pt": "forte",
+   "zh": "强"
+  },
+  "excellent": {
+   "de": "exzellent",
+   "es": "excelente",
+   "fr": "excellent",
+   "ja": "とても強い",
+   "pt": "excelente",
+   "zh": "极强"
+  },
+  "Make it a bit longer: a short sentence is perfect.": {
+   "de": "Etwas länger, bitte: ein kurzer Satz ist perfekt.",
+   "es": "Hazla un poco más larga: una frase corta es perfecta.",
+   "fr": "Un peu plus long: une petite phrase, c'est parfait.",
+   "ja": "もう少し長くしてください。短い文がぴったりです。",
+   "pt": "Deixe um pouco mais longa: uma frase curta é perfeita.",
+   "zh": "再长一点:一句短句就很好。"
+  },
+  "Creating your account...": {
+   "de": "Konto wird erstellt...",
+   "es": "Creando tu cuenta...",
+   "fr": "Création du compte...",
+   "ja": "アカウントを作成中...",
+   "pt": "Criando sua conta...",
+   "zh": "正在创建账号..."
+  },
+  "your recovery kit": {
+   "de": "dein Wiederherstellungs-Kit",
+   "es": "tu kit de recuperación",
+   "fr": "ton kit de récupération",
+   "ja": "リカバリーキット",
+   "pt": "seu kit de recuperação",
+   "zh": "你的恢复工具包"
+  },
+  "These 24 words are your account. Write them on paper and keep them safe: they bring everything back if you forget your password. Never share them.": {
+   "de": "Diese 24 Wörter sind dein Konto. Schreib sie auf Papier und bewahre sie sicher auf: Damit holst du alles zurück, wenn du dein Passwort vergisst. Teile sie nie.",
+   "es": "Estas 24 palabras son tu cuenta. Escríbelas en papel y guárdalas bien: lo recuperan todo si olvidas tu contraseña. No las compartas nunca.",
+   "fr": "Ces 24 mots sont ton compte. Note-les sur papier et garde-les en lieu sûr: ils ramènent tout si tu oublies ton mot de passe. Ne les partage jamais.",
+   "ja": "この24語があなたのアカウントです。紙に書いて安全に保管してください。パスワードを忘れても、すべて元に戻せます。絶対に共有しないでください。",
+   "pt": "Estas 24 palavras são sua conta. Anote no papel e guarde bem: elas trazem tudo de volta se você esquecer a senha. Nunca compartilhe.",
+   "zh": "这 24 个词就是你的账号。抄在纸上并妥善保管:忘记密码时,靠它们找回一切。切勿分享。"
+  },
+  "I wrote them down": {
+   "de": "Ich habe sie notiert",
+   "es": "Ya las anoté",
+   "fr": "Je les ai notés",
+   "ja": "書き留めました",
+   "pt": "Já anotei",
+   "zh": "我已抄好"
+  },
+  "quick check": {
+   "de": "kurzer Check",
+   "es": "comprobación rápida",
+   "fr": "petite vérification",
+   "ja": "かんたん確認",
+   "pt": "verificação rápida",
+   "zh": "快速确认"
+  },
+  "Type two of your words, so we know they're safe with you.": {
+   "de": "Gib zwei deiner Wörter ein, damit wir wissen, dass sie bei dir sicher sind.",
+   "es": "Escribe dos de tus palabras, para saber que las tienes a salvo.",
+   "fr": "Tape deux de tes mots, pour être sûr qu'ils sont bien avec toi.",
+   "ja": "単語を2つ入力して、控えがあることを確認します。",
+   "pt": "Digite duas das suas palavras, para sabermos que estão seguras com você.",
+   "zh": "输入其中两个词,确认你已妥善保存。"
+  },
+  "Check": {
+   "de": "Prüfen",
+   "es": "Comprobar",
+   "fr": "Vérifier",
+   "ja": "確認",
+   "pt": "Verificar",
+   "zh": "确认"
+  },
+  "Show my words again": {
+   "de": "Wörter nochmal zeigen",
+   "es": "Ver mis palabras otra vez",
+   "fr": "Revoir mes mots",
+   "ja": "単語をもう一度表示",
+   "pt": "Ver minhas palavras de novo",
+   "zh": "再看一遍"
+  },
+  "Not quite: look at your paper again.": {
+   "de": "Nicht ganz: schau nochmal auf dein Papier.",
+   "es": "No del todo: mira tu papel otra vez.",
+   "fr": "Pas tout à fait: regarde ton papier.",
+   "ja": "違います。紙をもう一度見てください。",
+   "pt": "Quase: olhe seu papel de novo.",
+   "zh": "不对:再看看你的纸。"
+  },
+  "your agents": {
+   "de": "deine agenten",
+   "es": "tus agentes",
+   "fr": "tes agents",
+   "ja": "エージェント",
+   "pt": "seus agentes",
+   "zh": "你的智能体"
+  },
+  "Looking at this computer...": {
+   "de": "Dieser Computer wird geprüft...",
+   "es": "Revisando este ordenador...",
+   "fr": "J'examine cet ordinateur...",
+   "ja": "このコンピューターを確認中...",
+   "pt": "Verificando este computador...",
+   "zh": "正在检查这台电脑..."
+  },
+  "What's already here is ready. Add a key only if you use that agent: you can skip.": {
+   "de": "Was schon da ist, ist bereit. Füge einen Schlüssel nur hinzu, wenn du den Agenten nutzt: du kannst das überspringen.",
+   "es": "Lo que ya está aquí funciona. Añade una clave solo si usas ese agente: puedes saltarlo.",
+   "fr": "Ce qui est déjà là est prêt. Ajoute une clé seulement si tu utilises cet agent: tu peux passer.",
+   "ja": "すでにあるものは準備完了です。使うエージェントのキーだけ追加してください。スキップもできます。",
+   "pt": "O que já está aqui está pronto. Adicione uma chave só se usar esse agente: pode pular.",
+   "zh": "已有的都可直接用。只在需要某个智能体时才添加密钥,可以跳过。"
+  },
+  "Anthropic API key": {
+   "de": "Anthropic-API-Schlüssel",
+   "es": "Clave de API de Anthropic",
+   "fr": "Clé API Anthropic",
+   "ja": "Anthropic APIキー",
+   "pt": "Chave de API da Anthropic",
+   "zh": "Anthropic API 密钥"
+  },
+  "ready, with your Claude account": {
+   "de": "bereit, mit deinem Claude-Konto",
+   "es": "listo, con tu cuenta de Claude",
+   "fr": "prêt, avec ton compte Claude",
+   "ja": "準備完了(Claudeアカウント)",
+   "pt": "pronto, com sua conta Claude",
+   "zh": "已就绪,使用你的 Claude 账号"
+  },
+  "open a terminal and run": {
+   "de": "öffne ein Terminal und führe",
+   "es": "abre una terminal y ejecuta",
+   "fr": "ouvre un terminal et lance",
+   "ja": "ターミナルを開いて",
+   "pt": "abra um terminal e rode",
+   "zh": "打开终端并运行"
+  },
+  "once to sign in": {
+   "de": "einmal aus, um dich anzumelden",
+   "es": "una vez para iniciar sesión",
+   "fr": "une fois pour te connecter",
+   "ja": "を一度実行してサインイン",
+   "pt": "uma vez para entrar",
+   "zh": "一次以登录"
+  },
+  "install Claude Code, then run": {
+   "de": "installiere Claude Code und führe dann",
+   "es": "instala Claude Code y luego ejecuta",
+   "fr": "installe Claude Code, puis lance",
+   "ja": "Claude Codeをインストールして",
+   "pt": "instale o Claude Code e rode",
+   "zh": "安装 Claude Code,然后运行"
+  },
+  "once": {
+   "de": "einmal aus",
+   "es": "una vez",
+   "fr": "une fois",
+   "ja": "を一度実行",
+   "pt": "uma vez",
+   "zh": "一次"
+  },
+  "optional: free models on your computer, ollama.com": {
+   "de": "optional: kostenlose Modelle auf deinem Computer, ollama.com",
+   "es": "opcional: modelos gratis en tu ordenador, ollama.com",
+   "fr": "facultatif: des modèles gratuits sur ton ordinateur, ollama.com",
+   "ja": "任意: コンピューター上の無料モデル、ollama.com",
+   "pt": "opcional: modelos grátis no seu computador, ollama.com",
+   "zh": "可选:电脑上的免费模型,ollama.com"
+  },
+  "optional, for vibe code: run": {
+   "de": "optional, für Vibe Coding: führe aus",
+   "es": "opcional, para vibe code: ejecuta",
+   "fr": "facultatif, pour le vibe code: lance",
+   "ja": "任意(バイブコーディング用): 実行",
+   "pt": "opcional, para vibe code: rode",
+   "zh": "可选,用于 Vibe 编程:运行"
+  },
+  "key saved": {
+   "de": "Schlüssel gespeichert",
+   "es": "clave guardada",
+   "fr": "clé enregistrée",
+   "ja": "キー保存済み",
+   "pt": "chave salva",
+   "zh": "密钥已保存"
+  },
+  "key (optional)": {
+   "de": "Schlüssel (optional)",
+   "es": "clave (opcional)",
+   "fr": "clé (facultatif)",
+   "ja": "キー(任意)",
+   "pt": "chave (opcional)",
+   "zh": "密钥(可选)"
+  },
+  "This key does not look right.": {
+   "de": "Dieser Schlüssel sieht nicht richtig aus.",
+   "es": "Esta clave no parece correcta.",
+   "fr": "Cette clé n'a pas l'air bonne.",
+   "ja": "このキーは正しくないようです。",
+   "pt": "Essa chave não parece certa.",
+   "zh": "这个密钥看起来不对。"
+  },
+  "Use from my phone": {
+   "de": "Vom Telefon aus nutzen",
+   "es": "Usar desde mi teléfono",
+   "fr": "Utiliser depuis mon téléphone",
+   "ja": "スマホから使う",
+   "pt": "Usar pelo celular",
+   "zh": "用手机操作"
+  },
+  "Your phone drives this computer's agents, sealed.": {
+   "de": "Dein Handy steuert die Agenten dieses Computers, versiegelt.",
+   "es": "Tu móvil maneja los agentes de este ordenador, sellado.",
+   "fr": "Ton téléphone pilote les agents de cet ordinateur, en scellé.",
+   "ja": "スマホからこのコンピューターのエージェントを暗号化して操作します。",
+   "pt": "Seu celular comanda os agentes deste computador, selado.",
+   "zh": "手机加密操控这台电脑上的智能体。"
+  },
+  "Vibe code from anywhere": {
+   "de": "Vibe Coding von überall",
+   "es": "Vibe code desde cualquier sitio",
+   "fr": "Vibe code de n'importe où",
+   "ja": "どこからでもバイブコーディング",
+   "pt": "Vibe code de qualquer lugar",
+   "zh": "随时随地 Vibe 编程"
+  },
+  "A private workshop on your GitHub: Claude builds your ideas, computer off.": {
+   "de": "Eine private Werkstatt auf deinem GitHub: Claude baut deine Ideen, der Computer bleibt aus.",
+   "es": "Un taller privado en tu GitHub: Claude construye tus ideas con el ordenador apagado.",
+   "fr": "Un atelier privé sur ton GitHub: Claude construit tes idées, ordinateur éteint.",
+   "ja": "あなたのGitHubにプライベートな作業場を用意。PCがオフでもClaudeがアイデアを形にします。",
+   "pt": "Uma oficina privada no seu GitHub: o Claude constrói suas ideias com o computador desligado.",
+   "zh": "在你的 GitHub 上建一个私有工作间:电脑关着,Claude 也能实现你的想法。"
+  },
+  "GitHub on my phone": {
+   "de": "GitHub auf meinem Telefon",
+   "es": "GitHub en mi teléfono",
+   "fr": "GitHub sur mon téléphone",
+   "ja": "スマホでGitHub",
+   "pt": "GitHub no meu celular",
+   "zh": "手机上的 GitHub"
+  },
+  "Vibe code from the phone with your GitHub sign-in, kept sealed.": {
+   "de": "Vibe Coding vom Handy mit deiner GitHub-Anmeldung, versiegelt aufbewahrt.",
+   "es": "Vibe code desde el móvil con tu sesión de GitHub, guardada sellada.",
+   "fr": "Vibe code depuis le téléphone avec ta connexion GitHub, gardée scellée.",
+   "ja": "GitHubのログインを暗号化して保存し、スマホからバイブコーディング。",
+   "pt": "Vibe code pelo celular com seu login do GitHub, guardado selado.",
+   "zh": "用你的 GitHub 登录在手机上 Vibe 编程,凭据加密保存。"
+  },
+  "My own background": {
+   "de": "Mein eigener Hintergrund",
+   "es": "Mi propio fondo",
+   "fr": "Mon propre fond",
+   "ja": "自分の背景",
+   "pt": "Meu próprio fundo",
+   "zh": "自定义背景"
+  },
+  "Pick a picture for your root-harness.": {
+   "de": "Wähle ein Bild für dein root-harness.",
+   "es": "Elige una imagen para tu root-harness.",
+   "fr": "Choisis une image pour ton root-harness.",
+   "ja": "root-harnessの背景画像を選びます。",
+   "pt": "Escolha uma imagem para o seu root-harness.",
+   "zh": "为你的 root-harness 选一张图片。"
+  },
+  "a few extras": {
+   "de": "ein paar extras",
+   "es": "algunos extras",
+   "fr": "quelques extras",
+   "ja": "おまけ機能",
+   "pt": "alguns extras",
+   "zh": "几个附加功能"
+  },
+  "One tap each, all optional. You can change them later in Settings.": {
+   "de": "Ein Tippen pro Option, alles optional. Du kannst es später in den Einstellungen ändern.",
+   "es": "Un toque cada uno, todo opcional. Puedes cambiarlos luego en Ajustes.",
+   "fr": "Un geste chacun, tout est facultatif. Tu pourras les changer dans Réglages.",
+   "ja": "それぞれワンタップ、すべて任意です。あとで設定から変更できます。",
+   "pt": "Um toque cada, tudo opcional. Dá para mudar depois em Configurações.",
+   "zh": "每项轻点一下,全部可选。之后可在设置中更改。"
+  },
+  "Finish": {
+   "de": "Fertig",
+   "es": "Terminar",
+   "fr": "Terminer",
+   "ja": "完了",
+   "pt": "Concluir",
+   "zh": "完成"
+  },
+  "Workshop ready. Two keys to add once, from Settings, Vibe code.": {
+   "de": "Werkstatt bereit. Noch zwei Schlüssel einmalig hinzufügen, unter Einstellungen, Vibe Coding.",
+   "es": "Taller listo. Faltan dos claves por añadir una vez, en Ajustes, Vibe code.",
+   "fr": "Atelier prêt. Deux clés à ajouter une fois, dans Réglages, Vibe code.",
+   "ja": "作業場の準備ができました。設定のバイブコーディングから、キーを2つ一度だけ追加してください。",
+   "pt": "Oficina pronta. Faltam duas chaves para adicionar uma vez, em Configurações, Vibe code.",
+   "zh": "工作间已就绪。还需在设置的 Vibe 编程里添加两个密钥(仅一次)。"
+  },
+  "Your account is yours, on your devices. Here's your ID: give it to your friends and colleagues, or let them scan it.": {
+   "de": "Dein Konto gehört dir, auf deinen Geräten. Hier ist deine ID: gib sie Freunden und Kollegen oder lass sie scannen.",
+   "es": "Tu cuenta es tuya, en tus dispositivos. Aquí está tu ID: dásela a tus amigos y colegas, o deja que la escaneen.",
+   "fr": "Ton compte est à toi, sur tes appareils. Voici ton ID: donne-le à tes amis et collègues, ou laisse-les le scanner.",
+   "ja": "アカウントはあなたのもの、あなたの端末にあります。これがあなたのIDです。友達や同僚に渡すか、スキャンしてもらいましょう。",
+   "pt": "Sua conta é sua, nos seus dispositivos. Aqui está seu ID: passe para amigos e colegas, ou deixe que escaneiem.",
+   "zh": "账号属于你,只在你的设备上。这是你的 ID:发给好友和同事,或让他们扫码。"
+  },
+  "Open root-harness": {
+   "de": "root-harness öffnen",
+   "es": "Abrir root-harness",
+   "fr": "Ouvrir root-harness",
+   "ja": "root-harnessを開く",
+   "pt": "Abrir o root-harness",
+   "zh": "打开 root-harness"
+  },
+  "your 24 words": {
+   "de": "deine 24 wörter",
+   "es": "tus 24 palabras",
+   "fr": "tes 24 mots",
+   "ja": "24の単語",
+   "pt": "suas 24 palavras",
+   "zh": "你的 24 个词"
+  },
+  "They bring your account back here, with a new password.": {
+   "de": "Damit holst du dein Konto hierher zurück, mit einem neuen Passwort.",
+   "es": "Recuperan tu cuenta aquí, con una contraseña nueva.",
+   "fr": "Ils ramènent ton compte ici, avec un nouveau mot de passe.",
+   "ja": "新しいパスワードで、ここにアカウントを復元します。",
+   "pt": "Elas trazem sua conta de volta aqui, com uma nova senha.",
+   "zh": "用它们在这里找回账号,并设置新密码。"
+  },
+  "word1 word2 ... word24": {
+   "de": "wort1 wort2 ... wort24",
+   "es": "palabra1 palabra2 ... palabra24",
+   "fr": "mot1 mot2 ... mot24",
+   "ja": "単語1 単語2 ... 単語24",
+   "pt": "palavra1 palavra2 ... palavra24",
+   "zh": "词1 词2 ... 词24"
+  },
+  "new password (10+)": {
+   "de": "neues Passwort (10+)",
+   "es": "nueva contraseña (10+)",
+   "fr": "nouveau mot de passe (10+)",
+   "ja": "新しいパスワード(10文字以上)",
+   "pt": "nova senha (10+)",
+   "zh": "新密码(至少 10 位)"
+  },
+  "again": {
+   "de": "nochmal",
+   "es": "otra vez",
+   "fr": "encore",
+   "ja": "もう一度",
+   "pt": "de novo",
+   "zh": "再次输入"
+  },
+  "Bring my account back": {
+   "de": "Mein Konto zurückholen",
+   "es": "Recuperar mi cuenta",
+   "fr": "Récupérer mon compte",
+   "ja": "アカウントを復元",
+   "pt": "Recuperar minha conta",
+   "zh": "找回我的账号"
+  },
+  "Restoring...": {
+   "de": "Wird wiederhergestellt...",
+   "es": "Restaurando...",
+   "fr": "Restauration...",
+   "ja": "復元中...",
+   "pt": "Restaurando...",
+   "zh": "正在恢复..."
+  },
+  "welcome back": {
+   "de": "willkommen zurück",
+   "es": "hola de nuevo",
+   "fr": "bon retour",
+   "ja": "おかえりなさい",
+   "pt": "que bom te ver de novo",
+   "zh": "欢迎回来"
+  },
+  "Your pseudo and password. Your memory comes with them.": {
+   "de": "Dein Pseudonym und dein Passwort. Dein Gedächtnis kommt mit.",
+   "es": "Tu seudónimo y tu contraseña. Tu memoria viene con ellos.",
+   "fr": "Ton pseudo et ton mot de passe. Ta mémoire suit.",
+   "ja": "ニックネームとパスワードを入力。メモリーも一緒に戻ります。",
+   "pt": "Seu apelido e sua senha. Sua memória vem junto.",
+   "zh": "输入昵称和密码,你的记忆会随之回来。"
+  },
+  "password": {
+   "de": "Passwort",
+   "es": "contraseña",
+   "fr": "mot de passe",
+   "ja": "パスワード",
+   "pt": "senha",
+   "zh": "密码"
+  },
+  "Sign in": {
+   "de": "Anmelden",
+   "es": "Iniciar sesión",
+   "fr": "Se connecter",
+   "ja": "サインイン",
+   "pt": "Entrar",
+   "zh": "登录"
+  },
+  "Use my 24 words instead": {
+   "de": "Stattdessen meine 24 Wörter nutzen",
+   "es": "Usar mis 24 palabras",
+   "fr": "Utiliser plutôt mes 24 mots",
+   "ja": "代わりに24語を使う",
+   "pt": "Usar minhas 24 palavras",
+   "zh": "改用 24 个词"
+  },
+  "Create a new account": {
+   "de": "Neues Konto erstellen",
+   "es": "Crear una cuenta nueva",
+   "fr": "Créer un nouveau compte",
+   "ja": "新しいアカウントを作成",
+   "pt": "Criar uma conta nova",
+   "zh": "创建新账号"
+  },
+  "Finding your account...": {
+   "de": "Dein Konto wird gesucht...",
+   "es": "Buscando tu cuenta...",
+   "fr": "Recherche du compte...",
+   "ja": "アカウントを検索中...",
+   "pt": "Procurando sua conta...",
+   "zh": "正在查找账号..."
+  },
+  "Type your password.": {
+   "de": "Gib dein Passwort ein.",
+   "es": "Escribe tu contraseña.",
+   "fr": "Tape ton mot de passe.",
+   "ja": "パスワードを入力してください。",
+   "pt": "Digite sua senha.",
+   "zh": "请输入密码。"
+  },
+  "Unlock": {
+   "de": "Entsperren",
+   "es": "Desbloquear",
+   "fr": "Déverrouiller",
+   "ja": "ロック解除",
+   "pt": "Desbloquear",
+   "zh": "解锁"
+  },
+  "Sign out of this phone": {
+   "de": "Auf diesem Handy abmelden",
+   "es": "Cerrar sesión en este móvil",
+   "fr": "Me déconnecter de ce téléphone",
+   "ja": "このスマホからサインアウト",
+   "pt": "Sair deste celular",
+   "zh": "从这台手机退出"
+  },
+  "Forgot your password?": {
+   "de": "Passwort vergessen?",
+   "es": "¿Olvidaste tu contraseña?",
+   "fr": "Mot de passe oublié?",
+   "ja": "パスワードをお忘れですか?",
+   "pt": "Esqueceu a senha?",
+   "zh": "忘记密码?"
+  },
+  "Unlocking...": {
+   "de": "Wird entsperrt...",
+   "es": "Desbloqueando...",
+   "fr": "Déverrouillage...",
+   "ja": "解除中...",
+   "pt": "Desbloqueando...",
+   "zh": "正在解锁..."
+  },
+  "Your password is short: change it to 10+ characters in Settings.": {
+   "de": "Dein Passwort ist kurz: ändere es in den Einstellungen auf 10+ Zeichen.",
+   "es": "Tu contraseña es corta: cámbiala por una de 10+ caracteres en Ajustes.",
+   "fr": "Ton mot de passe est court: passe-le à 10 caractères ou plus dans Réglages.",
+   "ja": "パスワードが短いです。設定で10文字以上に変更してください。",
+   "pt": "Sua senha é curta: troque por uma de 10+ caracteres em Configurações.",
+   "zh": "密码太短:请在设置中改为至少 10 个字符。"
+  },
+  "forgot it?": {
+   "de": "vergessen?",
+   "es": "¿la olvidaste?",
+   "fr": "oublié?",
+   "ja": "忘れましたか?",
+   "pt": "esqueceu?",
+   "zh": "忘了?"
+  },
+  "Your 24 words bring your account back with a new password.": {
+   "de": "Mit deinen 24 Wörtern holst du dein Konto mit einem neuen Passwort zurück.",
+   "es": "Tus 24 palabras recuperan tu cuenta con una contraseña nueva.",
+   "fr": "Tes 24 mots ramènent ton compte avec un nouveau mot de passe.",
+   "ja": "24語があれば、新しいパスワードでアカウントを復元できます。",
+   "pt": "Suas 24 palavras trazem sua conta de volta com uma nova senha.",
+   "zh": "用 24 个词即可找回账号并设置新密码。"
+  },
+  "Use my 24 words": {
+   "de": "Meine 24 Wörter nutzen",
+   "es": "Usar mis 24 palabras",
+   "fr": "Utiliser mes 24 mots",
+   "ja": "24語を使う",
+   "pt": "Usar minhas 24 palavras",
+   "zh": "使用 24 个词"
+  },
+  "No words? Then only a new account is possible: new ID, your channels go away, your agent conversations stay.": {
+   "de": "Keine Wörter? Dann geht nur ein neues Konto: neue ID, deine Kanäle verschwinden, deine Agenten-Unterhaltungen bleiben.",
+   "es": "¿Sin palabras? Entonces solo queda una cuenta nueva: nuevo ID, tus canales desaparecen, tus conversaciones con agentes se quedan.",
+   "fr": "Pas de mots? Alors seul un nouveau compte est possible: nouvel ID, tes canaux disparaissent, tes conversations avec tes agents restent.",
+   "ja": "単語がない場合は、新しいアカウントしか作れません。IDは新しくなり、チャンネルは消えますが、エージェントとの会話は残ります。",
+   "pt": "Sem as palavras? Então só dá para criar uma conta nova: novo ID, seus canais somem, suas conversas com agentes ficam.",
+   "zh": "没有这些词?那只能新建账号:新 ID,频道会消失,与智能体的对话会保留。"
+  },
+  "type RESET to confirm": {
+   "de": "zum Bestätigen RESET eingeben",
+   "es": "escribe RESET para confirmar",
+   "fr": "tape RESET pour confirmer",
+   "ja": "確認のため RESET と入力",
+   "pt": "digite RESET para confirmar",
+   "zh": "输入 RESET 确认"
+  },
+  "Start a new account": {
+   "de": "Neues Konto beginnen",
+   "es": "Empezar una cuenta nueva",
+   "fr": "Repartir d'un nouveau compte",
+   "ja": "新しいアカウントを始める",
+   "pt": "Começar uma conta nova",
+   "zh": "新建账号"
+  },
+  "Type RESET in capitals.": {
+   "de": "Gib RESET in Großbuchstaben ein.",
+   "es": "Escribe RESET en mayúsculas.",
+   "fr": "Tape RESET en majuscules.",
+   "ja": "RESET を大文字で入力してください。",
+   "pt": "Digite RESET em maiúsculas.",
+   "zh": "请输入大写的 RESET。"
+  },
+  "linking this phone": {
+   "de": "dieses handy verbinden",
+   "es": "vinculando este móvil",
+   "fr": "liaison de ce téléphone",
+   "ja": "このスマホを連携中",
+   "pt": "conectando este celular",
+   "zh": "正在关联这台手机"
+  },
+  "Check that your computer shows the same code, then approve it there.": {
+   "de": "Prüfe, ob dein Computer denselben Code zeigt, und bestätige ihn dort.",
+   "es": "Comprueba que tu ordenador muestra el mismo código y apruébalo allí.",
+   "fr": "Vérifie que ton ordinateur affiche le même code, puis valide-le là-bas.",
+   "ja": "コンピューターに同じコードが表示されているか確認し、そちらで承認してください。",
+   "pt": "Confira se o computador mostra o mesmo código e aprove por lá.",
+   "zh": "确认电脑上显示相同的代码,然后在电脑上批准。"
+  },
+  "waiting for your computer...": {
+   "de": "warte auf deinen Computer...",
+   "es": "esperando a tu ordenador...",
+   "fr": "en attente de ton ordinateur...",
+   "ja": "コンピューターを待っています...",
+   "pt": "aguardando seu computador...",
+   "zh": "等待你的电脑..."
+  },
+  "Choose a code to unlock root-harness on this phone (6+ characters).": {
+   "de": "Wähle einen Code, um root-harness auf diesem Handy zu entsperren (6+ Zeichen).",
+   "es": "Elige un código para desbloquear root-harness en este móvil (6+ caracteres).",
+   "fr": "Choisis un code pour déverrouiller root-harness sur ce téléphone (6 caractères ou plus).",
+   "ja": "このスマホでroot-harnessを開くコードを決めてください(6文字以上)。",
+   "pt": "Escolha um código para desbloquear o root-harness neste celular (6+ caracteres).",
+   "zh": "设置一个在这台手机上解锁 root-harness 的代码(至少 6 个字符)。"
+  },
+  "unlock code": {
+   "de": "Entsperrcode",
+   "es": "código de desbloqueo",
+   "fr": "code de déverrouillage",
+   "ja": "解除コード",
+   "pt": "código de desbloqueio",
+   "zh": "解锁代码"
+  },
+  "Done": {
+   "de": "Fertig",
+   "es": "Listo",
+   "fr": "Terminé",
+   "ja": "完了",
+   "pt": "Pronto",
+   "zh": "完成"
+  },
+  "The two codes are different.": {
+   "de": "Die beiden Codes stimmen nicht überein.",
+   "es": "Los dos códigos no coinciden.",
+   "fr": "Les deux codes sont différents.",
+   "ja": "2つのコードが一致しません。",
+   "pt": "Os dois códigos são diferentes.",
+   "zh": "两次输入的代码不一致。"
+  },
+  "Share with a friend": {
+   "de": "Mit einem Freund teilen",
+   "es": "Compartir con un amigo",
+   "fr": "Partager avec un ami",
+   "ja": "友達と共有",
+   "pt": "Compartilhar com um amigo",
+   "zh": "分享给好友"
+  },
+  "New chat": {
+   "de": "Neuer Chat",
+   "es": "Nuevo chat",
+   "fr": "Nouvelle discussion",
+   "ja": "新しいチャット",
+   "pt": "Novo chat",
+   "zh": "新对话"
+  },
+  "Add an image": {
+   "de": "Bild hinzufügen",
+   "es": "Añadir una imagen",
+   "fr": "Ajouter une image",
+   "ja": "画像を追加",
+   "pt": "Adicionar imagem",
+   "zh": "添加图片"
+  },
+  "Ask your agent, or / for commands": {
+   "de": "Frag deinen Agenten, oder / für Befehle",
+   "es": "Pregunta a tu agente, o / para comandos",
+   "fr": "Demande à ton agent, ou / pour les commandes",
+   "ja": "エージェントに質問、/ でコマンド",
+   "pt": "Pergunte ao seu agente, ou / para comandos",
+   "zh": "问你的智能体,或输入 / 使用命令"
+  },
+  "what are we making?": {
+   "de": "was bauen wir?",
+   "es": "¿qué hacemos hoy?",
+   "fr": "on fait quoi?",
+   "ja": "何をつくる?",
+   "pt": "o que vamos criar?",
+   "zh": "今天做点什么?"
+  },
+  "Ask your agent, vibe code on GitHub, or share what you did with a friend.": {
+   "de": "Frag deinen Agenten, mach Vibe Coding auf GitHub oder teile mit einem Freund, was du gemacht hast.",
+   "es": "Pregunta a tu agente, haz vibe code en GitHub o comparte con un amigo lo que hiciste.",
+   "fr": "Demande à ton agent, fais du vibe code sur GitHub, ou partage ce que tu as fait avec un ami.",
+   "ja": "エージェントに質問、GitHubでバイブコーディング、やったことを友達と共有。",
+   "pt": "Pergunte ao seu agente, faça vibe code no GitHub ou compartilhe o que fez com um amigo.",
+   "zh": "问智能体、在 GitHub 上 Vibe 编程,或把成果分享给好友。"
+  },
+  "your computer": {
+   "de": "dein Computer",
+   "es": "tu ordenador",
+   "fr": "ton ordinateur",
+   "ja": "あなたのコンピューター",
+   "pt": "seu computador",
+   "zh": "你的电脑"
+  },
+  "offline": {
+   "de": "offline",
+   "es": "sin conexión",
+   "fr": "hors ligne",
+   "ja": "オフライン",
+   "pt": "offline",
+   "zh": "离线"
+  },
+  "your computer is off": {
+   "de": "dein Computer ist aus",
+   "es": "tu ordenador está apagado",
+   "fr": "ton ordinateur est éteint",
+   "ja": "コンピューターがオフです",
+   "pt": "seu computador está desligado",
+   "zh": "你的电脑已关机"
+  },
+  "ready": {
+   "de": "bereit",
+   "es": "listo",
+   "fr": "prêt",
+   "ja": "準備完了",
+   "pt": "pronto",
+   "zh": "就绪"
+  },
+  "thinking": {
+   "de": "denkt nach",
+   "es": "pensando",
+   "fr": "réfléchit",
+   "ja": "考え中",
+   "pt": "pensando",
+   "zh": "思考中"
+  },
+  "waiting for you": {
+   "de": "wartet auf dich",
+   "es": "esperándote",
+   "fr": "t'attend",
+   "ja": "あなたの返答待ち",
+   "pt": "aguardando você",
+   "zh": "等你回应"
+  },
+  "Your agent wants to:": {
+   "de": "Dein Agent möchte:",
+   "es": "Tu agente quiere:",
+   "fr": "Ton agent veut:",
+   "ja": "エージェントの依頼:",
+   "pt": "Seu agente quer:",
+   "zh": "你的智能体想要:"
+  },
+  "Allow": {
+   "de": "Erlauben",
+   "es": "Permitir",
+   "fr": "Autoriser",
+   "ja": "許可",
+   "pt": "Permitir",
+   "zh": "允许"
+  },
+  "Deny": {
+   "de": "Ablehnen",
+   "es": "Denegar",
+   "fr": "Refuser",
+   "ja": "拒否",
+   "pt": "Negar",
+   "zh": "拒绝"
+  },
+  "Allowed": {
+   "de": "Erlaubt",
+   "es": "Permitido",
+   "fr": "Autorisé",
+   "ja": "許可しました",
+   "pt": "Permitido",
+   "zh": "已允许"
+  },
+  "Denied": {
+   "de": "Abgelehnt",
+   "es": "Denegado",
+   "fr": "Refusé",
+   "ja": "拒否しました",
+   "pt": "Negado",
+   "zh": "已拒绝"
+  },
+  "Send": {
+   "de": "Senden",
+   "es": "Enviar",
+   "fr": "Envoyer",
+   "ja": "送信",
+   "pt": "Enviar",
+   "zh": "发送"
+  },
+  "Skip": {
+   "de": "Überspringen",
+   "es": "Omitir",
+   "fr": "Passer",
+   "ja": "スキップ",
+   "pt": "Pular",
+   "zh": "跳过"
+  },
+  "Skipped": {
+   "de": "Übersprungen",
+   "es": "Omitido",
+   "fr": "Passé",
+   "ja": "スキップしました",
+   "pt": "Pulado",
+   "zh": "已跳过"
+  },
+  "Change the model": {
+   "de": "Modell wechseln",
+   "es": "Cambiar el modelo",
+   "fr": "Changer de modèle",
+   "ja": "モデルを変更",
+   "pt": "Trocar o modelo",
+   "zh": "切换模型"
+  },
+  "How hard it thinks": {
+   "de": "Wie gründlich es nachdenkt",
+   "es": "Cuánto piensa",
+   "fr": "À quel point il réfléchit",
+   "ja": "思考の深さ",
+   "pt": "Quanto ele pensa",
+   "zh": "思考力度"
+  },
+  "Change the agent": {
+   "de": "Agent wechseln",
+   "es": "Cambiar el agente",
+   "fr": "Changer d'agent",
+   "ja": "エージェントを変更",
+   "pt": "Trocar o agente",
+   "zh": "切换智能体"
+  },
+  "Ask, accept edits, plan or auto": {
+   "de": "Fragen, Änderungen annehmen, planen oder auto",
+   "es": "Preguntar, aceptar cambios, planificar o auto",
+   "fr": "Demander, accepter les modifs, planifier ou auto",
+   "ja": "確認・編集を許可・計画・自動",
+   "pt": "Perguntar, aceitar edições, planejar ou auto",
+   "zh": "询问、接受修改、规划或自动"
+  },
+  "Start a new conversation": {
+   "de": "Neue Unterhaltung beginnen",
+   "es": "Empezar una conversación nueva",
+   "fr": "Lancer une nouvelle conversation",
+   "ja": "新しい会話を始める",
+   "pt": "Começar uma nova conversa",
+   "zh": "开始新对话"
+  },
+  "Share this conversation with a friend": {
+   "de": "Diese Unterhaltung mit einem Freund teilen",
+   "es": "Compartir esta conversación con un amigo",
+   "fr": "Partager cette conversation avec un ami",
+   "ja": "この会話を友達と共有",
+   "pt": "Compartilhar esta conversa com um amigo",
+   "zh": "把这段对话分享给好友"
+  },
+  "commands": {
+   "de": "befehle",
+   "es": "comandos",
+   "fr": "commandes",
+   "ja": "コマンド",
+   "pt": "comandos",
+   "zh": "命令"
+  },
+  "ask mode": {
+   "de": "Fragemodus",
+   "es": "modo preguntar",
+   "fr": "mode demander",
+   "ja": "確認モード",
+   "pt": "modo perguntar",
+   "zh": "询问模式"
+  },
+  "accept edits on": {
+   "de": "Änderungen annehmen an",
+   "es": "aceptar cambios activado",
+   "fr": "acceptation des modifs activée",
+   "ja": "編集の自動許可オン",
+   "pt": "aceitar edições ativado",
+   "zh": "已开启接受修改"
+  },
+  "plan mode on": {
+   "de": "Planmodus an",
+   "es": "modo plan activado",
+   "fr": "mode plan activé",
+   "ja": "プランモードオン",
+   "pt": "modo plano ativado",
+   "zh": "已开启规划模式"
+  },
+  "auto mode on": {
+   "de": "Automodus an",
+   "es": "modo auto activado",
+   "fr": "mode auto activé",
+   "ja": "自動モードオン",
+   "pt": "modo auto ativado",
+   "zh": "已开启自动模式"
+  },
+  "your agent": {
+   "de": "dein agent",
+   "es": "tu agente",
+   "fr": "ton agent",
+   "ja": "エージェント",
+   "pt": "seu agente",
+   "zh": "你的智能体"
+  },
+  "Loading...": {
+   "de": "Lädt...",
+   "es": "Cargando...",
+   "fr": "Chargement...",
+   "ja": "読み込み中...",
+   "pt": "Carregando...",
+   "zh": "加载中..."
+  },
+  "Your computer is off or not answering. On the go, use": {
+   "de": "Dein Computer ist aus oder antwortet nicht. Unterwegs nutzt du",
+   "es": "Tu ordenador está apagado o no responde. Fuera de casa, usa",
+   "fr": "Ton ordinateur est éteint ou ne répond pas. En déplacement, utilise",
+   "ja": "コンピューターがオフか応答しません。外出先では",
+   "pt": "Seu computador está desligado ou não responde. Fora de casa, use",
+   "zh": "你的电脑已关机或无响应。外出时可使用"
+  },
+  ": Claude works on GitHub.": {
+   "de": ": Claude arbeitet auf GitHub.",
+   "es": ": Claude trabaja en GitHub.",
+   "fr": ": Claude travaille sur GitHub.",
+   "ja": "を使いましょう。ClaudeがGitHub上で作業します。",
+   "pt": ": o Claude trabalha no GitHub.",
+   "zh": ":Claude 在 GitHub 上工作。"
+  },
+  "Same tools, same permission cards, whoever thinks.": {
+   "de": "Dieselben Werkzeuge, dieselben Freigabekarten, egal wer denkt.",
+   "es": "Mismas herramientas, mismas tarjetas de permiso, piense quien piense.",
+   "fr": "Mêmes outils, mêmes cartes d'autorisation, quel que soit celui qui réfléchit.",
+   "ja": "誰が考えても、同じツールと同じ許可カード。",
+   "pt": "Mesmas ferramentas, mesmos cartões de permissão, seja quem for que pensa.",
+   "zh": "无论谁来思考,工具和权限卡都一样。"
+  },
+  "agent": {
+   "de": "agent",
+   "es": "agente",
+   "fr": "agent",
+   "ja": "エージェント",
+   "pt": "agente",
+   "zh": "智能体"
+  },
+  "model": {
+   "de": "modell",
+   "es": "modelo",
+   "fr": "modèle",
+   "ja": "モデル",
+   "pt": "modelo",
+   "zh": "模型"
+  },
+  "effort": {
+   "de": "aufwand",
+   "es": "esfuerzo",
+   "fr": "effort",
+   "ja": "思考量",
+   "pt": "esforço",
+   "zh": "力度"
+  },
+  "permissions": {
+   "de": "berechtigungen",
+   "es": "permisos",
+   "fr": "autorisations",
+   "ja": "権限",
+   "pt": "permissões",
+   "zh": "权限"
+  },
+  "not ready": {
+   "de": "nicht bereit",
+   "es": "no está listo",
+   "fr": "pas prêt",
+   "ja": "未準備",
+   "pt": "não está pronto",
+   "zh": "未就绪"
+  },
+  "ask first": {
+   "de": "erst fragen",
+   "es": "preguntar antes",
+   "fr": "demander d'abord",
+   "ja": "先に確認",
+   "pt": "perguntar antes",
+   "zh": "先询问"
+  },
+  "accept edits": {
+   "de": "Änderungen annehmen",
+   "es": "aceptar cambios",
+   "fr": "accepter les modifs",
+   "ja": "編集を許可",
+   "pt": "aceitar edições",
+   "zh": "接受修改"
+  },
+  "plan": {
+   "de": "planen",
+   "es": "plan",
+   "fr": "plan",
+   "ja": "プラン",
+   "pt": "plano",
+   "zh": "规划"
+  },
+  "auto": {
+   "de": "auto",
+   "es": "auto",
+   "fr": "auto",
+   "ja": "自動",
+   "pt": "auto",
+   "zh": "自动"
+  },
+  "low": {
+   "de": "niedrig",
+   "es": "bajo",
+   "fr": "faible",
+   "ja": "低",
+   "pt": "baixo",
+   "zh": "低"
+  },
+  "medium": {
+   "de": "mittel",
+   "es": "medio",
+   "fr": "moyen",
+   "ja": "中",
+   "pt": "médio",
+   "zh": "中"
+  },
+  "high": {
+   "de": "hoch",
+   "es": "alto",
+   "fr": "élevé",
+   "ja": "高",
+   "pt": "alto",
+   "zh": "高"
+  },
+  "share": {
+   "de": "teilen",
+   "es": "compartir",
+   "fr": "partager",
+   "ja": "共有",
+   "pt": "compartilhar",
+   "zh": "分享"
+  },
+  "Loading your friends...": {
+   "de": "Freunde werden geladen...",
+   "es": "Cargando tus amigos...",
+   "fr": "Chargement de tes amis...",
+   "ja": "友達を読み込み中...",
+   "pt": "Carregando seus amigos...",
+   "zh": "正在加载好友..."
+  },
+  "Unlock your account first.": {
+   "de": "Entsperre zuerst dein Konto.",
+   "es": "Desbloquea tu cuenta primero.",
+   "fr": "Déverrouille d'abord ton compte.",
+   "ja": "先にアカウントのロックを解除してください。",
+   "pt": "Desbloqueie sua conta primeiro.",
+   "zh": "请先解锁账号。"
+  },
+  "share this conversation": {
+   "de": "diese unterhaltung teilen",
+   "es": "compartir esta conversación",
+   "fr": "partager cette conversation",
+   "ja": "この会話を共有",
+   "pt": "compartilhar esta conversa",
+   "zh": "分享这段对话"
+  },
+  "It goes sealed: only the people in the channel can read it. Tool outputs stay with you.": {
+   "de": "Es wird versiegelt gesendet: nur die Leute im Kanal können es lesen. Tool-Ausgaben bleiben bei dir.",
+   "es": "Se envía sellado: solo las personas del canal pueden leerlo. Los resultados de las herramientas se quedan contigo.",
+   "fr": "Ça part scellé: seules les personnes du canal peuvent le lire. Les sorties d'outils restent chez toi.",
+   "ja": "暗号化して送信。チャンネルのメンバーだけが読めます。ツールの出力は手元に残ります。",
+   "pt": "Vai selado: só as pessoas do canal podem ler. As saídas das ferramentas ficam com você.",
+   "zh": "加密发送:只有频道成员能读。工具输出留在你这边。"
+  },
+  "No friend or group yet: add one in Friends & groups.": {
+   "de": "Noch keine Freunde oder Gruppen: füge welche unter Freunde & Gruppen hinzu.",
+   "es": "Aún no hay amigos ni grupos: añade uno en Amigos y grupos.",
+   "fr": "Pas encore d'ami ni de groupe: ajoutes-en un dans Amis et groupes.",
+   "ja": "友達やグループがまだいません。「友達とグループ」で追加してください。",
+   "pt": "Nenhum amigo ou grupo ainda: adicione em Amigos e grupos.",
+   "zh": "还没有好友或群组:去「好友和群组」里添加。"
+  },
+  "Nothing to share yet.": {
+   "de": "Noch nichts zu teilen.",
+   "es": "Aún no hay nada que compartir.",
+   "fr": "Rien à partager pour l'instant.",
+   "ja": "共有できるものがまだありません。",
+   "pt": "Nada para compartilhar ainda.",
+   "zh": "暂时没有可分享的内容。"
+  },
+  "A conversation": {
+   "de": "Eine Unterhaltung",
+   "es": "Una conversación",
+   "fr": "Une conversation",
+   "ja": "会話",
+   "pt": "Uma conversa",
+   "zh": "一段对话"
+  },
+  "Shared, sealed.": {
+   "de": "Geteilt, versiegelt.",
+   "es": "Compartido, sellado.",
+   "fr": "Partagé, scellé.",
+   "ja": "暗号化して共有しました。",
+   "pt": "Compartilhado, selado.",
+   "zh": "已加密分享。"
+  },
+  "Not sent: are you online?": {
+   "de": "Nicht gesendet: bist du online?",
+   "es": "No enviado: ¿tienes conexión?",
+   "fr": "Pas envoyé: tu es bien en ligne?",
+   "ja": "送信できませんでした。オンラインですか?",
+   "pt": "Não enviado: você está online?",
+   "zh": "未发送:你在线吗?"
+  },
+  "conversations": {
+   "de": "unterhaltungen",
+   "es": "conversaciones",
+   "fr": "conversations",
+   "ja": "会話",
+   "pt": "conversas",
+   "zh": "对话"
+  },
+  "Each one stays with the agent you had it with. Pick an agent to see only its conversations.": {
+   "de": "Jede bleibt beim Agenten, mit dem du sie geführt hast. Wähle einen Agenten, um nur seine Unterhaltungen zu sehen.",
+   "es": "Cada una se queda con el agente con el que la tuviste. Elige un agente para ver solo sus conversaciones.",
+   "fr": "Chacune reste avec l'agent avec qui tu l'as eue. Choisis un agent pour ne voir que ses conversations.",
+   "ja": "会話はそれぞれのエージェントに残ります。エージェントを選ぶと、その会話だけを表示します。",
+   "pt": "Cada uma fica com o agente com quem você conversou. Escolha um agente para ver só as conversas dele.",
+   "zh": "每段对话都归属于当时的智能体。选择一个智能体,只看它的对话。"
+  },
+  "search a conversation, an agent, a model": {
+   "de": "Unterhaltung, Agent oder Modell suchen",
+   "es": "busca una conversación, un agente, un modelo",
+   "fr": "chercher une conversation, un agent, un modèle",
+   "ja": "会話・エージェント・モデルを検索",
+   "pt": "busque uma conversa, um agente, um modelo",
+   "zh": "搜索对话、智能体或模型"
+  },
+  "Your conversations show here once your computer has synced them.": {
+   "de": "Deine Unterhaltungen erscheinen hier, sobald dein Computer sie synchronisiert hat.",
+   "es": "Tus conversaciones aparecerán aquí cuando tu ordenador las sincronice.",
+   "fr": "Tes conversations s'affichent ici une fois synchronisées par ton ordinateur.",
+   "ja": "コンピューターが同期すると、ここに会話が表示されます。",
+   "pt": "Suas conversas aparecem aqui assim que o computador sincronizá-las.",
+   "zh": "电脑同步后,你的对话会显示在这里。"
+  },
+  "Unavailable.": {
+   "de": "Nicht verfügbar.",
+   "es": "No disponible.",
+   "fr": "Indisponible.",
+   "ja": "利用できません。",
+   "pt": "Indisponível.",
+   "zh": "暂不可用。"
+  },
+  "Unavailable": {
+   "de": "Nicht verfügbar",
+   "es": "No disponible",
+   "fr": "Indisponible",
+   "ja": "利用できません",
+   "pt": "Indisponível",
+   "zh": "暂不可用"
+  },
+  "+ folder": {
+   "de": "+ Ordner",
+   "es": "+ carpeta",
+   "fr": "+ dossier",
+   "ja": "+ フォルダ",
+   "pt": "+ pasta",
+   "zh": "+ 文件夹"
+  },
+  "terminal": {
+   "de": "Terminal",
+   "es": "terminal",
+   "fr": "terminal",
+   "ja": "ターミナル",
+   "pt": "terminal",
+   "zh": "终端"
+  },
+  "No conversation here.": {
+   "de": "Hier gibt es keine Unterhaltung.",
+   "es": "No hay conversaciones aquí.",
+   "fr": "Aucune conversation ici.",
+   "ja": "ここには会話がありません。",
+   "pt": "Nenhuma conversa aqui.",
+   "zh": "这里没有对话。"
+  },
+  "new folder": {
+   "de": "neuer ordner",
+   "es": "nueva carpeta",
+   "fr": "nouveau dossier",
+   "ja": "新しいフォルダ",
+   "pt": "nova pasta",
+   "zh": "新建文件夹"
+  },
+  "name": {
+   "de": "Name",
+   "es": "nombre",
+   "fr": "nom",
+   "ja": "名前",
+   "pt": "nome",
+   "zh": "名称"
+  },
+  "Create": {
+   "de": "Erstellen",
+   "es": "Crear",
+   "fr": "Créer",
+   "ja": "作成",
+   "pt": "Criar",
+   "zh": "创建"
+  },
+  "move to": {
+   "de": "verschieben nach",
+   "es": "mover a",
+   "fr": "déplacer vers",
+   "ja": "移動先",
+   "pt": "mover para",
+   "zh": "移动到"
+  },
+  "out of the folder": {
+   "de": "aus dem Ordner",
+   "es": "fuera de la carpeta",
+   "fr": "hors du dossier",
+   "ja": "フォルダから出す",
+   "pt": "fora da pasta",
+   "zh": "移出文件夹"
+  },
+  "hide": {
+   "de": "ausblenden",
+   "es": "ocultar",
+   "fr": "masquer",
+   "ja": "非表示",
+   "pt": "ocultar",
+   "zh": "隐藏"
+  },
+  "delete": {
+   "de": "löschen",
+   "es": "eliminar",
+   "fr": "supprimer",
+   "ja": "削除",
+   "pt": "excluir",
+   "zh": "删除"
+  },
+  "Can't open it right now.": {
+   "de": "Kann gerade nicht geöffnet werden.",
+   "es": "No se puede abrir ahora.",
+   "fr": "Impossible de l'ouvrir pour l'instant.",
+   "ja": "今は開けません。",
+   "pt": "Não dá para abrir agora.",
+   "zh": "现在无法打开。"
+  },
+  "friends & groups": {
+   "de": "freunde & gruppen",
+   "es": "amigos y grupos",
+   "fr": "amis et groupes",
+   "ja": "友達とグループ",
+   "pt": "amigos e grupos",
+   "zh": "好友和群组"
+  },
+  "Sealed end to end. Relays carry sealed blobs: not the text, not who talks to whom.": {
+   "de": "Ende-zu-Ende versiegelt. Relays transportieren versiegelte Blobs: weder den Text noch, wer mit wem spricht.",
+   "es": "Sellado de extremo a extremo. Los relays transportan bloques sellados: ni el texto, ni quién habla con quién.",
+   "fr": "Scellé de bout en bout. Les relais transportent des blocs scellés: ni le texte, ni qui parle à qui.",
+   "ja": "エンドツーエンドで暗号化。リレーが運ぶのは暗号化されたデータだけで、本文も誰と誰が話しているかも見えません。",
+   "pt": "Selado de ponta a ponta. Os relays levam blocos selados: nem o texto, nem quem fala com quem.",
+   "zh": "端到端加密。中继只传输加密数据块:看不到内容,也看不到谁在和谁说话。"
+  },
+  "your ID, to give to friends and colleagues": {
+   "de": "deine ID für Freunde und Kollegen",
+   "es": "tu ID, para dársela a amigos y colegas",
+   "fr": "ton ID, à donner à tes amis et collègues",
+   "ja": "友達や同僚に渡すあなたのID",
+   "pt": "seu ID, para passar a amigos e colegas",
+   "zh": "你的 ID,可发给好友和同事"
+  },
+  "copy": {
+   "de": "kopieren",
+   "es": "copiar",
+   "fr": "copier",
+   "ja": "コピー",
+   "pt": "copiar",
+   "zh": "复制"
+  },
+  "QR code": {
+   "de": "QR-Code",
+   "es": "Código QR",
+   "fr": "QR code",
+   "ja": "QRコード",
+   "pt": "QR code",
+   "zh": "二维码"
+  },
+  "+ friend": {
+   "de": "+ Freund",
+   "es": "+ amigo",
+   "fr": "+ ami",
+   "ja": "+ 友達",
+   "pt": "+ amigo",
+   "zh": "+ 好友"
+  },
+  "+ group": {
+   "de": "+ Gruppe",
+   "es": "+ grupo",
+   "fr": "+ groupe",
+   "ja": "+ グループ",
+   "pt": "+ grupo",
+   "zh": "+ 群组"
+  },
+  "Connecting...": {
+   "de": "Verbinde...",
+   "es": "Conectando...",
+   "fr": "Connexion...",
+   "ja": "接続中...",
+   "pt": "Conectando...",
+   "zh": "连接中..."
+  },
+  "unlock your account first": {
+   "de": "entsperre zuerst dein Konto",
+   "es": "desbloquea tu cuenta primero",
+   "fr": "déverrouille d'abord ton compte",
+   "ja": "先にアカウントのロックを解除",
+   "pt": "desbloqueie sua conta primeiro",
+   "zh": "请先解锁账号"
+  },
+  "Copied": {
+   "de": "Kopiert",
+   "es": "Copiado",
+   "fr": "Copié",
+   "ja": "コピーしました",
+   "pt": "Copiado",
+   "zh": "已复制"
+  },
+  "your ID": {
+   "de": "deine id",
+   "es": "tu ID",
+   "fr": "ton ID",
+   "ja": "あなたのID",
+   "pt": "seu ID",
+   "zh": "你的 ID"
+  },
+  "Let a friend scan it with their phone's camera, then paste it in + friend.": {
+   "de": "Lass einen Freund ihn mit der Handykamera scannen und unter + Freund einfügen.",
+   "es": "Que un amigo lo escanee con la cámara del móvil y lo pegue en + amigo.",
+   "fr": "Fais-le scanner par un ami avec l'appareil photo de son téléphone, puis il le colle dans + ami.",
+   "ja": "友達にスマホのカメラでスキャンしてもらい、「+ 友達」に貼り付けてもらいます。",
+   "pt": "Peça a um amigo para escanear com a câmera do celular e colar em + amigo.",
+   "zh": "让好友用手机相机扫码,再粘贴到「+ 好友」。"
+  },
+  "no message yet": {
+   "de": "noch keine Nachricht",
+   "es": "aún no hay mensajes",
+   "fr": "pas encore de message",
+   "ja": "メッセージはまだありません",
+   "pt": "nenhuma mensagem ainda",
+   "zh": "还没有消息"
+  },
+  "requests from people you have not added": {
+   "de": "anfragen von leuten, die du nicht hinzugefügt hast",
+   "es": "solicitudes de personas que no has añadido",
+   "fr": "demandes de personnes que tu n'as pas ajoutées",
+   "ja": "追加していない人からのリクエスト",
+   "pt": "pedidos de pessoas que você não adicionou",
+   "zh": "来自未添加者的请求"
+  },
+  "your channels": {
+   "de": "deine kanäle",
+   "es": "tus canales",
+   "fr": "tes canaux",
+   "ja": "あなたのチャンネル",
+   "pt": "seus canais",
+   "zh": "你的频道"
+  },
+  "Add a friend with their ID, then talk or make a group.": {
+   "de": "Füge einen Freund über seine ID hinzu, dann schreibt euch oder gründet eine Gruppe.",
+   "es": "Añade a un amigo con su ID y luego habla o crea un grupo.",
+   "fr": "Ajoute un ami avec son ID, puis discute ou crée un groupe.",
+   "ja": "IDで友達を追加して、話したりグループを作ったりしましょう。",
+   "pt": "Adicione um amigo pelo ID e depois converse ou crie um grupo.",
+   "zh": "用 ID 添加好友,然后聊天或建群。"
+  },
+  "add a friend": {
+   "de": "freund hinzufügen",
+   "es": "añadir un amigo",
+   "fr": "ajouter un ami",
+   "ja": "友達を追加",
+   "pt": "adicionar um amigo",
+   "zh": "添加好友"
+  },
+  "Their ID (like vincent#k7f2qa9m), from their Friends tab or their QR code.": {
+   "de": "Seine ID (wie vincent#k7f2qa9m), aus seinem Freunde-Tab oder seinem QR-Code.",
+   "es": "Su ID (como vincent#k7f2qa9m), de su pestaña Amigos o su código QR.",
+   "fr": "Son ID (comme vincent#k7f2qa9m), depuis son onglet Amis ou son QR code.",
+   "ja": "相手のID(例: vincent#k7f2qa9m)。相手の友達タブかQRコードから。",
+   "pt": "O ID da pessoa (como vincent#k7f2qa9m), da aba Amigos ou do QR code dela.",
+   "zh": "对方的 ID(如 vincent#k7f2qa9m),在其好友页或二维码中。"
+  },
+  "Find": {
+   "de": "Suchen",
+   "es": "Buscar",
+   "fr": "Chercher",
+   "ja": "検索",
+   "pt": "Buscar",
+   "zh": "查找"
+  },
+  "found": {
+   "de": "gefunden",
+   "es": "encontrado",
+   "fr": "trouvé",
+   "ja": "見つかりました",
+   "pt": "encontrado",
+   "zh": "已找到"
+  },
+  "the name you give them": {
+   "de": "der Name, den du vergibst",
+   "es": "el nombre que le das",
+   "fr": "le nom que tu lui donnes",
+   "ja": "相手の表示名",
+   "pt": "o nome que você dá",
+   "zh": "你给对方的备注名"
+  },
+  "Add": {
+   "de": "Hinzufügen",
+   "es": "Añadir",
+   "fr": "Ajouter",
+   "ja": "追加",
+   "pt": "Adicionar",
+   "zh": "添加"
+  },
+  "Looking...": {
+   "de": "Suche...",
+   "es": "Buscando...",
+   "fr": "Recherche...",
+   "ja": "検索中...",
+   "pt": "Procurando...",
+   "zh": "查找中..."
+  },
+  "Check the ID.": {
+   "de": "Prüfe die ID.",
+   "es": "Revisa el ID.",
+   "fr": "Vérifie l'ID.",
+   "ja": "IDを確認してください。",
+   "pt": "Confira o ID.",
+   "zh": "请检查 ID。"
+  },
+  "Give them a name.": {
+   "de": "Gib ihm einen Namen.",
+   "es": "Ponle un nombre.",
+   "fr": "Donne-lui un nom.",
+   "ja": "名前を付けてください。",
+   "pt": "Dê um nome.",
+   "zh": "请填写一个名字。"
+  },
+  "Added": {
+   "de": "Hinzugefügt",
+   "es": "Añadido",
+   "fr": "Ajouté",
+   "ja": "追加しました",
+   "pt": "Adicionado",
+   "zh": "已添加"
+  },
+  "new group": {
+   "de": "neue gruppe",
+   "es": "nuevo grupo",
+   "fr": "nouveau groupe",
+   "ja": "新しいグループ",
+   "pt": "novo grupo",
+   "zh": "新建群组"
+  },
+  "group name (sent sealed)": {
+   "de": "Gruppenname (versiegelt gesendet)",
+   "es": "nombre del grupo (se envía sellado)",
+   "fr": "nom du groupe (envoyé scellé)",
+   "ja": "グループ名(暗号化して送信)",
+   "pt": "nome do grupo (enviado selado)",
+   "zh": "群组名称(加密发送)"
+  },
+  "Pick at least one friend.": {
+   "de": "Wähle mindestens einen Freund.",
+   "es": "Elige al menos un amigo.",
+   "fr": "Choisis au moins un ami.",
+   "ja": "友達を1人以上選んでください。",
+   "pt": "Escolha pelo menos um amigo.",
+   "zh": "至少选择一位好友。"
+  },
+  "You already talk with these people here.": {
+   "de": "Mit diesen Leuten schreibst du schon hier.",
+   "es": "Ya hablas con estas personas aquí.",
+   "fr": "Tu parles déjà avec ces personnes ici.",
+   "ja": "このメンバーとはすでにここで話しています。",
+   "pt": "Você já conversa com essas pessoas aqui.",
+   "zh": "你已经在这里和这些人聊天了。"
+  },
+  "Could not create it.": {
+   "de": "Konnte nicht erstellt werden.",
+   "es": "No se pudo crear.",
+   "fr": "Impossible de le créer.",
+   "ja": "作成できませんでした。",
+   "pt": "Não foi possível criar.",
+   "zh": "无法创建。"
+  },
+  "Only the people in this channel can read it.": {
+   "de": "Nur die Leute in diesem Kanal können es lesen.",
+   "es": "Solo las personas de este canal pueden leerlo.",
+   "fr": "Seules les personnes de ce canal peuvent le lire.",
+   "ja": "このチャンネルのメンバーだけが読めます。",
+   "pt": "Só as pessoas deste canal podem ler.",
+   "zh": "只有本频道成员能读。"
+  },
+  "Read": {
+   "de": "Lesen",
+   "es": "Leer",
+   "fr": "Lire",
+   "ja": "読む",
+   "pt": "Ler",
+   "zh": "阅读"
+  },
+  "Continue with my agent": {
+   "de": "Mit meinem Agenten weitermachen",
+   "es": "Continuar con mi agente",
+   "fr": "Continuer avec mon agent",
+   "ja": "自分のエージェントで続ける",
+   "pt": "Continuar com meu agente",
+   "zh": "用我的智能体继续"
+  },
+  "You": {
+   "de": "Du",
+   "es": "Tú",
+   "fr": "Toi",
+   "ja": "あなた",
+   "pt": "Você",
+   "zh": "你"
+  },
+  "friend": {
+   "de": "Freund",
+   "es": "amigo",
+   "fr": "ami",
+   "ja": "友達",
+   "pt": "amigo",
+   "zh": "好友"
+  },
+  "vibe code": {
+   "de": "vibe coding",
+   "es": "vibe code",
+   "fr": "vibe code",
+   "ja": "バイブコーディング",
+   "pt": "vibe code",
+   "zh": "vibe 编程"
+  },
+  "Have an idea? Claude Agent builds it in any of your GitHub repositories, on GitHub's machines, with your plan. Your computer can stay off.": {
+   "de": "Eine Idee? Claude Agent baut sie in einem deiner GitHub-Repositories, auf den Maschinen von GitHub, mit deinem Abo. Dein Computer kann aus bleiben.",
+   "es": "¿Tienes una idea? Claude Agent la construye en cualquiera de tus repositorios de GitHub, en las máquinas de GitHub, con tu plan. Tu ordenador puede quedarse apagado.",
+   "fr": "Une idée? Claude Agent la construit dans n'importe lequel de tes dépôts GitHub, sur les machines de GitHub, avec ton abonnement. Ton ordinateur peut rester éteint.",
+   "ja": "アイデアがある? Claude AgentがあなたのGitHubリポジトリで、GitHubのマシン上で、あなたのプランを使って形にします。コンピューターはオフのままでOK。",
+   "pt": "Tem uma ideia? O Claude Agent constrói em qualquer repositório seu no GitHub, nas máquinas do GitHub, com o seu plano. Seu computador pode ficar desligado.",
+   "zh": "有想法?Claude Agent 会用你的套餐,在 GitHub 的机器上、在你任意一个仓库里把它做出来。电脑可以一直关着。"
+  },
+  "Looking at GitHub...": {
+   "de": "GitHub wird geprüft...",
+   "es": "Revisando GitHub...",
+   "fr": "Je regarde GitHub...",
+   "ja": "GitHubを確認中...",
+   "pt": "Verificando o GitHub...",
+   "zh": "正在查看 GitHub..."
+  },
+  "Not set up yet.": {
+   "de": "Noch nicht eingerichtet.",
+   "es": "Aún no está configurado.",
+   "fr": "Pas encore configuré.",
+   "ja": "まだ設定されていません。",
+   "pt": "Ainda não configurado.",
+   "zh": "尚未设置。"
+  },
+  "Set it up in Settings": {
+   "de": "In den Einstellungen einrichten",
+   "es": "Configúralo en Ajustes",
+   "fr": "Le configurer dans Réglages",
+   "ja": "設定でセットアップ",
+   "pt": "Configurar em Configurações",
+   "zh": "去设置中配置"
+  },
+  "Set it up once from root-harness on your computer: Settings, Vibe code.": {
+   "de": "Richte es einmal in root-harness auf deinem Computer ein: Einstellungen, Vibe Coding.",
+   "es": "Configúralo una vez desde root-harness en tu ordenador: Ajustes, Vibe code.",
+   "fr": "Configure-le une fois depuis root-harness sur ton ordinateur: Réglages, Vibe code.",
+   "ja": "コンピューターのroot-harnessで一度だけ設定してください: 設定 > バイブコーディング。",
+   "pt": "Configure uma vez no root-harness do seu computador: Configurações, Vibe code.",
+   "zh": "在电脑上的 root-harness 中设置一次:设置 > Vibe 编程。"
+  },
+  "+ new idea": {
+   "de": "+ neue Idee",
+   "es": "+ nueva idea",
+   "fr": "+ nouvelle idée",
+   "ja": "+ 新しいアイデア",
+   "pt": "+ nova ideia",
+   "zh": "+ 新想法"
+  },
+  "your vibes": {
+   "de": "deine vibes",
+   "es": "tus vibes",
+   "fr": "tes vibes",
+   "ja": "あなたのバイブ",
+   "pt": "suas vibes",
+   "zh": "你的项目"
+  },
+  "Nothing yet. Start with an idea.": {
+   "de": "Noch nichts. Fang mit einer Idee an.",
+   "es": "Nada aún. Empieza con una idea.",
+   "fr": "Rien pour l'instant. Commence par une idée.",
+   "ja": "まだ何もありません。アイデアから始めましょう。",
+   "pt": "Nada ainda. Comece com uma ideia.",
+   "zh": "还没有内容。从一个想法开始吧。"
+  },
+  "open": {
+   "de": "offen",
+   "es": "abierto",
+   "fr": "ouvert",
+   "ja": "オープン",
+   "pt": "aberto",
+   "zh": "进行中"
+  },
+  "closed": {
+   "de": "geschlossen",
+   "es": "cerrado",
+   "fr": "fermé",
+   "ja": "クローズ",
+   "pt": "fechado",
+   "zh": "已关闭"
+  },
+  "a new idea": {
+   "de": "eine neue idee",
+   "es": "una idea nueva",
+   "fr": "une nouvelle idée",
+   "ja": "新しいアイデア",
+   "pt": "uma nova ideia",
+   "zh": "一个新想法"
+  },
+  "Loading your repositories...": {
+   "de": "Repositories werden geladen...",
+   "es": "Cargando tus repositorios...",
+   "fr": "Chargement de tes dépôts...",
+   "ja": "リポジトリを読み込み中...",
+   "pt": "Carregando seus repositórios...",
+   "zh": "正在加载你的仓库..."
+  },
+  "Where should Claude work?": {
+   "de": "Wo soll Claude arbeiten?",
+   "es": "¿Dónde debe trabajar Claude?",
+   "fr": "Où Claude doit-il travailler?",
+   "ja": "Claudeはどこで作業する?",
+   "pt": "Onde o Claude deve trabalhar?",
+   "zh": "让 Claude 在哪里工作?"
+  },
+  "search a repository, or type a name for a new one": {
+   "de": "Repository suchen oder Namen für ein neues eingeben",
+   "es": "busca un repositorio o escribe un nombre para uno nuevo",
+   "fr": "cherche un dépôt, ou tape un nom pour en créer un",
+   "ja": "リポジトリを検索、または新しい名前を入力",
+   "pt": "busque um repositório ou digite um nome para um novo",
+   "zh": "搜索仓库,或输入新仓库名"
+  },
+  "private, created by Claude": {
+   "de": "privat, von Claude erstellt",
+   "es": "privado, creado por Claude",
+   "fr": "privé, créé par Claude",
+   "ja": "非公開、Claudeが作成",
+   "pt": "privado, criado pelo Claude",
+   "zh": "私有,由 Claude 创建"
+  },
+  "Ask for changes...": {
+   "de": "Änderungen anfragen...",
+   "es": "Pide cambios...",
+   "fr": "Demande des changements...",
+   "ja": "変更を依頼...",
+   "pt": "Peça mudanças...",
+   "zh": "提出修改..."
+  },
+  "Describe your idea...": {
+   "de": "Beschreibe deine Idee...",
+   "es": "Describe tu idea...",
+   "fr": "Décris ton idée...",
+   "ja": "アイデアを説明...",
+   "pt": "Descreva sua ideia...",
+   "zh": "描述你的想法..."
+  },
+  "Claude is working on GitHub...": {
+   "de": "Claude arbeitet auf GitHub...",
+   "es": "Claude está trabajando en GitHub...",
+   "fr": "Claude travaille sur GitHub...",
+   "ja": "ClaudeがGitHubで作業中...",
+   "pt": "O Claude está trabalhando no GitHub...",
+   "zh": "Claude 正在 GitHub 上工作..."
+  },
+  "done: review the pull request": {
+   "de": "fertig: prüfe den Pull Request",
+   "es": "listo: revisa el pull request",
+   "fr": "fini: relis la pull request",
+   "ja": "完了: プルリクエストを確認してください",
+   "pt": "pronto: revise o pull request",
+   "zh": "完成:请审阅拉取请求"
+  },
+  "loading...": {
+   "de": "lädt...",
+   "es": "cargando...",
+   "fr": "chargement...",
+   "ja": "読み込み中...",
+   "pt": "carregando...",
+   "zh": "加载中..."
+  },
+  "your idea, built on GitHub": {
+   "de": "deine idee, gebaut auf github",
+   "es": "tu idea, construida en GitHub",
+   "fr": "ton idée, construite sur GitHub",
+   "ja": "あなたのアイデアをGitHubで形に",
+   "pt": "sua ideia, construída no GitHub",
+   "zh": "你的想法,在 GitHub 上实现"
+  },
+  "Claude makes a branch and a pull request in": {
+   "de": "Claude erstellt einen Branch und einen Pull Request in",
+   "es": "Claude crea una rama y un pull request en",
+   "fr": "Claude crée une branche et une pull request dans",
+   "ja": "Claudeがブランチとプルリクエストを作成します:",
+   "pt": "O Claude cria uma branch e um pull request em",
+   "zh": "Claude 会在以下仓库中创建分支和拉取请求:"
+  },
+  ". You review before anything is merged.": {
+   "de": ". Du prüfst, bevor etwas gemergt wird.",
+   "es": ". Tú revisas antes de fusionar nada.",
+   "fr": ". Tu relis avant toute fusion.",
+   "ja": "。マージ前に必ずあなたが確認します。",
+   "pt": ". Você revisa antes de qualquer merge.",
+   "zh": "。合并之前都由你审阅。"
+  },
+  "sending to GitHub...": {
+   "de": "wird an GitHub gesendet...",
+   "es": "enviando a GitHub...",
+   "fr": "envoi vers GitHub...",
+   "ja": "GitHubに送信中...",
+   "pt": "enviando para o GitHub...",
+   "zh": "正在发送到 GitHub..."
+  },
+  "not sent": {
+   "de": "nicht gesendet",
+   "es": "no enviado",
+   "fr": "pas envoyé",
+   "ja": "未送信",
+   "pt": "não enviado",
+   "zh": "未发送"
+  },
+  "Claude is starting on GitHub (about a minute)...": {
+   "de": "Claude startet auf GitHub (etwa eine Minute)...",
+   "es": "Claude está arrancando en GitHub (un minuto aprox.)...",
+   "fr": "Claude démarre sur GitHub (environ une minute)...",
+   "ja": "ClaudeがGitHubで起動中(約1分)...",
+   "pt": "O Claude está começando no GitHub (cerca de um minuto)...",
+   "zh": "Claude 正在 GitHub 上启动(约一分钟)..."
+  },
+  "all": {
+   "de": "alle",
+   "es": "todo",
+   "fr": "tout",
+   "ja": "すべて",
+   "pt": "tudo",
+   "zh": "全部"
+  },
+  "agents": {
+   "de": "Agenten",
+   "es": "agentes",
+   "fr": "agents",
+   "ja": "エージェント",
+   "pt": "agentes",
+   "zh": "智能体"
+  },
+  "code": {
+   "de": "Code",
+   "es": "código",
+   "fr": "code",
+   "ja": "コード",
+   "pt": "código",
+   "zh": "代码"
+  },
+  "security & CTF": {
+   "de": "Sicherheit & CTF",
+   "es": "seguridad y CTF",
+   "fr": "sécurité et CTF",
+   "ja": "セキュリティとCTF",
+   "pt": "segurança e CTF",
+   "zh": "安全与 CTF"
+  },
+  "encyclopedia": {
+   "de": "lexikon",
+   "es": "enciclopedia",
+   "fr": "encyclopédie",
+   "ja": "事典",
+   "pt": "enciclopédia",
+   "zh": "百科"
+  },
+  "The words of agents, LLMs, RAG, code and security. Tap one to ask your agent about it.": {
+   "de": "Die Begriffe rund um Agenten, LLMs, RAG, Code und Sicherheit. Tippe einen an, um deinen Agenten danach zu fragen.",
+   "es": "Las palabras de los agentes, los LLM, el RAG, el código y la seguridad. Toca una para preguntarle a tu agente.",
+   "fr": "Les mots des agents, des LLM, du RAG, du code et de la sécurité. Touche-en un pour interroger ton agent.",
+   "ja": "エージェント、LLM、RAG、コード、セキュリティの用語集。タップしてエージェントに質問できます。",
+   "pt": "As palavras de agentes, LLMs, RAG, código e segurança. Toque em uma para perguntar ao seu agente.",
+   "zh": "智能体、LLM、RAG、代码与安全领域的术语。点一个即可问你的智能体。"
+  },
+  "Learn as I work": {
+   "de": "Beim Arbeiten lernen",
+   "es": "Aprender mientras trabajo",
+   "fr": "Apprendre en travaillant",
+   "ja": "作業しながら学ぶ",
+   "pt": "Aprender enquanto trabalho",
+   "zh": "边工作边学习"
+  },
+  "After each answer, your agent adds the new technical words of the exchange, with a short definition.": {
+   "de": "Nach jeder Antwort fügt dein Agent die neuen Fachbegriffe des Austauschs mit einer kurzen Definition hinzu.",
+   "es": "Tras cada respuesta, tu agente añade las palabras técnicas nuevas del intercambio, con una definición corta.",
+   "fr": "Après chaque réponse, ton agent ajoute les nouveaux mots techniques de l'échange, avec une courte définition.",
+   "ja": "回答のたびに、やりとりに出てきた新しい専門用語を短い定義付きで追加します。",
+   "pt": "Depois de cada resposta, seu agente adiciona as palavras técnicas novas da conversa, com uma definição curta.",
+   "zh": "每次回答后,智能体会把对话中出现的新技术词加进来,附上简短定义。"
+  },
+  "search a word": {
+   "de": "Begriff suchen",
+   "es": "busca una palabra",
+   "fr": "chercher un mot",
+   "ja": "用語を検索",
+   "pt": "busque uma palavra",
+   "zh": "搜索词条"
+  },
+  "+ a word": {
+   "de": "+ Begriff",
+   "es": "+ una palabra",
+   "fr": "+ un mot",
+   "ja": "+ 用語",
+   "pt": "+ uma palavra",
+   "zh": "+ 词条"
+  },
+  "Unavailable right now.": {
+   "de": "Gerade nicht verfügbar.",
+   "es": "No disponible ahora mismo.",
+   "fr": "Indisponible pour l'instant.",
+   "ja": "現在利用できません。",
+   "pt": "Indisponível no momento.",
+   "zh": "暂时不可用。"
+  },
+  "Your agent will add new words as you work.": {
+   "de": "Dein Agent fügt beim Arbeiten neue Begriffe hinzu.",
+   "es": "Tu agente añadirá palabras nuevas mientras trabajas.",
+   "fr": "Ton agent ajoutera les nouveaux mots pendant que tu travailles.",
+   "ja": "作業中にエージェントが新しい用語を追加します。",
+   "pt": "Seu agente vai adicionar palavras novas enquanto você trabalha.",
+   "zh": "你工作时,智能体会添加新词。"
+  },
+  "Off.": {
+   "de": "Aus.",
+   "es": "Desactivado.",
+   "fr": "Désactivé.",
+   "ja": "オフにしました。",
+   "pt": "Desativado.",
+   "zh": "已关闭。"
+  },
+  "you": {
+   "de": "du",
+   "es": "tú",
+   "fr": "toi",
+   "ja": "あなた",
+   "pt": "você",
+   "zh": "你"
+  },
+  "learned lately": {
+   "de": "kürzlich gelernt",
+   "es": "aprendidas hace poco",
+   "fr": "appris récemment",
+   "ja": "最近覚えた用語",
+   "pt": "aprendidas recentemente",
+   "zh": "最近学到"
+  },
+  "No word matches.": {
+   "de": "Kein Begriff passt.",
+   "es": "Ninguna palabra coincide.",
+   "fr": "Aucun mot ne correspond.",
+   "ja": "一致する用語はありません。",
+   "pt": "Nenhuma palavra encontrada.",
+   "zh": "没有匹配的词条。"
+  },
+  "A side talk, like /btw: your main conversation stays untouched.": {
+   "de": "Ein Nebengespräch wie /btw: deine Hauptunterhaltung bleibt unberührt.",
+   "es": "Una charla aparte, como /btw: tu conversación principal no se toca.",
+   "fr": "Un aparté, comme /btw: ta conversation principale reste intacte.",
+   "ja": "/btw のような脇道の会話。メインの会話はそのままです。",
+   "pt": "Uma conversa paralela, como /btw: sua conversa principal fica intacta.",
+   "zh": "像 /btw 一样的旁聊:主对话不受影响。"
+  },
+  "remove this word": {
+   "de": "diesen Begriff entfernen",
+   "es": "quitar esta palabra",
+   "fr": "retirer ce mot",
+   "ja": "この用語を削除",
+   "pt": "remover esta palavra",
+   "zh": "删除这个词条"
+  },
+  "a new word": {
+   "de": "ein neuer begriff",
+   "es": "una palabra nueva",
+   "fr": "un nouveau mot",
+   "ja": "新しい用語",
+   "pt": "uma nova palavra",
+   "zh": "新词条"
+  },
+  "the word": {
+   "de": "der Begriff",
+   "es": "la palabra",
+   "fr": "le mot",
+   "ja": "用語",
+   "pt": "a palavra",
+   "zh": "词条"
+  },
+  "a short, clear definition": {
+   "de": "eine kurze, klare Definition",
+   "es": "una definición corta y clara",
+   "fr": "une définition courte et claire",
+   "ja": "短くわかりやすい定義",
+   "pt": "uma definição curta e clara",
+   "zh": "简短清晰的定义"
+  },
+  "Not added.": {
+   "de": "Nicht hinzugefügt.",
+   "es": "No añadido.",
+   "fr": "Pas ajouté.",
+   "ja": "追加できませんでした。",
+   "pt": "Não adicionado.",
+   "zh": "未添加。"
+  },
+  "settings": {
+   "de": "einstellungen",
+   "es": "ajustes",
+   "fr": "réglages",
+   "ja": "設定",
+   "pt": "configurações",
+   "zh": "设置"
+  },
+  "Your account lives on your devices. Nothing here goes to a server of ours: there is none.": {
+   "de": "Dein Konto lebt auf deinen Geräten. Nichts davon geht an einen Server von uns: es gibt keinen.",
+   "es": "Tu cuenta vive en tus dispositivos. Nada de esto va a un servidor nuestro: no tenemos ninguno.",
+   "fr": "Ton compte vit sur tes appareils. Rien ici ne part sur un serveur à nous: il n'y en a pas.",
+   "ja": "アカウントはあなたの端末の中にあります。私たちのサーバーには何も送られません。そもそもサーバーがありません。",
+   "pt": "Sua conta vive nos seus dispositivos. Nada aqui vai para um servidor nosso: não existe nenhum.",
+   "zh": "你的账号只存在于你的设备上。这里的任何内容都不会发往我们的服务器:我们根本没有服务器。"
+  },
+  "account": {
+   "de": "konto",
+   "es": "cuenta",
+   "fr": "compte",
+   "ja": "アカウント",
+   "pt": "conta",
+   "zh": "账号"
+  },
+  "Stay signed in": {
+   "de": "Angemeldet bleiben",
+   "es": "Mantener la sesión",
+   "fr": "Rester connecté",
+   "ja": "ログインしたままにする",
+   "pt": "Manter conectado",
+   "zh": "保持登录"
+  },
+  "No password when root-harness opens": {
+   "de": "Kein Passwort beim Öffnen von root-harness",
+   "es": "Sin contraseña al abrir root-harness",
+   "fr": "Pas de mot de passe à l'ouverture de root-harness",
+   "ja": "root-harnessを開くときにパスワード不要",
+   "pt": "Sem senha ao abrir o root-harness",
+   "zh": "打开 root-harness 时无需密码"
+  },
+  "Sync between my devices": {
+   "de": "Zwischen meinen Geräten synchronisieren",
+   "es": "Sincronizar entre mis dispositivos",
+   "fr": "Synchroniser entre mes appareils",
+   "ja": "端末間で同期",
+   "pt": "Sincronizar entre meus dispositivos",
+   "zh": "在我的设备间同步"
+  },
+  "Your whole memory, sealed, on relays": {
+   "de": "Dein ganzes Gedächtnis, versiegelt, auf Relays",
+   "es": "Toda tu memoria, sellada, en relays",
+   "fr": "Toute ta mémoire, scellée, sur des relais",
+   "ja": "メモリー全体を暗号化してリレーに保存",
+   "pt": "Toda a sua memória, selada, em relays",
+   "zh": "你的全部记忆,加密存放在中继上"
+  },
+  "Findable by my ID": {
+   "de": "Über meine ID auffindbar",
+   "es": "Encontrable por mi ID",
+   "fr": "Trouvable par mon identifiant",
+   "ja": "IDで見つけられる",
+   "pt": "Encontrável pelo meu ID",
+   "zh": "可通过 ID 找到我"
+  },
+  "Lock": {
+   "de": "Sperren",
+   "es": "Bloquear",
+   "fr": "Verrouiller",
+   "ja": "ロック",
+   "pt": "Bloquear",
+   "zh": "锁定"
+  },
+  "Change password": {
+   "de": "Passwort ändern",
+   "es": "Cambiar contraseña",
+   "fr": "Changer le mot de passe",
+   "ja": "パスワードを変更",
+   "pt": "Alterar senha",
+   "zh": "修改密码"
+  },
+  "My recovery kit": {
+   "de": "Mein Wiederherstellungs-Kit",
+   "es": "Mi kit de recuperación",
+   "fr": "Mon kit de récupération",
+   "ja": "リカバリーキット",
+   "pt": "Meu kit de recuperação",
+   "zh": "我的恢复工具包"
+  },
+  "background": {
+   "de": "hintergrund",
+   "es": "fondo",
+   "fr": "fond",
+   "ja": "背景",
+   "pt": "fundo",
+   "zh": "背景"
+  },
+  "Choose a picture": {
+   "de": "Bild wählen",
+   "es": "Elegir una imagen",
+   "fr": "Choisir une image",
+   "ja": "画像を選ぶ",
+   "pt": "Escolher uma imagem",
+   "zh": "选择图片"
+  },
+  "Plain night": {
+   "de": "Schlichte Nacht",
+   "es": "Noche lisa",
+   "fr": "Nuit unie",
+   "ja": "シンプルな夜",
+   "pt": "Noite lisa",
+   "zh": "纯色夜晚"
+  },
+  "Your phone uses the picture of your computer.": {
+   "de": "Dein Handy nutzt das Bild deines Computers.",
+   "es": "Tu móvil usa la imagen de tu ordenador.",
+   "fr": "Ton téléphone utilise l'image de ton ordinateur.",
+   "ja": "スマホはコンピューターと同じ画像を使います。",
+   "pt": "Seu celular usa a imagem do seu computador.",
+   "zh": "手机会使用电脑上的图片。"
+  },
+  "Your picture goes to your phone too, never to anyone else.": {
+   "de": "Dein Bild geht auch auf dein Handy, nie an jemand anderen.",
+   "es": "Tu imagen también va a tu móvil, nunca a nadie más.",
+   "fr": "Ton image va aussi sur ton téléphone, jamais chez quelqu'un d'autre.",
+   "ja": "画像はあなたのスマホにも届きますが、他の誰にも送られません。",
+   "pt": "Sua imagem vai também para o seu celular, nunca para mais ninguém.",
+   "zh": "图片也会同步到你的手机,绝不会发给别人。"
+  },
+  "root-harness · free software under the AGPL-3.0 ·": {
+   "de": "root-harness · freie Software unter der AGPL-3.0 ·",
+   "es": "root-harness · software libre bajo la AGPL-3.0 ·",
+   "fr": "root-harness · logiciel libre sous AGPL-3.0 ·",
+   "ja": "root-harness · AGPL-3.0 のフリーソフトウェア ·",
+   "pt": "root-harness · software livre sob a AGPL-3.0 ·",
+   "zh": "root-harness · 基于 AGPL-3.0 的自由软件 ·"
+  },
+  "source code": {
+   "de": "Quellcode",
+   "es": "código fuente",
+   "fr": "code source",
+   "ja": "ソースコード",
+   "pt": "código-fonte",
+   "zh": "源代码"
+  },
+  "change password": {
+   "de": "passwort ändern",
+   "es": "cambiar contraseña",
+   "fr": "changer le mot de passe",
+   "ja": "パスワードを変更",
+   "pt": "alterar senha",
+   "zh": "修改密码"
+  },
+  "current password": {
+   "de": "aktuelles Passwort",
+   "es": "contraseña actual",
+   "fr": "mot de passe actuel",
+   "ja": "現在のパスワード",
+   "pt": "senha atual",
+   "zh": "当前密码"
+  },
+  "Change": {
+   "de": "Ändern",
+   "es": "Cambiar",
+   "fr": "Changer",
+   "ja": "変更",
+   "pt": "Alterar",
+   "zh": "修改"
+  },
+  "Password changed": {
+   "de": "Passwort geändert",
+   "es": "Contraseña cambiada",
+   "fr": "Mot de passe changé",
+   "ja": "パスワードを変更しました",
+   "pt": "Senha alterada",
+   "zh": "密码已修改"
+  },
+  "Your 24 words are your account. Type your password to see them, somewhere nobody can look.": {
+   "de": "Deine 24 Wörter sind dein Konto. Gib dein Passwort ein, um sie zu sehen, wo dir niemand zuschaut.",
+   "es": "Tus 24 palabras son tu cuenta. Escribe tu contraseña para verlas, donde nadie pueda mirar.",
+   "fr": "Tes 24 mots sont ton compte. Tape ton mot de passe pour les voir, là où personne ne regarde.",
+   "ja": "24語があなたのアカウントです。誰にも見られない場所で、パスワードを入力して表示してください。",
+   "pt": "Suas 24 palavras são sua conta. Digite sua senha para vê-las, num lugar onde ninguém possa olhar.",
+   "zh": "这 24 个词就是你的账号。请在无人能看到的地方输入密码查看。"
+  },
+  "Show my words": {
+   "de": "Meine Wörter zeigen",
+   "es": "Ver mis palabras",
+   "fr": "Voir mes mots",
+   "ja": "単語を表示",
+   "pt": "Ver minhas palavras",
+   "zh": "显示我的词"
+  },
+  "Write them on paper. Never in a message, never in a photo.": {
+   "de": "Schreib sie auf Papier. Nie in eine Nachricht, nie in ein Foto.",
+   "es": "Escríbelas en papel. Nunca en un mensaje, nunca en una foto.",
+   "fr": "Note-les sur papier. Jamais dans un message, jamais en photo.",
+   "ja": "紙に書いてください。メッセージや写真には残さないでください。",
+   "pt": "Anote no papel. Nunca em mensagem, nunca em foto.",
+   "zh": "抄在纸上。不要发消息,也不要拍照。"
+  },
+  "your phone": {
+   "de": "dein handy",
+   "es": "tu móvil",
+   "fr": "ton téléphone",
+   "ja": "あなたのスマホ",
+   "pt": "seu celular",
+   "zh": "你的手机"
+  },
+  "Your phone becomes this computer's remote, through sealed messages": {
+   "de": "Dein Handy wird zur Fernbedienung dieses Computers, über versiegelte Nachrichten",
+   "es": "Tu móvil se convierte en el mando de este ordenador, con mensajes sellados",
+   "fr": "Ton téléphone devient la télécommande de cet ordinateur, par messages scellés",
+   "ja": "暗号化メッセージで、スマホがこのコンピューターのリモコンになります",
+   "pt": "Seu celular vira o controle deste computador, por mensagens seladas",
+   "zh": "通过加密消息,手机成为这台电脑的遥控器"
+  },
+  "On your phone (same Wi-Fi), open in Safari": {
+   "de": "Auf deinem Handy (gleiches WLAN) in Safari öffnen",
+   "es": "En tu móvil (misma Wi-Fi), abre en Safari",
+   "fr": "Sur ton téléphone (même Wi-Fi), ouvre dans Safari",
+   "ja": "スマホで(同じWi-Fi)Safariを開いて",
+   "pt": "No celular (mesmo Wi-Fi), abra no Safari",
+   "zh": "在手机上(同一 Wi-Fi)用 Safari 打开"
+  },
+  "then Share, Add to Home Screen. Type http:// in full.": {
+   "de": "dann Teilen, Zum Home-Bildschirm. Tippe http:// vollständig ein.",
+   "es": "luego Compartir, Añadir a pantalla de inicio. Escribe http:// completo.",
+   "fr": "puis Partager, Sur l'écran d'accueil. Tape http:// en entier.",
+   "ja": "共有 > ホーム画面に追加。http:// まで省略せずに入力してください。",
+   "pt": "depois Compartilhar, Adicionar à Tela de Início. Digite o http:// completo.",
+   "zh": "然后点分享 > 添加到主屏幕。请完整输入 http://。"
+  },
+  "Link a phone with a QR code": {
+   "de": "Handy per QR-Code verbinden",
+   "es": "Vincular un móvil con un código QR",
+   "fr": "Lier un téléphone avec un QR code",
+   "ja": "QRコードでスマホを連携",
+   "pt": "Conectar um celular com QR code",
+   "zh": "用二维码关联手机"
+  },
+  "Vibe code from the phone with your GitHub sign-in, kept in your sealed memory": {
+   "de": "Vibe Coding vom Handy mit deiner GitHub-Anmeldung, in deinem versiegelten Gedächtnis aufbewahrt",
+   "es": "Vibe code desde el móvil con tu sesión de GitHub, guardada en tu memoria sellada",
+   "fr": "Vibe code depuis le téléphone avec ta connexion GitHub, gardée dans ta mémoire scellée",
+   "ja": "GitHubのログインを暗号化メモリーに保存し、スマホからバイブコーディング",
+   "pt": "Vibe code pelo celular com seu login do GitHub, guardado na sua memória selada",
+   "zh": "用你的 GitHub 登录在手机上 Vibe 编程,凭据存放在加密记忆中"
+  },
+  "Creating...": {
+   "de": "Wird erstellt...",
+   "es": "Creando...",
+   "fr": "Création...",
+   "ja": "作成中...",
+   "pt": "Criando...",
+   "zh": "创建中..."
+  },
+  "link a phone": {
+   "de": "handy verbinden",
+   "es": "vincular un móvil",
+   "fr": "lier un téléphone",
+   "ja": "スマホを連携",
+   "pt": "conectar um celular",
+   "zh": "关联手机"
+  },
+  "Scan this with your phone's camera. It opens root-harness there.": {
+   "de": "Scanne das mit der Handykamera. Dort öffnet sich root-harness.",
+   "es": "Escanéalo con la cámara del móvil. Abrirá root-harness allí.",
+   "fr": "Scanne-le avec l'appareil photo de ton téléphone. Ça y ouvre root-harness.",
+   "ja": "スマホのカメラでスキャンすると、root-harnessが開きます。",
+   "pt": "Escaneie com a câmera do celular. O root-harness abre lá.",
+   "zh": "用手机相机扫码,即可在手机上打开 root-harness。"
+  },
+  "waiting for your phone...": {
+   "de": "warte auf dein Handy...",
+   "es": "esperando a tu móvil...",
+   "fr": "en attente de ton téléphone...",
+   "ja": "スマホを待っています...",
+   "pt": "aguardando seu celular...",
+   "zh": "等待你的手机..."
+  },
+  "Does your phone show this code?": {
+   "de": "Zeigt dein Handy diesen Code?",
+   "es": "¿Tu móvil muestra este código?",
+   "fr": "Ton téléphone affiche ce code?",
+   "ja": "スマホにこのコードが表示されていますか?",
+   "pt": "Seu celular mostra este código?",
+   "zh": "手机上显示的是这个代码吗?"
+  },
+  "Yes, link it": {
+   "de": "Ja, verbinden",
+   "es": "Sí, vincular",
+   "fr": "Oui, lier",
+   "ja": "はい、連携する",
+   "pt": "Sim, conectar",
+   "zh": "是,关联"
+  },
+  "No, cancel": {
+   "de": "Nein, abbrechen",
+   "es": "No, cancelar",
+   "fr": "Non, annuler",
+   "ja": "いいえ、キャンセル",
+   "pt": "Não, cancelar",
+   "zh": "否,取消"
+  },
+  "Phone linked.": {
+   "de": "Handy verbunden.",
+   "es": "Móvil vinculado.",
+   "fr": "Téléphone lié.",
+   "ja": "スマホを連携しました。",
+   "pt": "Celular conectado.",
+   "zh": "手机已关联。"
+  },
+  "It did not go through: try again.": {
+   "de": "Hat nicht geklappt: versuch es nochmal.",
+   "es": "No ha funcionado: inténtalo otra vez.",
+   "fr": "Ça n'est pas passé: réessaie.",
+   "ja": "うまくいきませんでした。もう一度お試しください。",
+   "pt": "Não deu certo: tente de novo.",
+   "zh": "没有成功:请再试一次。"
+  },
+  "Cancelled: nothing was sent.": {
+   "de": "Abgebrochen: nichts wurde gesendet.",
+   "es": "Cancelado: no se envió nada.",
+   "fr": "Annulé: rien n'a été envoyé.",
+   "ja": "キャンセルしました。何も送信されていません。",
+   "pt": "Cancelado: nada foi enviado.",
+   "zh": "已取消:没有发送任何内容。"
+  },
+  "Ready": {
+   "de": "Bereit",
+   "es": "Listo",
+   "fr": "Prêt",
+   "ja": "準備完了",
+   "pt": "Pronto",
+   "zh": "就绪"
+  },
+  "Create my workshop": {
+   "de": "Meine Werkstatt erstellen",
+   "es": "Crear mi taller",
+   "fr": "Créer mon atelier",
+   "ja": "作業場を作成",
+   "pt": "Criar minha oficina",
+   "zh": "创建我的工作间"
+  },
+  "Check again": {
+   "de": "Erneut prüfen",
+   "es": "Comprobar otra vez",
+   "fr": "Vérifier à nouveau",
+   "ja": "再確認",
+   "pt": "Verificar de novo",
+   "zh": "重新检查"
+  },
+  "Too big to send to your computer (an image? try a smaller one).": {
+   "de": "Zu groß für deinen Computer (ein Bild? versuch ein kleineres).",
+   "es": "Demasiado grande para enviarlo a tu ordenador (¿una imagen? prueba con una más pequeña).",
+   "fr": "Trop gros pour être envoyé à ton ordinateur (une image? essaie plus petit).",
+   "ja": "コンピューターに送るには大きすぎます(画像なら小さいものを試してください)。",
+   "pt": "Grande demais para enviar ao computador (uma imagem? tente uma menor).",
+   "zh": "太大了,无法发送到电脑(是图片吗?试试更小的)。"
+  },
+  "Your computer is off or not answering.": {
+   "de": "Dein Computer ist aus oder antwortet nicht.",
+   "es": "Tu ordenador está apagado o no responde.",
+   "fr": "Ton ordinateur est éteint ou ne répond pas.",
+   "ja": "コンピューターがオフか応答しません。",
+   "pt": "Seu computador está desligado ou não responde.",
+   "zh": "你的电脑已关机或无响应。"
+  },
+  "Turn on \"GitHub on my phone\" in Settings on your computer.": {
+   "de": "Aktiviere „GitHub auf meinem Handy“ in den Einstellungen auf deinem Computer.",
+   "es": "Activa «GitHub en mi móvil» en Ajustes, en tu ordenador.",
+   "fr": "Active « GitHub sur mon téléphone » dans Réglages, sur ton ordinateur.",
+   "ja": "コンピューターの設定で「スマホでGitHub」をオンにしてください。",
+   "pt": "Ative \"GitHub no meu celular\" em Configurações, no seu computador.",
+   "zh": "请在电脑的设置中开启「手机上的 GitHub」。"
+  },
+  "Create your account on your computer first, then sign in here.": {
+   "de": "Erstelle dein Konto zuerst auf deinem Computer und melde dich dann hier an.",
+   "es": "Crea primero tu cuenta en tu ordenador y luego inicia sesión aquí.",
+   "fr": "Crée d'abord ton compte sur ton ordinateur, puis connecte-toi ici.",
+   "ja": "まずコンピューターでアカウントを作成し、ここでサインインしてください。",
+   "pt": "Crie sua conta no computador primeiro e depois entre aqui.",
+   "zh": "请先在电脑上创建账号,再在这里登录。"
+  },
+  "At least 6 characters.": {
+   "de": "Mindestens 6 Zeichen.",
+   "es": "Al menos 6 caracteres.",
+   "fr": "Au moins 6 caractères.",
+   "ja": "6文字以上にしてください。",
+   "pt": "Pelo menos 6 caracteres.",
+   "zh": "至少 6 个字符。"
+  },
+  "No account with this pseudo and password.": {
+   "de": "Kein Konto mit diesem Pseudonym und Passwort.",
+   "es": "No hay ninguna cuenta con este seudónimo y contraseña.",
+   "fr": "Aucun compte avec ce pseudo et ce mot de passe.",
+   "ja": "このニックネームとパスワードのアカウントはありません。",
+   "pt": "Nenhuma conta com esse apelido e senha.",
+   "zh": "没有与该昵称和密码匹配的账号。"
+  },
+  "Wrong password.": {
+   "de": "Falsches Passwort.",
+   "es": "Contraseña incorrecta.",
+   "fr": "Mauvais mot de passe.",
+   "ja": "パスワードが違います。",
+   "pt": "Senha incorreta.",
+   "zh": "密码错误。"
+  },
+  "Change it on your computer.": {
+   "de": "Ändere es auf deinem Computer.",
+   "es": "Cámbiala en tu ordenador.",
+   "fr": "Change-le sur ton ordinateur.",
+   "ja": "コンピューターで変更してください。",
+   "pt": "Altere no seu computador.",
+   "zh": "请在电脑上修改。"
+  },
+  "read only": {
+   "de": "nur lesen",
+   "es": "solo lectura",
+   "fr": "lecture seule",
+   "ja": "閲覧のみ",
+   "pt": "somente leitura",
+   "zh": "只读"
+  },
+  "Read only: your computer is off.": {
+   "de": "Nur lesen: dein Computer ist aus.",
+   "es": "Solo lectura: tu ordenador está apagado.",
+   "fr": "Lecture seule: ton ordinateur est éteint.",
+   "ja": "閲覧のみ: コンピューターがオフです。",
+   "pt": "Somente leitura: seu computador está desligado.",
+   "zh": "只读:你的电脑已关机。"
+  },
+  "Check the key.": {
+   "de": "Prüfe den Schlüssel.",
+   "es": "Revisa la clave.",
+   "fr": "Vérifie la clé.",
+   "ja": "キーを確認してください。",
+   "pt": "Confira a chave.",
+   "zh": "请检查密钥。"
+  },
+  "An ID looks like name#k7f2qa9m.": {
+   "de": "Eine ID sieht so aus: name#k7f2qa9m.",
+   "es": "Un ID tiene esta forma: nombre#k7f2qa9m.",
+   "fr": "Un ID ressemble à nom#k7f2qa9m.",
+   "ja": "IDは name#k7f2qa9m の形式です。",
+   "pt": "Um ID tem este formato: nome#k7f2qa9m.",
+   "zh": "ID 的格式类似 name#k7f2qa9m。"
+  },
+  "Nobody with this ID (or they are not findable).": {
+   "de": "Niemand mit dieser ID (oder nicht auffindbar).",
+   "es": "No hay nadie con este ID (o no se le puede encontrar).",
+   "fr": "Personne avec cet ID (ou introuvable).",
+   "ja": "このIDのユーザーはいません(または非公開です)。",
+   "pt": "Ninguém com esse ID (ou a pessoa não está encontrável).",
+   "zh": "没有这个 ID 的用户(或对方设置为不可查找)。"
+  },
+  "Create your workshop from your computer: Settings, Vibe code.": {
+   "de": "Erstelle deine Werkstatt auf deinem Computer: Einstellungen, Vibe Coding.",
+   "es": "Crea tu taller desde tu ordenador: Ajustes, Vibe code.",
+   "fr": "Crée ton atelier depuis ton ordinateur: Réglages, Vibe code.",
+   "ja": "コンピューターから作業場を作成してください: 設定 > バイブコーディング。",
+   "pt": "Crie sua oficina pelo computador: Configurações, Vibe code.",
+   "zh": "请在电脑上创建工作间:设置 > Vibe 编程。"
+  },
+  "Notifications need root-harness opened over https (its online address or your private link). Here it is opened over plain http on your Wi-Fi.": {
+   "de": "Mitteilungen brauchen root-harness über https (die Online-Adresse oder deinen privaten Link). Hier ist es über einfaches http in deinem WLAN geöffnet.",
+   "es": "Las notificaciones necesitan root-harness abierto por https (su dirección en línea o tu enlace privado). Aquí está abierto por http simple en tu Wi-Fi.",
+   "fr": "Les notifications demandent root-harness ouvert en https (son adresse en ligne ou ton lien privé). Ici, il est ouvert en simple http sur ton Wi-Fi.",
+   "ja": "通知を受け取るには、root-harnessをhttps(オンラインのアドレスかプライベートリンク)で開く必要があります。今はWi-Fi上のhttpで開いています。",
+   "pt": "As notificações precisam do root-harness aberto via https (o endereço online ou seu link privado). Aqui ele está aberto via http simples no seu Wi-Fi.",
+   "zh": "通知需要通过 https 打开 root-harness(在线地址或你的私有链接)。当前是在 Wi-Fi 上通过普通 http 打开的。"
+  },
+  "On iPhone, add root-harness to your Home Screen first (Share, Add to Home Screen), then open it from there.": {
+   "de": "Füge root-harness auf dem iPhone zuerst zum Home-Bildschirm hinzu (Teilen, Zum Home-Bildschirm) und öffne es dann von dort.",
+   "es": "En iPhone, añade primero root-harness a la pantalla de inicio (Compartir, Añadir a pantalla de inicio) y ábrelo desde ahí.",
+   "fr": "Sur iPhone, ajoute d'abord root-harness à l'écran d'accueil (Partager, Sur l'écran d'accueil), puis ouvre-le depuis là.",
+   "ja": "iPhoneでは、まずroot-harnessをホーム画面に追加し(共有 > ホーム画面に追加)、そこから開いてください。",
+   "pt": "No iPhone, adicione o root-harness à Tela de Início primeiro (Compartilhar, Adicionar à Tela de Início) e abra por lá.",
+   "zh": "在 iPhone 上,请先把 root-harness 添加到主屏幕(分享 > 添加到主屏幕),再从那里打开。"
+  },
+  "This browser cannot receive notifications.": {
+   "de": "Dieser Browser kann keine Mitteilungen empfangen.",
+   "es": "Este navegador no puede recibir notificaciones.",
+   "fr": "Ce navigateur ne peut pas recevoir de notifications.",
+   "ja": "このブラウザは通知を受け取れません。",
+   "pt": "Este navegador não recebe notificações.",
+   "zh": "此浏览器无法接收通知。"
+  },
+  "Notifications are blocked for root-harness in this phone's settings.": {
+   "de": "Mitteilungen für root-harness sind in den Einstellungen dieses Handys blockiert.",
+   "es": "Las notificaciones de root-harness están bloqueadas en los ajustes de este móvil.",
+   "fr": "Les notifications de root-harness sont bloquées dans les réglages de ce téléphone.",
+   "ja": "このスマホの設定でroot-harnessの通知がブロックされています。",
+   "pt": "As notificações do root-harness estão bloqueadas nas configurações deste celular.",
+   "zh": "此手机的设置已屏蔽 root-harness 的通知。"
+  },
+  "Notifications were not allowed.": {
+   "de": "Mitteilungen wurden nicht erlaubt.",
+   "es": "No se permitieron las notificaciones.",
+   "fr": "Les notifications n'ont pas été autorisées.",
+   "ja": "通知が許可されませんでした。",
+   "pt": "As notificações não foram permitidas.",
+   "zh": "未允许通知。"
+  },
+  "Your computer did not accept this phone.": {
+   "de": "Dein Computer hat dieses Handy nicht akzeptiert.",
+   "es": "Tu ordenador no aceptó este móvil.",
+   "fr": "Ton ordinateur n'a pas accepté ce téléphone.",
+   "ja": "コンピューターがこのスマホを受け入れませんでした。",
+   "pt": "Seu computador não aceitou este celular.",
+   "zh": "你的电脑没有接受这台手机。"
+  },
+  "this phone": {
+   "de": "dieses handy",
+   "es": "este móvil",
+   "fr": "ce téléphone",
+   "ja": "このスマホ",
+   "pt": "este celular",
+   "zh": "这台手机"
+  },
+  "When your agent needs you or finishes a long task. Your conversation never shows on the lock screen.": {
+   "de": "Wenn dein Agent dich braucht oder eine lange Aufgabe beendet. Deine Unterhaltung erscheint nie auf dem Sperrbildschirm.",
+   "es": "Cuando tu agente te necesita o termina una tarea larga. Tu conversación nunca aparece en la pantalla de bloqueo.",
+   "fr": "Quand ton agent a besoin de toi ou finit une longue tâche. Ta conversation ne s'affiche jamais sur l'écran verrouillé.",
+   "ja": "エージェントがあなたを必要としたときや長い作業が終わったときに通知します。会話の内容はロック画面に表示されません。",
+   "pt": "Quando seu agente precisa de você ou termina uma tarefa longa. Sua conversa nunca aparece na tela de bloqueio.",
+   "zh": "当智能体需要你或完成长任务时通知你。对话内容绝不会出现在锁屏上。"
+  },
+  "Notifications off on this phone.": {
+   "de": "Mitteilungen auf diesem Handy aus.",
+   "es": "Notificaciones desactivadas en este móvil.",
+   "fr": "Notifications désactivées sur ce téléphone.",
+   "ja": "このスマホの通知をオフにしました。",
+   "pt": "Notificações desativadas neste celular.",
+   "zh": "已关闭此手机的通知。"
+  },
+  "Notifications on. Your computer will tell you.": {
+   "de": "Mitteilungen an. Dein Computer meldet sich.",
+   "es": "Notificaciones activadas. Tu ordenador te avisará.",
+   "fr": "Notifications activées. Ton ordinateur te préviendra.",
+   "ja": "通知をオンにしました。コンピューターからお知らせします。",
+   "pt": "Notificações ativadas. Seu computador vai te avisar.",
+   "zh": "已开启通知,电脑会提醒你。"
+  },
+  "Locked.": {
+   "de": "Gesperrt.",
+   "es": "Bloqueado.",
+   "fr": "Verrouillé.",
+   "ja": "ロック中です。",
+   "pt": "Bloqueado.",
+   "zh": "已锁定。"
+  },
+  "not synced": {
+   "de": "nicht synchronisiert",
+   "es": "sin sincronizar",
+   "fr": "pas synchronisé",
+   "ja": "未同期",
+   "pt": "não sincronizado",
+   "zh": "未同步"
+  },
+  "First post": {
+   "de": "Erster Post",
+   "es": "Primera publicación",
+   "fr": "Premier post",
+   "ja": "初投稿",
+   "pt": "Primeiro post",
+   "zh": "首次发帖"
+  },
+  "Post for the first time.": {
+   "de": "Poste zum ersten Mal.",
+   "es": "Publica por primera vez.",
+   "fr": "Poste pour la première fois.",
+   "ja": "はじめて投稿する。",
+   "pt": "Publique pela primeira vez.",
+   "zh": "第一次发帖。"
+  },
+  "Shipped": {
+   "de": "Ausgeliefert",
+   "es": "Lanzado",
+   "fr": "Livré",
+   "ja": "リリース",
+   "pt": "Entregue",
+   "zh": "已发布"
+  },
+  "Finish a project and show it on your page.": {
+   "de": "Schließe ein Projekt ab und zeig es auf deiner Seite.",
+   "es": "Termina un proyecto y muéstralo en tu página.",
+   "fr": "Termine un projet et montre-le sur ta page.",
+   "ja": "プロジェクトを完成させてページに載せる。",
+   "pt": "Termine um projeto e mostre na sua página.",
+   "zh": "完成一个项目并展示在主页上。"
+  },
+  "Hackathon": {
+   "de": "Hackathon",
+   "es": "Hackathon",
+   "fr": "Hackathon",
+   "ja": "ハッカソン",
+   "pt": "Hackathon",
+   "zh": "黑客松"
+  },
+  "Add a hackathon to your work.": {
+   "de": "Füge deiner Arbeit einen Hackathon hinzu.",
+   "es": "Añade un hackathon a tu trabajo.",
+   "fr": "Ajoute un hackathon à ton travail.",
+   "ja": "実績にハッカソンを追加する。",
+   "pt": "Adicione um hackathon ao seu trabalho.",
+   "zh": "在作品中添加一次黑客松。"
+  },
+  "7 days in a row": {
+   "de": "7 Tage am Stück",
+   "es": "7 días seguidos",
+   "fr": "7 jours d'affilée",
+   "ja": "7日連続",
+   "pt": "7 dias seguidos",
+   "zh": "连续 7 天"
+  },
+  "Work with your agents seven days in a row.": {
+   "de": "Arbeite sieben Tage am Stück mit deinen Agenten.",
+   "es": "Trabaja con tus agentes siete días seguidos.",
+   "fr": "Travaille avec tes agents sept jours d'affilée.",
+   "ja": "7日連続でエージェントと作業する。",
+   "pt": "Trabalhe com seus agentes sete dias seguidos.",
+   "zh": "连续七天和智能体一起工作。"
+  },
+  "Encyclopedist": {
+   "de": "Enzyklopädist",
+   "es": "Enciclopedista",
+   "fr": "Encyclopédiste",
+   "ja": "百科博士",
+   "pt": "Enciclopedista",
+   "zh": "百科达人"
+  },
+  "Learn fifty words in the encyclopedia.": {
+   "de": "Lerne fünfzig Begriffe im Lexikon.",
+   "es": "Aprende cincuenta palabras en la enciclopedia.",
+   "fr": "Apprends cinquante mots dans l'encyclopédie.",
+   "ja": "事典で50語を覚える。",
+   "pt": "Aprenda cinquenta palavras na enciclopédia.",
+   "zh": "在百科中学会五十个词。"
+  },
+  "Night shift": {
+   "de": "Nachtschicht",
+   "es": "Turno de noche",
+   "fr": "Service de nuit",
+   "ja": "夜勤",
+   "pt": "Turno da noite",
+   "zh": "夜班"
+  },
+  "Secret.": {
+   "de": "Geheim.",
+   "es": "Secreto.",
+   "fr": "Secret.",
+   "ja": "ひみつ。",
+   "pt": "Segredo.",
+   "zh": "秘密。"
+  },
+  "secret badge": {
+   "de": "geheimes Abzeichen",
+   "es": "insignia secreta",
+   "fr": "badge secret",
+   "ja": "ひみつのバッジ",
+   "pt": "selo secreto",
+   "zh": "秘密徽章"
+  },
+  "student": {
+   "de": "studiere",
+   "es": "estudiante",
+   "fr": "étudiant",
+   "ja": "学生",
+   "pt": "estudante",
+   "zh": "学生"
+  },
+  "working": {
+   "de": "arbeite",
+   "es": "trabajando",
+   "fr": "en poste",
+   "ja": "仕事中",
+   "pt": "trabalhando",
+   "zh": "在职"
+  },
+  "looking for a job": {
+   "de": "suche einen Job",
+   "es": "buscando trabajo",
+   "fr": "en recherche d'emploi",
+   "ja": "求職中",
+   "pt": "procurando emprego",
+   "zh": "求职中"
+  },
+  "● looking for a job": {
+   "de": "● suche einen Job",
+   "es": "● buscando trabajo",
+   "fr": "● en recherche d'emploi",
+   "ja": "● 求職中",
+   "pt": "● procurando emprego",
+   "zh": "● 求职中"
+  },
+  "from the days spent working with agents": {
+   "de": "aus den Tagen, an denen du mit Agenten gearbeitet hast",
+   "es": "según los días trabajando con agentes",
+   "fr": "d'après les jours passés à travailler avec des agents",
+   "ja": "エージェントと作業した日数から",
+   "pt": "pelos dias trabalhando com agentes",
+   "zh": "根据与智能体工作的天数"
+  },
+  "active": {
+   "de": "aktiv",
+   "es": "activo",
+   "fr": "actif",
+   "ja": "アクティブ",
+   "pt": "ativo",
+   "zh": "活跃"
+  },
+  "very active": {
+   "de": "sehr aktiv",
+   "es": "muy activo",
+   "fr": "très actif",
+   "ja": "とてもアクティブ",
+   "pt": "muito ativo",
+   "zh": "非常活跃"
+  },
+  "actively active": {
+   "de": "aktiv aktiv",
+   "es": "activamente activo",
+   "fr": "activement actif",
+   "ja": "超アクティブ",
+   "pt": "ativamente ativo",
+   "zh": "超级活跃"
+  },
+  "someone": {
+   "de": "jemand",
+   "es": "alguien",
+   "fr": "quelqu'un",
+   "ja": "だれか",
+   "pt": "alguém",
+   "zh": "某人"
+  },
+  "Agents": {
+   "de": "Agenten",
+   "es": "Agentes",
+   "fr": "Agents",
+   "ja": "エージェント",
+   "pt": "Agentes",
+   "zh": "智能体"
+  },
+  "Security & CTF": {
+   "de": "Sicherheit & CTF",
+   "es": "Seguridad y CTF",
+   "fr": "Sécurité et CTF",
+   "ja": "セキュリティとCTF",
+   "pt": "Segurança e CTF",
+   "zh": "安全与 CTF"
+  },
+  "Hackathons": {
+   "de": "Hackathons",
+   "es": "Hackathons",
+   "fr": "Hackathons",
+   "ja": "ハッカソン",
+   "pt": "Hackathons",
+   "zh": "黑客松"
+  },
+  "Local LLMs": {
+   "de": "Lokale LLMs",
+   "es": "LLM locales",
+   "fr": "LLM locaux",
+   "ja": "ローカルLLM",
+   "pt": "LLMs locais",
+   "zh": "本地 LLM"
+  },
+  "Design": {
+   "de": "Design",
+   "es": "Diseño",
+   "fr": "Design",
+   "ja": "デザイン",
+   "pt": "Design",
+   "zh": "设计"
+  },
+  "My agent now reads the error before rerunning the tests, instead of trying three fixes at random. Fewer runs, and I finally understand why my build broke.": {
+   "de": "Mein Agent liest jetzt den Fehler, bevor er die Tests erneut startet, statt drei Fixes auf gut Glück zu probieren. Weniger Durchläufe, und ich verstehe endlich, warum mein Build kaputt war.",
+   "es": "Mi agente ahora lee el error antes de volver a lanzar los tests, en vez de probar tres arreglos al azar. Menos ejecuciones, y por fin entiendo por qué se rompió mi build.",
+   "fr": "Mon agent lit maintenant l'erreur avant de relancer les tests, au lieu de tenter trois correctifs au hasard. Moins de lancements, et je comprends enfin pourquoi mon build cassait.",
+   "ja": "エージェントが、適当に3つ修正を試すのではなく、テストを再実行する前にエラーを読むようになった。実行回数が減って、ビルドが壊れた理由もやっと理解できた。",
+   "pt": "Meu agente agora lê o erro antes de rodar os testes de novo, em vez de tentar três correções ao acaso. Menos execuções, e finalmente entendi por que meu build quebrou.",
+   "zh": "我的智能体现在会先读报错再重跑测试,而不是随便试三种修复。运行次数少了,我也终于明白构建为什么会挂。"
+  },
+  "Spent the night on a web challenge: the filter blocked \"script\" but not \"ScRiPt\". Lesson: never filter with a list, escape the output.": {
+   "de": "Die Nacht mit einer Web-Challenge verbracht: der Filter blockte „script“, aber nicht „ScRiPt“. Lektion: nie mit einer Liste filtern, die Ausgabe escapen.",
+   "es": "Pasé la noche en un reto web: el filtro bloqueaba «script» pero no «ScRiPt». Lección: nunca filtres con una lista, escapa la salida.",
+   "fr": "Nuit passée sur un challenge web: le filtre bloquait « script » mais pas « ScRiPt ». Leçon: ne jamais filtrer avec une liste, échapper la sortie.",
+   "ja": "Web問題で徹夜した。フィルターは「script」は弾くのに「ScRiPt」は通していた。教訓: リストでフィルターせず、出力をエスケープすること。",
+   "pt": "Passei a noite num desafio web: o filtro bloqueava \"script\" mas não \"ScRiPt\". Lição: nunca filtre com uma lista, escape a saída.",
+   "zh": "熬夜做了一道 Web 题:过滤器拦了「script」却放过了「ScRiPt」。教训:别用黑名单过滤,要转义输出。"
+  },
+  "A 27B model on one consumer GPU answers in 2 seconds once it is warm. The trick was the context size, not the model.": {
+   "de": "Ein 27B-Modell auf einer einzigen Consumer-GPU antwortet in 2 Sekunden, sobald es warm ist. Der Trick war die Kontextgröße, nicht das Modell.",
+   "es": "Un modelo de 27B en una sola GPU doméstica responde en 2 segundos una vez caliente. El truco era el tamaño del contexto, no el modelo.",
+   "fr": "Un modèle 27B sur un seul GPU grand public répond en 2 secondes une fois chaud. L'astuce, c'était la taille du contexte, pas le modèle.",
+   "ja": "一般向けGPU1枚で動く27Bモデルが、温まれば2秒で答える。コツはモデルではなくコンテキストサイズだった。",
+   "pt": "Um modelo de 27B numa única GPU doméstica responde em 2 segundos depois de aquecido. O truque era o tamanho do contexto, não o modelo.",
+   "zh": "一块消费级显卡上的 27B 模型,预热后 2 秒就能回答。关键在上下文大小,而不是模型本身。"
+  },
+  "First week of piscine done. My agent explains, but I write every line myself: that was the deal.": {
+   "de": "Erste Piscine-Woche geschafft. Mein Agent erklärt, aber jede Zeile schreibe ich selbst: so war der Deal.",
+   "es": "Primera semana de piscine terminada. Mi agente explica, pero cada línea la escribo yo: ese era el trato.",
+   "fr": "Première semaine de piscine bouclée. Mon agent explique, mais j'écris chaque ligne moi-même: c'était le deal.",
+   "ja": "ピシンの1週目が終わった。エージェントは説明するだけで、コードは全部自分で書く。それが約束だった。",
+   "pt": "Primeira semana de piscine concluída. Meu agente explica, mas cada linha eu escrevo: esse era o combinado.",
+   "zh": "Piscine 第一周结束。智能体负责讲解,但每一行代码都是我自己写的:这是约定。"
+  },
+  "3 runs instead of 11": {
+   "de": "3 Durchläufe statt 11",
+   "es": "3 ejecuciones en vez de 11",
+   "fr": "3 lancements au lieu de 11",
+   "ja": "11回から3回に",
+   "pt": "3 execuções em vez de 11",
+   "zh": "从 11 次降到 3 次"
+  },
+  "an example": {
+   "de": "ein Beispiel",
+   "es": "un ejemplo",
+   "fr": "un exemple",
+   "ja": "サンプル",
+   "pt": "um exemplo",
+   "zh": "示例"
+  },
+  "answer": {
+   "de": "antworten",
+   "es": "responder",
+   "fr": "répondre",
+   "ja": "返信",
+   "pt": "responder",
+   "zh": "回复"
+  },
+  "repost": {
+   "de": "reposten",
+   "es": "republicar",
+   "fr": "republier",
+   "ja": "リポスト",
+   "pt": "repostar",
+   "zh": "转发"
+  },
+  "like": {
+   "de": "gefällt mir",
+   "es": "me gusta",
+   "fr": "j'aime",
+   "ja": "いいね",
+   "pt": "curtir",
+   "zh": "赞"
+  },
+  "An example: nothing is sent.": {
+   "de": "Ein Beispiel: nichts wird gesendet.",
+   "es": "Es un ejemplo: no se envía nada.",
+   "fr": "Un exemple: rien n'est envoyé.",
+   "ja": "サンプルです。何も送信されません。",
+   "pt": "É um exemplo: nada é enviado.",
+   "zh": "这是示例:不会发送任何内容。"
+  },
+  "Reposted on your page.": {
+   "de": "Auf deiner Seite repostet.",
+   "es": "Republicado en tu página.",
+   "fr": "Republié sur ta page.",
+   "ja": "あなたのページにリポストしました。",
+   "pt": "Repostado na sua página.",
+   "zh": "已转发到你的主页。"
+  },
+  "Repost removed.": {
+   "de": "Repost entfernt.",
+   "es": "Republicación quitada.",
+   "fr": "Republication retirée.",
+   "ja": "リポストを取り消しました。",
+   "pt": "Repost removido.",
+   "zh": "已取消转发。"
+  },
+  "Not sent.": {
+   "de": "Nicht gesendet.",
+   "es": "No enviado.",
+   "fr": "Pas envoyé.",
+   "ja": "送信できませんでした。",
+   "pt": "Não enviado.",
+   "zh": "未发送。"
+  },
+  "the thread": {
+   "de": "der thread",
+   "es": "el hilo",
+   "fr": "le fil de discussion",
+   "ja": "スレッド",
+   "pt": "a conversa",
+   "zh": "帖子讨论"
+  },
+  "a real answer: what works, what you would try": {
+   "de": "eine echte Antwort: was funktioniert, was du probieren würdest",
+   "es": "una respuesta de verdad: qué funciona, qué probarías",
+   "fr": "une vraie réponse: ce qui marche, ce que tu essaierais",
+   "ja": "ちゃんとした返信を: うまくいくこと、試したいこと",
+   "pt": "uma resposta de verdade: o que funciona, o que você tentaria",
+   "zh": "认真回复:什么有效,你会怎么试"
+  },
+  "Real answers to other people's work are what this network is for.": {
+   "de": "Echte Antworten auf die Arbeit anderer: dafür ist dieses Netzwerk da.",
+   "es": "Responder de verdad al trabajo de los demás: para eso existe esta red.",
+   "fr": "Répondre vraiment au travail des autres, c'est à ça que sert ce réseau.",
+   "ja": "他の人の作品にちゃんと返信する。それがこのネットワークの目的です。",
+   "pt": "Responder de verdade ao trabalho dos outros: é para isso que esta rede existe.",
+   "zh": "认真回应别人的作品,正是这个网络存在的意义。"
+  },
+  "Answered.": {
+   "de": "Beantwortet.",
+   "es": "Respondido.",
+   "fr": "Répondu.",
+   "ja": "返信しました。",
+   "pt": "Respondido.",
+   "zh": "已回复。"
+  },
+  "share this post": {
+   "de": "diesen post teilen",
+   "es": "compartir esta publicación",
+   "fr": "partager ce post",
+   "ja": "この投稿を共有",
+   "pt": "compartilhar este post",
+   "zh": "分享这条帖子"
+  },
+  "to a friend or a group": {
+   "de": "an einen freund oder eine gruppe",
+   "es": "a un amigo o un grupo",
+   "fr": "à un ami ou un groupe",
+   "ja": "友達またはグループへ",
+   "pt": "para um amigo ou grupo",
+   "zh": "分享给好友或群组"
+  },
+  "No friend or group yet: add them in Friends & groups.": {
+   "de": "Noch keine Freunde oder Gruppen: füge sie unter Freunde & Gruppen hinzu.",
+   "es": "Aún no hay amigos ni grupos: añádelos en Amigos y grupos.",
+   "fr": "Pas encore d'ami ni de groupe: ajoute-les dans Amis et groupes.",
+   "ja": "友達やグループがまだいません。「友達とグループ」で追加してください。",
+   "pt": "Nenhum amigo ou grupo ainda: adicione em Amigos e grupos.",
+   "zh": "还没有好友或群组:去「好友和群组」里添加。"
+  },
+  "Copy the post id": {
+   "de": "Post-ID kopieren",
+   "es": "Copiar el id de la publicación",
+   "fr": "Copier l'id du post",
+   "ja": "投稿IDをコピー",
+   "pt": "Copiar o id do post",
+   "zh": "复制帖子 ID"
+  },
+  "Shared.": {
+   "de": "Geteilt.",
+   "es": "Compartido.",
+   "fr": "Partagé.",
+   "ja": "共有しました。",
+   "pt": "Compartilhado.",
+   "zh": "已分享。"
+  },
+  "Not shared.": {
+   "de": "Nicht geteilt.",
+   "es": "No compartido.",
+   "fr": "Pas partagé.",
+   "ja": "共有できませんでした。",
+   "pt": "Não compartilhado.",
+   "zh": "未分享。"
+  },
+  "Post id copied.": {
+   "de": "Post-ID kopiert.",
+   "es": "Id de la publicación copiado.",
+   "fr": "Id du post copié.",
+   "ja": "投稿IDをコピーしました。",
+   "pt": "Id do post copiado.",
+   "zh": "帖子 ID 已复制。"
+  },
+  "the feed": {
+   "de": "feed",
+   "es": "el feed",
+   "fr": "le fil",
+   "ja": "フィード",
+   "pt": "o feed",
+   "zh": "动态"
+  },
+  "What people build with their agents. Yours too: your agent can write the post.": {
+   "de": "Was Leute mit ihren Agenten bauen. Deins auch: dein Agent kann den Post schreiben.",
+   "es": "Lo que la gente construye con sus agentes. Lo tuyo también: tu agente puede escribir la publicación.",
+   "fr": "Ce que les gens construisent avec leurs agents. Toi aussi: ton agent peut écrire le post.",
+   "ja": "みんながエージェントと作っているもの。あなたの投稿もエージェントが書けます。",
+   "pt": "O que as pessoas constroem com seus agentes. O seu também: seu agente pode escrever o post.",
+   "zh": "大家用智能体做出的东西。你的也可以:让智能体帮你写帖子。"
+  },
+  "your agent is working: scroll here, it tells you when it is done. Back to it": {
+   "de": "dein Agent arbeitet: scroll ruhig hier, er sagt Bescheid, wenn er fertig ist. Zurück zu ihm",
+   "es": "tu agente está trabajando: navega por aquí, te avisa cuando termine. Volver",
+   "fr": "ton agent travaille: scrolle ici, il te prévient quand c'est fini. Y retourner",
+   "ja": "エージェントが作業中です。ここを見ていて大丈夫、終わったら知らせます。戻る",
+   "pt": "seu agente está trabalhando: role por aqui, ele avisa quando terminar. Voltar",
+   "zh": "智能体正在工作:先在这里逛逛,完成后会通知你。返回"
+  },
+  "what did you build today?": {
+   "de": "was hast du heute gebaut?",
+   "es": "¿qué has construido hoy?",
+   "fr": "t'as construit quoi aujourd'hui?",
+   "ja": "今日は何を作った?",
+   "pt": "o que você construiu hoje?",
+   "zh": "今天做了什么?"
+  },
+  "my agent writes it": {
+   "de": "mein Agent schreibt es",
+   "es": "que lo escriba mi agente",
+   "fr": "mon agent l'écrit",
+   "ja": "エージェントに書かせる",
+   "pt": "meu agente escreve",
+   "zh": "让智能体来写"
+  },
+  "a photo or a video": {
+   "de": "ein Foto oder ein Video",
+   "es": "una foto o un vídeo",
+   "fr": "une photo ou une vidéo",
+   "ja": "写真または動画",
+   "pt": "uma foto ou um vídeo",
+   "zh": "照片或视频"
+  },
+  "no community": {
+   "de": "keine Community",
+   "es": "sin comunidad",
+   "fr": "aucune communauté",
+   "ja": "コミュニティなし",
+   "pt": "sem comunidade",
+   "zh": "不选社区"
+  },
+  "Post": {
+   "de": "Posten",
+   "es": "Publicar",
+   "fr": "Publier",
+   "ja": "投稿",
+   "pt": "Publicar",
+   "zh": "发布"
+  },
+  "for you": {
+   "de": "für dich",
+   "es": "para ti",
+   "fr": "pour toi",
+   "ja": "おすすめ",
+   "pt": "para você",
+   "zh": "推荐"
+  },
+  "friends": {
+   "de": "Freunde",
+   "es": "amigos",
+   "fr": "amis",
+   "ja": "友達",
+   "pt": "amigos",
+   "zh": "好友"
+  },
+  "communities": {
+   "de": "Communities",
+   "es": "comunidades",
+   "fr": "communautés",
+   "ja": "コミュニティ",
+   "pt": "comunidades",
+   "zh": "社区"
+  },
+  "+ new": {
+   "de": "+ neu",
+   "es": "+ nueva",
+   "fr": "+ nouvelle",
+   "ja": "+ 新規",
+   "pt": "+ nova",
+   "zh": "+ 新建"
+  },
+  "find someone: pseudo#code or npub": {
+   "de": "jemanden finden: pseudonym#code oder npub",
+   "es": "buscar a alguien: seudónimo#código o npub",
+   "fr": "trouver quelqu'un: pseudo#code ou npub",
+   "ja": "ユーザーを検索: ニックネーム#コード または npub",
+   "pt": "encontrar alguém: apelido#código ou npub",
+   "zh": "查找用户:昵称#代码 或 npub"
+  },
+  "find": {
+   "de": "suchen",
+   "es": "buscar",
+   "fr": "chercher",
+   "ja": "検索",
+   "pt": "buscar",
+   "zh": "查找"
+  },
+  "writing...": {
+   "de": "schreibt...",
+   "es": "escribiendo...",
+   "fr": "écriture...",
+   "ja": "作成中...",
+   "pt": "escrevendo...",
+   "zh": "撰写中..."
+  },
+  "Not available here.": {
+   "de": "Hier nicht verfügbar.",
+   "es": "No disponible aquí.",
+   "fr": "Pas disponible ici.",
+   "ja": "ここでは利用できません。",
+   "pt": "Indisponível aqui.",
+   "zh": "此处不可用。"
+  },
+  "Uploading...": {
+   "de": "Wird hochgeladen...",
+   "es": "Subiendo...",
+   "fr": "Envoi du fichier...",
+   "ja": "アップロード中...",
+   "pt": "Enviando...",
+   "zh": "上传中..."
+  },
+  "Posting...": {
+   "de": "Wird gepostet...",
+   "es": "Publicando...",
+   "fr": "Publication...",
+   "ja": "投稿中...",
+   "pt": "Publicando...",
+   "zh": "发布中..."
+  },
+  "Upload failed.": {
+   "de": "Hochladen fehlgeschlagen.",
+   "es": "Error al subir.",
+   "fr": "Échec de l'envoi.",
+   "ja": "アップロードに失敗しました。",
+   "pt": "Falha no envio.",
+   "zh": "上传失败。"
+  },
+  "Posted.": {
+   "de": "Gepostet.",
+   "es": "Publicado.",
+   "fr": "Publié.",
+   "ja": "投稿しました。",
+   "pt": "Publicado.",
+   "zh": "已发布。"
+  },
+  "Posted, no relay has confirmed yet.": {
+   "de": "Gepostet, noch hat kein Relay bestätigt.",
+   "es": "Publicado, ningún relay lo ha confirmado aún.",
+   "fr": "Publié, aucun relais n'a encore confirmé.",
+   "ja": "投稿しました。まだどのリレーからも確認がありません。",
+   "pt": "Publicado, nenhum relay confirmou ainda.",
+   "zh": "已发布,但还没有中继确认。"
+  },
+  "Not posted.": {
+   "de": "Nicht gepostet.",
+   "es": "No publicado.",
+   "fr": "Pas publié.",
+   "ja": "投稿できませんでした。",
+   "pt": "Não publicado.",
+   "zh": "未发布。"
+  },
+  "Nobody found with that.": {
+   "de": "Niemand damit gefunden.",
+   "es": "No se encontró a nadie.",
+   "fr": "Personne trouvé avec ça.",
+   "ja": "該当するユーザーが見つかりません。",
+   "pt": "Ninguém encontrado com isso.",
+   "zh": "没有找到对应的用户。"
+  },
+  "Not found.": {
+   "de": "Nicht gefunden.",
+   "es": "No encontrado.",
+   "fr": "Introuvable.",
+   "ja": "見つかりません。",
+   "pt": "Não encontrado.",
+   "zh": "未找到。"
+  },
+  "Your friends have not posted yet.": {
+   "de": "Deine Freunde haben noch nichts gepostet.",
+   "es": "Tus amigos aún no han publicado.",
+   "fr": "Tes amis n'ont encore rien publié.",
+   "ja": "友達はまだ投稿していません。",
+   "pt": "Seus amigos ainda não publicaram.",
+   "zh": "你的好友还没有发帖。"
+  },
+  "Nobody has posted here yet. Be the first: your agent can write it.": {
+   "de": "Hier hat noch niemand gepostet. Sei die erste Person: dein Agent kann es schreiben.",
+   "es": "Nadie ha publicado aquí todavía. Sé el primero: tu agente puede escribirlo.",
+   "fr": "Personne n'a encore posté ici. Sois le premier: ton agent peut l'écrire.",
+   "ja": "まだ誰も投稿していません。最初の投稿をしましょう。エージェントが書けます。",
+   "pt": "Ninguém publicou aqui ainda. Seja o primeiro: seu agente pode escrever.",
+   "zh": "这里还没人发帖。来做第一个吧:智能体可以帮你写。"
+  },
+  "No answer from the network.": {
+   "de": "Keine Antwort vom Netzwerk.",
+   "es": "La red no responde.",
+   "fr": "Pas de réponse du réseau.",
+   "ja": "ネットワークから応答がありません。",
+   "pt": "Sem resposta da rede.",
+   "zh": "网络无响应。"
+  },
+  "a new community": {
+   "de": "eine neue community",
+   "es": "una comunidad nueva",
+   "fr": "une nouvelle communauté",
+   "ja": "新しいコミュニティ",
+   "pt": "uma nova comunidade",
+   "zh": "新建社区"
+  },
+  "A place to go deeper into one field. Anyone on root-harness can post in it.": {
+   "de": "Ein Ort, um tiefer in ein Thema einzutauchen. Alle auf root-harness können dort posten.",
+   "es": "Un lugar para profundizar en un tema. Cualquiera en root-harness puede publicar en él.",
+   "fr": "Un lieu pour creuser un domaine. Tout le monde sur root-harness peut y poster.",
+   "ja": "ひとつの分野を深掘りする場所。root-harnessの誰でも投稿できます。",
+   "pt": "Um lugar para se aprofundar num assunto. Qualquer pessoa no root-harness pode publicar nele.",
+   "zh": "深入某个领域的地方。root-harness 上的任何人都能在这里发帖。"
+  },
+  "its name": {
+   "de": "Name",
+   "es": "su nombre",
+   "fr": "son nom",
+   "ja": "名前",
+   "pt": "nome",
+   "zh": "名称"
+  },
+  "what it is about": {
+   "de": "worum es geht",
+   "es": "de qué trata",
+   "fr": "de quoi ça parle",
+   "ja": "どんなコミュニティ?",
+   "pt": "sobre o que é",
+   "zh": "关于什么"
+  },
+  "Community created.": {
+   "de": "Community erstellt.",
+   "es": "Comunidad creada.",
+   "fr": "Communauté créée.",
+   "ja": "コミュニティを作成しました。",
+   "pt": "Comunidade criada.",
+   "zh": "社区已创建。"
+  },
+  "Not created.": {
+   "de": "Nicht erstellt.",
+   "es": "No creado.",
+   "fr": "Pas créé.",
+   "ja": "作成できませんでした。",
+   "pt": "Não criado.",
+   "zh": "未创建。"
+  },
+  "this page": {
+   "de": "diese seite",
+   "es": "esta página",
+   "fr": "cette page",
+   "ja": "このページ",
+   "pt": "esta página",
+   "zh": "此主页"
+  },
+  "your page": {
+   "de": "deine seite",
+   "es": "tu página",
+   "fr": "ta page",
+   "ja": "あなたのページ",
+   "pt": "sua página",
+   "zh": "你的主页"
+  },
+  "Try again": {
+   "de": "Erneut versuchen",
+   "es": "Reintentar",
+   "fr": "Réessayer",
+   "ja": "再試行",
+   "pt": "Tentar de novo",
+   "zh": "重试"
+  },
+  "my page": {
+   "de": "meine Seite",
+   "es": "mi página",
+   "fr": "ma page",
+   "ja": "自分のページ",
+   "pt": "minha página",
+   "zh": "我的主页"
+  },
+  "Share my ID": {
+   "de": "Meine ID teilen",
+   "es": "Compartir mi ID",
+   "fr": "Partager mon ID",
+   "ja": "IDを共有",
+   "pt": "Compartilhar meu ID",
+   "zh": "分享我的 ID"
+  },
+  "Edit profile": {
+   "de": "Profil bearbeiten",
+   "es": "Editar perfil",
+   "fr": "Modifier le profil",
+   "ja": "プロフィールを編集",
+   "pt": "Editar perfil",
+   "zh": "编辑资料"
+  },
+  "Add as a friend": {
+   "de": "Als Freund hinzufügen",
+   "es": "Añadir como amigo",
+   "fr": "Ajouter en ami",
+   "ja": "友達に追加",
+   "pt": "Adicionar como amigo",
+   "zh": "加为好友"
+  },
+  "Following": {
+   "de": "Folge ich",
+   "es": "Siguiendo",
+   "fr": "Abonné",
+   "ja": "フォロー中",
+   "pt": "Seguindo",
+   "zh": "已关注"
+  },
+  "Follow": {
+   "de": "Folgen",
+   "es": "Seguir",
+   "fr": "Suivre",
+   "ja": "フォロー",
+   "pt": "Seguir",
+   "zh": "关注"
+  },
+  "follows you": {
+   "de": "folgt dir",
+   "es": "te sigue",
+   "fr": "te suit",
+   "ja": "フォローされています",
+   "pt": "segue você",
+   "zh": "关注了你"
+  },
+  "follower": {
+   "de": "Follower",
+   "es": "seguidor",
+   "fr": "abonné",
+   "ja": "フォロワー",
+   "pt": "seguidor",
+   "zh": "粉丝"
+  },
+  "followers": {
+   "de": "Follower",
+   "es": "seguidores",
+   "fr": "abonnés",
+   "ja": "フォロワー",
+   "pt": "seguidores",
+   "zh": "粉丝"
+  },
+  "following": {
+   "de": "folgt",
+   "es": "siguiendo",
+   "fr": "abonnements",
+   "ja": "フォロー中",
+   "pt": "seguindo",
+   "zh": "关注"
+  },
+  "post": {
+   "de": "Post",
+   "es": "publicación",
+   "fr": "post",
+   "ja": "投稿",
+   "pt": "post",
+   "zh": "帖子"
+  },
+  "posts": {
+   "de": "Posts",
+   "es": "publicaciones",
+   "fr": "posts",
+   "ja": "投稿",
+   "pt": "posts",
+   "zh": "帖子"
+  },
+  "reply": {
+   "de": "Antwort",
+   "es": "respuesta",
+   "fr": "réponse",
+   "ja": "返信",
+   "pt": "resposta",
+   "zh": "回复"
+  },
+  "replies": {
+   "de": "Antworten",
+   "es": "respuestas",
+   "fr": "réponses",
+   "ja": "返信",
+   "pt": "respostas",
+   "zh": "回复"
+  },
+  "community": {
+   "de": "Community",
+   "es": "comunidad",
+   "fr": "communauté",
+   "ja": "コミュニティ",
+   "pt": "comunidade",
+   "zh": "社区"
+  },
+  "badge": {
+   "de": "Abzeichen",
+   "es": "insignia",
+   "fr": "badge",
+   "ja": "バッジ",
+   "pt": "selo",
+   "zh": "徽章"
+  },
+  "badges": {
+   "de": "Abzeichen",
+   "es": "insignias",
+   "fr": "badges",
+   "ja": "バッジ",
+   "pt": "selos",
+   "zh": "徽章"
+  },
+  "all badges": {
+   "de": "alle Abzeichen",
+   "es": "todas las insignias",
+   "fr": "tous les badges",
+   "ja": "すべてのバッジ",
+   "pt": "todos os selos",
+   "zh": "全部徽章"
+  },
+  "my work": {
+   "de": "meine arbeit",
+   "es": "mi trabajo",
+   "fr": "mon travail",
+   "ja": "私の実績",
+   "pt": "meu trabalho",
+   "zh": "我的作品"
+  },
+  "work": {
+   "de": "arbeit",
+   "es": "trabajo",
+   "fr": "travail",
+   "ja": "実績",
+   "pt": "trabalho",
+   "zh": "作品"
+  },
+  "my work · available for work": {
+   "de": "meine arbeit · offen für jobs",
+   "es": "mi trabajo · disponible para trabajar",
+   "fr": "mon travail · disponible",
+   "ja": "私の実績 · 仕事募集中",
+   "pt": "meu trabalho · disponível para trabalhar",
+   "zh": "我的作品 · 正在求职"
+  },
+  "work · available for work": {
+   "de": "arbeit · offen für jobs",
+   "es": "trabajo · disponible para trabajar",
+   "fr": "travail · disponible",
+   "ja": "実績 · 仕事募集中",
+   "pt": "trabalho · disponível para trabalhar",
+   "zh": "作品 · 正在求职"
+  },
+  "Add what you build, your hackathons, what is in progress: Edit profile.": {
+   "de": "Füge hinzu, was du baust, deine Hackathons, was gerade läuft: Profil bearbeiten.",
+   "es": "Añade lo que construyes, tus hackathons, lo que está en marcha: Editar perfil.",
+   "fr": "Ajoute ce que tu construis, tes hackathons, ce qui est en cours: Modifier le profil.",
+   "ja": "作ったもの、ハッカソン、進行中のことを追加しましょう: プロフィールを編集。",
+   "pt": "Adicione o que você constrói, seus hackathons, o que está em andamento: Editar perfil.",
+   "zh": "添加你的作品、黑客松和进行中的项目:编辑资料。"
+  },
+  "Nothing shown yet.": {
+   "de": "Noch nichts zu sehen.",
+   "es": "Aún no hay nada.",
+   "fr": "Rien d'affiché pour l'instant.",
+   "ja": "まだ何もありません。",
+   "pt": "Nada exibido ainda.",
+   "zh": "还没有展示内容。"
+  },
+  "Posts": {
+   "de": "Posts",
+   "es": "Publicaciones",
+   "fr": "Posts",
+   "ja": "投稿",
+   "pt": "Posts",
+   "zh": "帖子"
+  },
+  "Replies": {
+   "de": "Antworten",
+   "es": "Respuestas",
+   "fr": "Réponses",
+   "ja": "返信",
+   "pt": "Respostas",
+   "zh": "回复"
+  },
+  "Reposts": {
+   "de": "Reposts",
+   "es": "Republicaciones",
+   "fr": "Republications",
+   "ja": "リポスト",
+   "pt": "Reposts",
+   "zh": "转发"
+  },
+  "Photos & videos": {
+   "de": "Fotos & Videos",
+   "es": "Fotos y vídeos",
+   "fr": "Photos et vidéos",
+   "ja": "写真と動画",
+   "pt": "Fotos e vídeos",
+   "zh": "照片和视频"
+  },
+  "Unfollowed.": {
+   "de": "Entfolgt.",
+   "es": "Has dejado de seguir.",
+   "fr": "Désabonné.",
+   "ja": "フォローを解除しました。",
+   "pt": "Deixou de seguir.",
+   "zh": "已取消关注。"
+  },
+  "your followers": {
+   "de": "deine follower",
+   "es": "tus seguidores",
+   "fr": "tes abonnés",
+   "ja": "あなたのフォロワー",
+   "pt": "seus seguidores",
+   "zh": "你的粉丝"
+  },
+  "who you follow": {
+   "de": "wem du folgst",
+   "es": "a quién sigues",
+   "fr": "tes abonnements",
+   "ja": "フォロー中",
+   "pt": "quem você segue",
+   "zh": "你关注的人"
+  },
+  "Nobody follows you yet. Post, answer people: they come.": {
+   "de": "Noch folgt dir niemand. Poste, antworte anderen: sie kommen.",
+   "es": "Nadie te sigue todavía. Publica, responde a la gente: llegarán.",
+   "fr": "Personne ne te suit encore. Poste, réponds aux gens: ils viendront.",
+   "ja": "まだフォロワーはいません。投稿したり返信したりすれば、人は集まります。",
+   "pt": "Ninguém te segue ainda. Publique, responda às pessoas: elas vêm.",
+   "zh": "还没有人关注你。发帖、回复别人,自然会有人来。"
+  },
+  "No follower yet.": {
+   "de": "Noch keine Follower.",
+   "es": "Aún sin seguidores.",
+   "fr": "Pas encore d'abonné.",
+   "ja": "フォロワーはまだいません。",
+   "pt": "Nenhum seguidor ainda.",
+   "zh": "还没有粉丝。"
+  },
+  "You follow nobody yet. Find people in the feed and follow them.": {
+   "de": "Du folgst noch niemandem. Finde Leute im Feed und folge ihnen.",
+   "es": "Aún no sigues a nadie. Encuentra gente en el feed y síguela.",
+   "fr": "Tu ne suis personne pour l'instant. Trouve des gens dans le fil et suis-les.",
+   "ja": "まだ誰もフォローしていません。フィードで見つけてフォローしましょう。",
+   "pt": "Você ainda não segue ninguém. Encontre pessoas no feed e siga.",
+   "zh": "你还没有关注任何人。去动态里找人关注吧。"
+  },
+  "Follows nobody yet.": {
+   "de": "Folgt noch niemandem.",
+   "es": "Aún no sigue a nadie.",
+   "fr": "Ne suit personne pour l'instant.",
+   "ja": "まだ誰もフォローしていません。",
+   "pt": "Ainda não segue ninguém.",
+   "zh": "还没有关注任何人。"
+  },
+  "in progress": {
+   "de": "in Arbeit",
+   "es": "en curso",
+   "fr": "en cours",
+   "ja": "進行中",
+   "pt": "em andamento",
+   "zh": "进行中"
+  },
+  "project": {
+   "de": "Projekt",
+   "es": "proyecto",
+   "fr": "projet",
+   "ja": "プロジェクト",
+   "pt": "projeto",
+   "zh": "项目"
+  },
+  "hackathon": {
+   "de": "Hackathon",
+   "es": "hackathon",
+   "fr": "hackathon",
+   "ja": "ハッカソン",
+   "pt": "hackathon",
+   "zh": "黑客松"
+  },
+  "liked your post": {
+   "de": "gefällt dein Post",
+   "es": "le gustó tu publicación",
+   "fr": "a aimé ton post",
+   "ja": "があなたの投稿にいいねしました",
+   "pt": "curtiu seu post",
+   "zh": "赞了你的帖子"
+  },
+  "reposted your post": {
+   "de": "hat deinen Post repostet",
+   "es": "republicó tu publicación",
+   "fr": "a republié ton post",
+   "ja": "があなたの投稿をリポストしました",
+   "pt": "repostou seu post",
+   "zh": "转发了你的帖子"
+  },
+  "answered you": {
+   "de": "hat dir geantwortet",
+   "es": "te respondió",
+   "fr": "t'a répondu",
+   "ja": "があなたに返信しました",
+   "pt": "respondeu você",
+   "zh": "回复了你"
+  },
+  "mentioned you": {
+   "de": "hat dich erwähnt",
+   "es": "te mencionó",
+   "fr": "t'a mentionné",
+   "ja": "があなたをメンションしました",
+   "pt": "mencionou você",
+   "zh": "提到了你"
+  },
+  "follows you now": {
+   "de": "folgt dir jetzt",
+   "es": "ahora te sigue",
+   "fr": "te suit maintenant",
+   "ja": "があなたをフォローしました",
+   "pt": "agora segue você",
+   "zh": "关注了你"
+  },
+  "gave you a badge": {
+   "de": "hat dir ein Abzeichen gegeben",
+   "es": "te dio una insignia",
+   "fr": "t'a donné un badge",
+   "ja": "があなたにバッジを贈りました",
+   "pt": "deu um selo para você",
+   "zh": "送了你一枚徽章"
+  },
+  "gave you a badge:": {
+   "de": "hat dir ein Abzeichen gegeben:",
+   "es": "te dio una insignia:",
+   "fr": "t'a donné un badge:",
+   "ja": "がバッジを贈りました:",
+   "pt": "deu um selo para você:",
+   "zh": "送了你一枚徽章:"
+  },
+  "notifications": {
+   "de": "mitteilungen",
+   "es": "notificaciones",
+   "fr": "notifications",
+   "ja": "通知",
+   "pt": "notificações",
+   "zh": "通知"
+  },
+  "Who liked, reposted, answered, followed you, or gave you a badge.": {
+   "de": "Wem dein Post gefällt, wer repostet, antwortet, dir folgt oder dir ein Abzeichen gibt.",
+   "es": "Quién te dio me gusta, republicó, respondió, te siguió o te dio una insignia.",
+   "fr": "Qui t'a aimé, republié, répondu, suivi, ou donné un badge.",
+   "ja": "いいね、リポスト、返信、フォロー、バッジの通知。",
+   "pt": "Quem curtiu, repostou, respondeu, seguiu você ou te deu um selo.",
+   "zh": "谁赞了、转发、回复、关注了你,或送了你徽章。"
+  },
+  "Nothing yet. Post what you build: when people like it, answer or follow you, it shows here.": {
+   "de": "Noch nichts. Poste, was du baust: wenn es Leuten gefällt, sie antworten oder dir folgen, erscheint es hier.",
+   "es": "Nada aún. Publica lo que construyes: cuando a la gente le guste, te responda o te siga, aparecerá aquí.",
+   "fr": "Rien pour l'instant. Poste ce que tu construis: quand on aime, qu'on te répond ou qu'on te suit, ça s'affiche ici.",
+   "ja": "まだ何もありません。作ったものを投稿しましょう。いいね、返信、フォローがここに表示されます。",
+   "pt": "Nada ainda. Publique o que você constrói: quando curtirem, responderem ou te seguirem, aparece aqui.",
+   "zh": "还没有通知。发布你的作品:有人点赞、回复或关注你时,会显示在这里。"
+  },
+  "No post yet. In the feed, your agent can write the first one.": {
+   "de": "Noch kein Post. Im Feed kann dein Agent den ersten schreiben.",
+   "es": "Aún no hay publicaciones. En el feed, tu agente puede escribir la primera.",
+   "fr": "Pas encore de post. Dans le fil, ton agent peut écrire le premier.",
+   "ja": "まだ投稿がありません。フィードでエージェントに最初の投稿を書いてもらえます。",
+   "pt": "Nenhum post ainda. No feed, seu agente pode escrever o primeiro.",
+   "zh": "还没有帖子。在动态里,智能体可以帮你写第一条。"
+  },
+  "No post yet.": {
+   "de": "Noch kein Post.",
+   "es": "Aún no hay publicaciones.",
+   "fr": "Pas encore de post.",
+   "ja": "まだ投稿がありません。",
+   "pt": "Nenhum post ainda.",
+   "zh": "还没有帖子。"
+  },
+  "No reply yet.": {
+   "de": "Noch keine Antwort.",
+   "es": "Aún no hay respuestas.",
+   "fr": "Pas encore de réponse.",
+   "ja": "まだ返信がありません。",
+   "pt": "Nenhuma resposta ainda.",
+   "zh": "还没有回复。"
+  },
+  "Nothing reposted yet.": {
+   "de": "Noch nichts repostet.",
+   "es": "Aún no hay republicaciones.",
+   "fr": "Rien de republié pour l'instant.",
+   "ja": "まだリポストはありません。",
+   "pt": "Nada repostado ainda.",
+   "zh": "还没有转发。"
+  },
+  "Posts with a photo or a video show here.": {
+   "de": "Posts mit Foto oder Video erscheinen hier.",
+   "es": "Las publicaciones con foto o vídeo aparecen aquí.",
+   "fr": "Les posts avec une photo ou une vidéo s'affichent ici.",
+   "ja": "写真や動画付きの投稿がここに表示されます。",
+   "pt": "Posts com foto ou vídeo aparecem aqui.",
+   "zh": "带照片或视频的帖子会显示在这里。"
+  },
+  "Tap one you have to pin it on your page (six at most). Secret badges stay hidden until you find them.": {
+   "de": "Tippe auf eines deiner Abzeichen, um es auf deiner Seite anzuheften (höchstens sechs). Geheime Abzeichen bleiben verborgen, bis du sie findest.",
+   "es": "Toca una que tengas para fijarla en tu página (seis como máximo). Las insignias secretas siguen ocultas hasta que las encuentres.",
+   "fr": "Touche un badge que tu as pour l'épingler sur ta page (six au maximum). Les badges secrets restent cachés jusqu'à ce que tu les trouves.",
+   "ja": "持っているバッジをタップするとページに固定できます(最大6個)。ひみつのバッジは見つけるまで隠れています。",
+   "pt": "Toque em um que você tem para fixar na sua página (seis no máximo). Os selos secretos ficam escondidos até você encontrá-los.",
+   "zh": "点击已获得的徽章即可置顶到主页(最多六个)。秘密徽章在你找到之前都是隐藏的。"
+  },
+  "Nobody says how.": {
+   "de": "Niemand verrät, wie.",
+   "es": "Nadie dice cómo.",
+   "fr": "Personne ne dit comment.",
+   "ja": "条件はひみつです。",
+   "pt": "Ninguém diz como.",
+   "zh": "没人知道怎么拿。"
+  },
+  "event": {
+   "de": "Event",
+   "es": "evento",
+   "fr": "événement",
+   "ja": "イベント",
+   "pt": "evento",
+   "zh": "活动"
+  },
+  "self-certified": {
+   "de": "selbst bestätigt",
+   "es": "autocertificada",
+   "fr": "auto-certifié",
+   "ja": "自己認定",
+   "pt": "autocertificado",
+   "zh": "自我认证"
+  },
+  "a badge for an event": {
+   "de": "ein abzeichen für ein event",
+   "es": "una insignia para un evento",
+   "fr": "un badge pour un événement",
+   "ja": "イベント用のバッジ",
+   "pt": "um selo para um evento",
+   "zh": "为活动制作徽章"
+  },
+  "Make one for a hackathon, a team, a night: it is unique, and you give it to the friends you choose.": {
+   "de": "Mach eins für einen Hackathon, ein Team, eine Nacht: es ist einzigartig, und du gibst es den Freunden, die du auswählst.",
+   "es": "Crea una para un hackathon, un equipo, una noche: es única y se la das a los amigos que elijas.",
+   "fr": "Crée-en un pour un hackathon, une équipe, une soirée: il est unique, et tu le donnes aux amis de ton choix.",
+   "ja": "ハッカソン、チーム、ある夜のために。世界にひとつのバッジを、選んだ友達に贈れます。",
+   "pt": "Crie um para um hackathon, uma equipe, uma noite: ele é único, e você dá para os amigos que escolher.",
+   "zh": "为一次黑客松、一个团队或某个夜晚做一枚:它独一无二,送给你选的好友。"
+  },
+  "its name, like Lanterns · Oct 2026": {
+   "de": "Name, z. B. Lanterns · Okt. 2026",
+   "es": "su nombre, como Lanterns · oct. 2026",
+   "fr": "son nom, comme Lanterns · oct. 2026",
+   "ja": "名前(例: Lanterns · 2026年10月)",
+   "pt": "nome, como Lanterns · out. 2026",
+   "zh": "名称,例如 Lanterns · 2026年10月"
+  },
+  "one line about it": {
+   "de": "eine Zeile dazu",
+   "es": "una línea sobre ella",
+   "fr": "une ligne pour le décrire",
+   "ja": "ひとこと説明",
+   "pt": "uma linha sobre ele",
+   "zh": "一句话介绍"
+  },
+  "Create and give it": {
+   "de": "Erstellen und vergeben",
+   "es": "Crear y dar",
+   "fr": "Créer et donner",
+   "ja": "作成して贈る",
+   "pt": "Criar e dar",
+   "zh": "创建并赠送"
+  },
+  "Not unlocked yet.": {
+   "de": "Noch nicht freigeschaltet.",
+   "es": "Aún no desbloqueada.",
+   "fr": "Pas encore débloqué.",
+   "ja": "まだ獲得していません。",
+   "pt": "Ainda não desbloqueado.",
+   "zh": "尚未解锁。"
+  },
+  "Not pinned.": {
+   "de": "Nicht angeheftet.",
+   "es": "No fijada.",
+   "fr": "Pas épinglé.",
+   "ja": "固定できませんでした。",
+   "pt": "Não fixado.",
+   "zh": "未置顶。"
+  },
+  "Add friends first, in Friends & groups.": {
+   "de": "Füge zuerst Freunde hinzu, unter Freunde & Gruppen.",
+   "es": "Añade amigos primero, en Amigos y grupos.",
+   "fr": "Ajoute d'abord des amis, dans Amis et groupes.",
+   "ja": "まず「友達とグループ」で友達を追加してください。",
+   "pt": "Adicione amigos primeiro, em Amigos e grupos.",
+   "zh": "请先在「好友和群组」中添加好友。"
+  },
+  "Give it a name.": {
+   "de": "Gib ihm einen Namen.",
+   "es": "Ponle un nombre.",
+   "fr": "Donne-lui un nom.",
+   "ja": "名前を付けてください。",
+   "pt": "Dê um nome.",
+   "zh": "请起个名字。"
+  },
+  "Badge created and given.": {
+   "de": "Abzeichen erstellt und vergeben.",
+   "es": "Insignia creada y entregada.",
+   "fr": "Badge créé et donné.",
+   "ja": "バッジを作成して贈りました。",
+   "pt": "Selo criado e entregue.",
+   "zh": "徽章已创建并送出。"
+  },
+  "edit your profile": {
+   "de": "profil bearbeiten",
+   "es": "editar tu perfil",
+   "fr": "modifier ton profil",
+   "ja": "プロフィールを編集",
+   "pt": "editar seu perfil",
+   "zh": "编辑资料"
+  },
+  "Everyone can see it.": {
+   "de": "Alle können es sehen.",
+   "es": "Todo el mundo puede verlo.",
+   "fr": "Tout le monde peut le voir.",
+   "ja": "誰でも見られます。",
+   "pt": "Todo mundo pode ver.",
+   "zh": "所有人都能看到。"
+  },
+  "photo": {
+   "de": "Foto",
+   "es": "foto",
+   "fr": "photo",
+   "ja": "写真",
+   "pt": "foto",
+   "zh": "头像"
+  },
+  "cover": {
+   "de": "Titelbild",
+   "es": "portada",
+   "fr": "couverture",
+   "ja": "カバー",
+   "pt": "capa",
+   "zh": "封面"
+  },
+  "Root's head": {
+   "de": "Roots Kopf",
+   "es": "La cabeza de Root",
+   "fr": "La tête de Root",
+   "ja": "Rootの顔",
+   "pt": "A cabeça do Root",
+   "zh": "Root 的头像"
+  },
+  "first and last name (optional)": {
+   "de": "Vor- und Nachname (optional)",
+   "es": "nombre y apellido (opcional)",
+   "fr": "prénom et nom (facultatif)",
+   "ja": "氏名(任意)",
+   "pt": "nome e sobrenome (opcional)",
+   "zh": "姓名(可选)"
+  },
+  "show": {
+   "de": "anzeigen",
+   "es": "mostrar",
+   "fr": "afficher",
+   "ja": "表示",
+   "pt": "mostrar",
+   "zh": "显示"
+  },
+  "my pseudo": {
+   "de": "mein Pseudonym",
+   "es": "mi seudónimo",
+   "fr": "mon pseudo",
+   "ja": "ニックネーム",
+   "pt": "meu apelido",
+   "zh": "我的昵称"
+  },
+  "my name": {
+   "de": "mein Name",
+   "es": "mi nombre",
+   "fr": "mon nom",
+   "ja": "氏名",
+   "pt": "meu nome",
+   "zh": "我的姓名"
+  },
+  "both": {
+   "de": "beides",
+   "es": "ambos",
+   "fr": "les deux",
+   "ja": "両方",
+   "pt": "ambos",
+   "zh": "都显示"
+  },
+  "right now I am": {
+   "de": "gerade bin ich",
+   "es": "ahora mismo estoy",
+   "fr": "en ce moment je suis",
+   "ja": "現在のステータス",
+   "pt": "agora estou",
+   "zh": "目前我在"
+  },
+  "school or company": {
+   "de": "Schule oder Firma",
+   "es": "escuela o empresa",
+   "fr": "école ou entreprise",
+   "ja": "学校または会社",
+   "pt": "escola ou empresa",
+   "zh": "学校或公司"
+  },
+  "role, or the job you are looking for": {
+   "de": "Rolle oder der Job, den du suchst",
+   "es": "puesto, o el trabajo que buscas",
+   "fr": "poste, ou le job que tu cherches",
+   "ja": "役職、または希望の職種",
+   "pt": "cargo, ou a vaga que você procura",
+   "zh": "职位,或你想找的工作"
+  },
+  "one line about you": {
+   "de": "eine Zeile über dich",
+   "es": "una línea sobre ti",
+   "fr": "une ligne sur toi",
+   "ja": "ひとこと自己紹介",
+   "pt": "uma linha sobre você",
+   "zh": "一句话介绍自己"
+  },
+  "+ a line": {
+   "de": "+ Zeile",
+   "es": "+ una línea",
+   "fr": "+ une ligne",
+   "ja": "+ 行を追加",
+   "pt": "+ uma linha",
+   "zh": "+ 添加一行"
+  },
+  "from my agents": {
+   "de": "von meinen Agenten",
+   "es": "de mis agentes",
+   "fr": "depuis mes agents",
+   "ja": "エージェントから",
+   "pt": "dos meus agentes",
+   "zh": "来自我的智能体"
+  },
+  "my agent and my posts": {
+   "de": "mein agent und meine posts",
+   "es": "mi agente y mis publicaciones",
+   "fr": "mon agent et mes posts",
+   "ja": "エージェントと投稿",
+   "pt": "meu agente e meus posts",
+   "zh": "我的智能体与帖子"
+  },
+  "Proposes a post after a long task": {
+   "de": "Schlägt nach einer langen Aufgabe einen Post vor",
+   "es": "Propone una publicación tras una tarea larga",
+   "fr": "Propose un post après une longue tâche",
+   "ja": "長い作業のあとに投稿を提案",
+   "pt": "Sugere um post depois de uma tarefa longa",
+   "zh": "长任务后建议发帖"
+  },
+  "It writes it from the work, you decide.": {
+   "de": "Er schreibt ihn aus der Arbeit, du entscheidest.",
+   "es": "La escribe a partir del trabajo; tú decides.",
+   "fr": "Il l'écrit à partir du travail, tu décides.",
+   "ja": "作業内容から書き、投稿するかはあなたが決めます。",
+   "pt": "Ele escreve a partir do trabalho, você decide.",
+   "zh": "它根据工作内容撰写,由你决定。"
+  },
+  "Posts it by itself": {
+   "de": "Postet von selbst",
+   "es": "La publica por sí solo",
+   "fr": "Le publie tout seul",
+   "ja": "自動で投稿",
+   "pt": "Publica sozinho",
+   "zh": "自动发布"
+  },
+  "Without asking. Off unless you turn it on.": {
+   "de": "Ohne zu fragen. Aus, bis du es einschaltest.",
+   "es": "Sin preguntar. Desactivado salvo que lo actives.",
+   "fr": "Sans demander. Désactivé tant que tu ne l'actives pas.",
+   "ja": "確認なしで投稿します。オンにしない限りオフです。",
+   "pt": "Sem perguntar. Desativado até você ativar.",
+   "zh": "无需询问。默认关闭,除非你开启。"
+  },
+  "Save": {
+   "de": "Speichern",
+   "es": "Guardar",
+   "fr": "Enregistrer",
+   "ja": "保存",
+   "pt": "Salvar",
+   "zh": "保存"
+  },
+  "title": {
+   "de": "Titel",
+   "es": "título",
+   "fr": "titre",
+   "ja": "タイトル",
+   "pt": "título",
+   "zh": "标题"
+  },
+  "when": {
+   "de": "wann",
+   "es": "cuándo",
+   "fr": "quand",
+   "ja": "時期",
+   "pt": "quando",
+   "zh": "时间"
+  },
+  "one line": {
+   "de": "eine Zeile",
+   "es": "una línea",
+   "fr": "une ligne",
+   "ja": "ひとこと",
+   "pt": "uma linha",
+   "zh": "一句话"
+  },
+  "remove": {
+   "de": "entfernen",
+   "es": "quitar",
+   "fr": "retirer",
+   "ja": "削除",
+   "pt": "remover",
+   "zh": "删除"
+  },
+  "Nothing yet.": {
+   "de": "Noch nichts.",
+   "es": "Nada aún.",
+   "fr": "Rien pour l'instant.",
+   "ja": "まだありません。",
+   "pt": "Nada ainda.",
+   "zh": "暂无内容。"
+  },
+  "Nothing new to suggest.": {
+   "de": "Nichts Neues vorzuschlagen.",
+   "es": "Nada nuevo que sugerir.",
+   "fr": "Rien de nouveau à proposer.",
+   "ja": "新しい提案はありません。",
+   "pt": "Nada novo para sugerir.",
+   "zh": "没有新的建议。"
+  },
+  "Photo ready: it is uploaded when you save.": {
+   "de": "Foto bereit: es wird beim Speichern hochgeladen.",
+   "es": "Foto lista: se sube al guardar.",
+   "fr": "Photo prête: elle sera envoyée à l'enregistrement.",
+   "ja": "写真の準備ができました。保存時にアップロードされます。",
+   "pt": "Foto pronta: ela é enviada quando você salvar.",
+   "zh": "头像已就绪:保存时上传。"
+  },
+  "Cover ready: it is uploaded when you save.": {
+   "de": "Titelbild bereit: es wird beim Speichern hochgeladen.",
+   "es": "Portada lista: se sube al guardar.",
+   "fr": "Couverture prête: elle sera envoyée à l'enregistrement.",
+   "ja": "カバーの準備ができました。保存時にアップロードされます。",
+   "pt": "Capa pronta: ela é enviada quando você salvar.",
+   "zh": "封面已就绪:保存时上传。"
+  },
+  "Back to Root's head.": {
+   "de": "Zurück zu Roots Kopf.",
+   "es": "De vuelta a la cabeza de Root.",
+   "fr": "Retour à la tête de Root.",
+   "ja": "Rootの顔に戻しました。",
+   "pt": "De volta à cabeça do Root.",
+   "zh": "已恢复为 Root 的头像。"
+  },
+  "Your agent will post about long tasks by itself.": {
+   "de": "Dein Agent postet selbst über lange Aufgaben.",
+   "es": "Tu agente publicará por sí solo sobre las tareas largas.",
+   "fr": "Ton agent postera tout seul sur les longues tâches.",
+   "ja": "長い作業について、エージェントが自動で投稿します。",
+   "pt": "Seu agente vai publicar sozinho sobre tarefas longas.",
+   "zh": "智能体会自动为长任务发帖。"
+  },
+  "Saving...": {
+   "de": "Wird gespeichert...",
+   "es": "Guardando...",
+   "fr": "Enregistrement...",
+   "ja": "保存中...",
+   "pt": "Salvando...",
+   "zh": "保存中..."
+  },
+  "Photo upload failed.": {
+   "de": "Foto-Upload fehlgeschlagen.",
+   "es": "Error al subir la foto.",
+   "fr": "Échec de l'envoi de la photo.",
+   "ja": "写真のアップロードに失敗しました。",
+   "pt": "Falha ao enviar a foto.",
+   "zh": "头像上传失败。"
+  },
+  "Cover upload failed.": {
+   "de": "Titelbild-Upload fehlgeschlagen.",
+   "es": "Error al subir la portada.",
+   "fr": "Échec de l'envoi de la couverture.",
+   "ja": "カバーのアップロードに失敗しました。",
+   "pt": "Falha ao enviar a capa.",
+   "zh": "封面上传失败。"
+  },
+  "Profile published.": {
+   "de": "Profil veröffentlicht.",
+   "es": "Perfil publicado.",
+   "fr": "Profil publié.",
+   "ja": "プロフィールを公開しました。",
+   "pt": "Perfil publicado.",
+   "zh": "资料已发布。"
+  },
+  "Not saved.": {
+   "de": "Nicht gespeichert.",
+   "es": "No guardado.",
+   "fr": "Pas enregistré.",
+   "ja": "保存できませんでした。",
+   "pt": "Não salvo.",
+   "zh": "未保存。"
+  },
+  "Your agent posted about your work.": {
+   "de": "Dein Agent hat über deine Arbeit gepostet.",
+   "es": "Tu agente publicó sobre tu trabajo.",
+   "fr": "Ton agent a posté sur ton travail.",
+   "ja": "エージェントがあなたの作業について投稿しました。",
+   "pt": "Seu agente publicou sobre seu trabalho.",
+   "zh": "智能体为你的工作发了帖。"
+  },
+  "your agent wrote a post": {
+   "de": "dein agent hat einen post geschrieben",
+   "es": "tu agente escribió una publicación",
+   "fr": "ton agent a écrit un post",
+   "ja": "エージェントが投稿を書きました",
+   "pt": "seu agente escreveu um post",
+   "zh": "智能体写了一条帖子"
+  },
+  "About the work you just did. Change it if you like, then post it, or not.": {
+   "de": "Über die Arbeit, die du gerade gemacht hast. Ändere ihn, wenn du willst, und poste ihn, oder lass es.",
+   "es": "Sobre el trabajo que acabas de hacer. Cámbiala si quieres y publícala, o no.",
+   "fr": "Sur le travail que tu viens de faire. Modifie-le si tu veux, puis publie-le, ou pas.",
+   "ja": "いま終えた作業についての投稿です。好きに直して投稿しても、しなくてもOK。",
+   "pt": "Sobre o trabalho que você acabou de fazer. Mude se quiser e publique, ou não.",
+   "zh": "关于你刚完成的工作。可以随意修改,发不发都行。"
+  },
+  "Post it": {
+   "de": "Posten",
+   "es": "Publicarla",
+   "fr": "Le publier",
+   "ja": "投稿する",
+   "pt": "Publicar",
+   "zh": "发布"
+  },
+  "Not now": {
+   "de": "Nicht jetzt",
+   "es": "Ahora no",
+   "fr": "Pas maintenant",
+   "ja": "今はしない",
+   "pt": "Agora não",
+   "zh": "以后再说"
+  },
+  "Ask, build, share.": {
+   "de": "Fragen, bauen, teilen.",
+   "es": "Pregunta, crea, comparte.",
+   "fr": "Demander, construire, partager.",
+   "ja": "聞く、作る、共有する。",
+   "pt": "Pergunte, crie, compartilhe.",
+   "zh": "提问、构建、分享。"
+  },
+  "Each one with its agent.": {
+   "de": "Jedes mit seinem Agenten.",
+   "es": "Cada una con su agente.",
+   "fr": "Chacune avec son agent.",
+   "ja": "それぞれのエージェントごとに。",
+   "pt": "Cada uma com seu agente.",
+   "zh": "每个都和它的智能体在一起。"
+  },
+  "Their @, their ID (like vincent#k7f2qa9m) or their QR code.": {
+   "de": "Ihr @, ihre ID (wie vincent#k7f2qa9m) oder ihr QR-Code.",
+   "es": "Su @, su ID (como vincent#k7f2qa9m) o su código QR.",
+   "fr": "Son @, son identifiant (comme vincent#k7f2qa9m) ou son QR code.",
+   "ja": "相手の@、ID(例: vincent#k7f2qa9m)、またはQRコード。",
+   "pt": "O @, o ID (como vincent#k7f2qa9m) ou o QR code.",
+   "zh": "对方的 @、ID(如 vincent#k7f2qa9m)或二维码。"
+  },
+  "An idea? Claude builds it in your GitHub repositories, even with your computer off.": {
+   "de": "Eine Idee? Claude baut sie in deinen GitHub-Repos, auch wenn dein Computer aus ist.",
+   "es": "¿Una idea? Claude la construye en tus repositorios de GitHub, incluso con tu ordenador apagado.",
+   "fr": "Une idée ? Claude la construit dans tes dépôts GitHub, même ordinateur éteint.",
+   "ja": "アイデアがある?パソコンがオフでも、ClaudeがGitHubのリポジトリで作ります。",
+   "pt": "Uma ideia? O Claude a constrói nos seus repositórios do GitHub, mesmo com o computador desligado.",
+   "zh": "有想法?即使电脑关着,Claude 也会在你的 GitHub 仓库里把它做出来。"
+  },
+  "The words of AI and code. Tap one to ask your agent.": {
+   "de": "Die Wörter von KI und Code. Tippe auf eines, um deinen Agenten zu fragen.",
+   "es": "Las palabras de la IA y el código. Toca una para preguntar a tu agente.",
+   "fr": "Les mots de l'IA et du code. Touche-en un pour demander à ton agent.",
+   "ja": "AIとコードの言葉。タップしてエージェントに聞こう。",
+   "pt": "As palavras da IA e do código. Toque em uma para perguntar ao seu agente.",
+   "zh": "AI 与代码的词汇。点一个问问你的智能体。"
+  },
+  "What people build with their agents.": {
+   "de": "Was Leute mit ihren Agenten bauen.",
+   "es": "Lo que la gente crea con sus agentes.",
+   "fr": "Ce que les gens construisent avec leurs agents.",
+   "ja": "みんながエージェントと作っているもの。",
+   "pt": "O que as pessoas criam com seus agentes.",
+   "zh": "大家用智能体做出的东西。"
+  },
+  "One field each, to go deeper.": {
+   "de": "Ein Thema pro Community, um tiefer zu gehen.",
+   "es": "Un tema cada una, para profundizar.",
+   "fr": "Un domaine chacune, pour aller plus loin.",
+   "ja": "テーマごとに、もっと深く。",
+   "pt": "Um tema cada, para ir mais fundo.",
+   "zh": "每个一个领域,深入探索。"
+  },
+  "One field, to go deeper. Anyone can post in it.": {
+   "de": "Ein Thema, um tiefer zu gehen. Jeder kann posten.",
+   "es": "Un tema, para profundizar. Cualquiera puede publicar.",
+   "fr": "Un domaine, pour aller plus loin. Tout le monde peut y poster.",
+   "ja": "ひとつのテーマを深く。誰でも投稿できます。",
+   "pt": "Um tema, para ir mais fundo. Qualquer pessoa pode postar.",
+   "zh": "一个领域,深入探索。任何人都可以发帖。"
+  },
+  "What people did with your posts.": {
+   "de": "Was andere mit deinen Posts gemacht haben.",
+   "es": "Lo que la gente hizo con tus publicaciones.",
+   "fr": "Ce que les gens ont fait de tes posts.",
+   "ja": "あなたの投稿への反応。",
+   "pt": "O que as pessoas fizeram com seus posts.",
+   "zh": "大家对你帖子的互动。"
+  },
+  "Communities": {
+   "de": "Communities",
+   "es": "Comunidades",
+   "fr": "Communautés",
+   "ja": "コミュニティ",
+   "pt": "Comunidades",
+   "zh": "社区"
+  },
+  "+ a new community": {
+   "de": "+ neue Community",
+   "es": "+ nueva comunidad",
+   "fr": "+ une nouvelle communauté",
+   "ja": "+ 新しいコミュニティ",
+   "pt": "+ nova comunidade",
+   "zh": "+ 新建社区"
+  },
+  "Join": {
+   "de": "Beitreten",
+   "es": "Unirse",
+   "fr": "Rejoindre",
+   "ja": "参加",
+   "pt": "Entrar",
+   "zh": "加入"
+  },
+  "Joined": {
+   "de": "Beigetreten",
+   "es": "Te uniste",
+   "fr": "Membre",
+   "ja": "参加中",
+   "pt": "Participando",
+   "zh": "已加入"
+  },
+  "Joined.": {
+   "de": "Beigetreten.",
+   "es": "Te uniste.",
+   "fr": "Rejoint.",
+   "ja": "参加しました。",
+   "pt": "Você entrou.",
+   "zh": "已加入。"
+  },
+  "Left.": {
+   "de": "Verlassen.",
+   "es": "Saliste.",
+   "fr": "Quitté.",
+   "ja": "退出しました。",
+   "pt": "Você saiu.",
+   "zh": "已退出。"
+  },
+  "Post here": {
+   "de": "Hier posten",
+   "es": "Publicar aquí",
+   "fr": "Poster ici",
+   "ja": "ここに投稿",
+   "pt": "Postar aqui",
+   "zh": "在这里发帖"
+  },
+  "Nobody has posted here yet. Be the first.": {
+   "de": "Hier hat noch niemand gepostet. Sei die erste Person.",
+   "es": "Nadie ha publicado aquí todavía. Sé el primero.",
+   "fr": "Personne n'a encore posté ici. Sois le premier.",
+   "ja": "まだ投稿がありません。最初の投稿をしよう。",
+   "pt": "Ninguém postou aqui ainda. Seja o primeiro.",
+   "zh": "这里还没有人发帖。来做第一个吧。"
+  },
+  "your @, like on X: the first to take a name keeps it": {
+   "de": "dein @, wie auf X: wer einen Namen zuerst nimmt, behält ihn",
+   "es": "tu @, como en X: quien toma un nombre primero se lo queda",
+   "fr": "ton @, comme sur X : le premier qui prend un nom le garde",
+   "ja": "あなたの@(Xと同じく、早い者勝ち)",
+   "pt": "seu @, como no X: quem pega um nome primeiro fica com ele",
+   "zh": "你的 @,和 X 一样:先到先得"
+  },
+  "Take it": {
+   "de": "Nehmen",
+   "es": "Tomarlo",
+   "fr": "Le prendre",
+   "ja": "取得",
+   "pt": "Pegar",
+   "zh": "占用"
+  },
+  "Checking...": {
+   "de": "Prüfe...",
+   "es": "Comprobando...",
+   "fr": "Vérification...",
+   "ja": "確認中...",
+   "pt": "Verificando...",
+   "zh": "检查中..."
+  },
+  "@yourname": {
+   "de": "@deinname",
+   "es": "@tunombre",
+   "fr": "@tonnom",
+   "ja": "@なまえ",
+   "pt": "@seunome",
+   "zh": "@你的名字"
+  },
+  "find someone: @name, pseudo#code or npub": {
+   "de": "jemanden finden: @name, pseudo#code oder npub",
+   "es": "buscar a alguien: @nombre, pseudo#código o npub",
+   "fr": "trouver quelqu'un : @nom, pseudo#code ou npub",
+   "ja": "人を探す: @名前、pseudo#code、npub",
+   "pt": "encontrar alguém: @nome, pseudo#código ou npub",
+   "zh": "找人:@名字、pseudo#code 或 npub"
+  },
+  "3 to 20 letters, digits or _.": {
+   "de": "3 bis 20 Buchstaben, Ziffern oder _.",
+   "es": "De 3 a 20 letras, cifras o _.",
+   "fr": "3 à 20 lettres, chiffres ou _.",
+   "ja": "3〜20文字の英字、数字、_。",
+   "pt": "De 3 a 20 letras, números ou _.",
+   "zh": "3 到 20 个字母、数字或 _。"
+  },
+  "language": {
+   "de": "sprache",
+   "es": "idioma",
+   "fr": "langue",
+   "ja": "言語",
+   "pt": "idioma",
+   "zh": "语言"
+  },
+  "phone": {
+   "de": "telefon",
+   "es": "teléfono",
+   "fr": "téléphone",
+   "ja": "スマホ",
+   "pt": "telefone",
+   "zh": "手机"
+  },
+  "No password at launch": {
+   "de": "Kein Passwort beim Start",
+   "es": "Sin contraseña al abrir",
+   "fr": "Pas de mot de passe au lancement",
+   "ja": "起動時にパスワード不要",
+   "pt": "Sem senha ao abrir",
+   "zh": "启动时无需密码"
+  },
+  "Sync my devices": {
+   "de": "Meine Geräte synchronisieren",
+   "es": "Sincronizar mis dispositivos",
+   "fr": "Synchroniser mes appareils",
+   "ja": "デバイスを同期",
+   "pt": "Sincronizar meus dispositivos",
+   "zh": "同步我的设备"
+  },
+  "Sealed, on relays": {
+   "de": "Versiegelt, auf Relays",
+   "es": "Sellado, en relays",
+   "fr": "Scellé, sur des relais",
+   "ja": "暗号化してリレーに保存",
+   "pt": "Selado, em relays",
+   "zh": "加密后存于中继"
+  },
+  "Friends can add you": {
+   "de": "Freunde können dich hinzufügen",
+   "es": "Tus amigos pueden añadirte",
+   "fr": "Tes amis peuvent t'ajouter",
+   "ja": "友達があなたを追加できます",
+   "pt": "Amigos podem te adicionar",
+   "zh": "朋友可以添加你"
+  },
+  "Password": {
+   "de": "Passwort",
+   "es": "Contraseña",
+   "fr": "Mot de passe",
+   "ja": "パスワード",
+   "pt": "Senha",
+   "zh": "密码"
+  },
+  "Recovery kit": {
+   "de": "Wiederherstellung",
+   "es": "Kit de recuperación",
+   "fr": "Kit de secours",
+   "ja": "復元キット",
+   "pt": "Kit de recuperação",
+   "zh": "恢复工具包"
+  },
+  "Sign out": {
+   "de": "Abmelden",
+   "es": "Cerrar sesión",
+   "fr": "Se déconnecter",
+   "ja": "ログアウト",
+   "pt": "Sair",
+   "zh": "退出登录"
+  },
+  "Your phone drives this computer": {
+   "de": "Dein Telefon steuert diesen Computer",
+   "es": "Tu teléfono controla este ordenador",
+   "fr": "Ton téléphone pilote cet ordinateur",
+   "ja": "スマホでこのパソコンを操作",
+   "pt": "Seu celular controla este computador",
+   "zh": "用手机控制这台电脑"
+  },
+  "Same Wi-Fi: open in Safari": {
+   "de": "Gleiches WLAN: in Safari öffnen",
+   "es": "Misma wifi: abrir en Safari",
+   "fr": "Même Wi-Fi : ouvrir dans Safari",
+   "ja": "同じWi-Fiで、Safariで開く",
+   "pt": "Mesmo Wi-Fi: abrir no Safari",
+   "zh": "同一 Wi-Fi:在 Safari 中打开"
+  },
+  "Vibe code from the phone": {
+   "de": "Vibe-Coding vom Telefon",
+   "es": "Vibe coding desde el teléfono",
+   "fr": "Vibe coder depuis le téléphone",
+   "ja": "スマホからバイブコーディング",
+   "pt": "Vibe coding pelo celular",
+   "zh": "用手机 vibe coding"
+  },
+  "Link a phone (QR code)": {
+   "de": "Telefon verbinden (QR-Code)",
+   "es": "Vincular un teléfono (QR)",
+   "fr": "Relier un téléphone (QR code)",
+   "ja": "スマホを接続(QRコード)",
+   "pt": "Conectar um celular (QR code)",
+   "zh": "连接手机(二维码)"
+  },
+  "source": {
+   "de": "Quellcode",
+   "es": "código fuente",
+   "fr": "code source",
+   "ja": "ソース",
+   "pt": "código-fonte",
+   "zh": "源代码"
+  }
+ },
+ "patterns": [
+  {
+   "en": "^@(\\S+) is taken\\.$",
+   "de": "@$1 ist vergeben.",
+   "es": "@$1 ya está ocupado.",
+   "fr": "@$1 est déjà pris.",
+   "ja": "@$1 は使用済みです。",
+   "pt": "@$1 já está em uso.",
+   "zh": "@$1 已被占用。"
+  },
+  {
+   "en": "^@(\\S+) is yours\\.$",
+   "de": "@$1 gehört dir.",
+   "es": "@$1 es tuyo.",
+   "fr": "@$1 est à toi.",
+   "ja": "@$1 はあなたのものです。",
+   "pt": "@$1 é seu.",
+   "zh": "@$1 归你了。"
+  },
+  {
+   "en": "^word number (\\d+)$",
+   "de": "Wort Nr. $1",
+   "es": "palabra n.º $1",
+   "fr": "mot n° $1",
+   "ja": "$1番目の単語",
+   "pt": "palavra nº $1",
+   "zh": "第 $1 个词"
+  },
+  {
+   "en": "^all set, (.+)$",
+   "de": "alles bereit, $1",
+   "es": "todo listo, $1",
+   "fr": "c'est prêt, $1",
+   "ja": "準備完了、$1さん",
+   "pt": "tudo pronto, $1",
+   "zh": "一切就绪,$1"
+  },
+  {
+   "en": "^hi (.+)$",
+   "de": "hallo $1",
+   "es": "hola, $1",
+   "fr": "salut $1",
+   "ja": "こんにちは、$1さん",
+   "pt": "oi, $1",
+   "zh": "你好,$1"
+  },
+  {
+   "en": "^ready, with your Claude account \\((.+)\\)$",
+   "de": "bereit, mit deinem Claude-Konto ($1)",
+   "es": "listo, con tu cuenta de Claude ($1)",
+   "fr": "prêt, avec ton compte Claude ($1)",
+   "ja": "準備完了(Claudeアカウント・$1)",
+   "pt": "pronto, com sua conta Claude ($1)",
+   "zh": "已就绪,使用你的 Claude 账号($1)"
+  },
+  {
+   "en": "^(\\d+) local models, free and offline$",
+   "de": "$1 lokale Modelle, kostenlos und offline",
+   "es": "$1 modelos locales, gratis y sin conexión",
+   "fr": "$1 modèles locaux, gratuits et hors ligne",
+   "ja": "ローカルモデル $1 個、無料・オフライン",
+   "pt": "$1 modelos locais, grátis e offline",
+   "zh": "$1 个本地模型,免费且可离线"
+  },
+  {
+   "en": "^signed in as (.+)$",
+   "de": "angemeldet als $1",
+   "es": "sesión iniciada como $1",
+   "fr": "connecté en tant que $1",
+   "ja": "$1 としてサインイン中",
+   "pt": "conectado como $1",
+   "zh": "已登录为 $1"
+  },
+  {
+   "en": "^(sk-\\S*) \\(optional\\)$",
+   "de": "$1 (optional)",
+   "es": "$1 (opcional)",
+   "fr": "$1 (facultatif)",
+   "ja": "$1(任意)",
+   "pt": "$1 (opcional)",
+   "zh": "$1(可选)"
+  },
+  {
+   "en": "^(.+ · )?effort (\\S+)$",
+   "de": "$1Aufwand $2",
+   "es": "$1esfuerzo $2",
+   "fr": "$1effort $2",
+   "ja": "$1思考量 $2",
+   "pt": "$1esforço $2",
+   "zh": "$1力度 $2"
+  },
+  {
+   "en": "^using (.+)$",
+   "de": "nutzt $1",
+   "es": "usando $1",
+   "fr": "utilise $1",
+   "ja": "$1 を使用中",
+   "pt": "usando $1",
+   "zh": "正在使用 $1"
+  },
+  {
+   "en": "^all · (\\d+)$",
+   "de": "alle · $1",
+   "es": "todas · $1",
+   "fr": "toutes · $1",
+   "ja": "すべて · $1",
+   "pt": "todas · $1",
+   "zh": "全部 · $1"
+  },
+  {
+   "en": "^with (.+) · now$",
+   "de": "mit $1 · jetzt",
+   "es": "con $1 · ahora",
+   "fr": "avec $1 · à l'instant",
+   "ja": "$1 · たった今",
+   "pt": "com $1 · agora",
+   "zh": "使用 $1 · 刚刚"
+  },
+  {
+   "en": "^with (.+) · (\\d+) min$",
+   "de": "mit $1 · $2 Min.",
+   "es": "con $1 · $2 min",
+   "fr": "avec $1 · $2 min",
+   "ja": "$1 · $2分",
+   "pt": "com $1 · $2 min",
+   "zh": "使用 $1 · $2分钟"
+  },
+  {
+   "en": "^with (.+) · (\\d+) h$",
+   "de": "mit $1 · $2 Std.",
+   "es": "con $1 · $2 h",
+   "fr": "avec $1 · $2 h",
+   "ja": "$1 · $2時間",
+   "pt": "com $1 · $2 h",
+   "zh": "使用 $1 · $2小时"
+  },
+  {
+   "en": "^with (.+) · (\\d+) d$",
+   "de": "mit $1 · $2 T.",
+   "es": "con $1 · $2 d",
+   "fr": "avec $1 · $2 j",
+   "ja": "$1 · $2日",
+   "pt": "com $1 · $2 d",
+   "zh": "使用 $1 · $2天"
+  },
+  {
+   "en": "^with (.+)$",
+   "de": "mit $1",
+   "es": "con $1",
+   "fr": "avec $1",
+   "ja": "$1 との会話",
+   "pt": "com $1",
+   "zh": "使用 $1"
+  },
+  {
+   "en": "^Continue with (?!my agent$)(.+)$",
+   "de": "Mit $1 weitermachen",
+   "es": "Continuar con $1",
+   "fr": "Continuer avec $1",
+   "ja": "$1 で続ける",
+   "pt": "Continuar com $1",
+   "zh": "用 $1 继续"
+  },
+  {
+   "en": "^Message (.+), sealed$",
+   "de": "Nachricht an $1, versiegelt",
+   "es": "Mensaje a $1, sellado",
+   "fr": "Message à $1, scellé",
+   "ja": "$1 へのメッセージ(暗号化)",
+   "pt": "Mensagem para $1, selada",
+   "zh": "发消息给 $1(加密)"
+  },
+  {
+   "en": "^You shared: (.+)$",
+   "de": "Du hast geteilt: $1",
+   "es": "Compartiste: $1",
+   "fr": "Tu as partagé: $1",
+   "ja": "あなたが共有: $1",
+   "pt": "Você compartilhou: $1",
+   "zh": "你分享了:$1"
+  },
+  {
+   "en": "^shared: (.+)$",
+   "de": "geteilt: $1",
+   "es": "compartido: $1",
+   "fr": "partagé: $1",
+   "ja": "共有: $1",
+   "pt": "compartilhado: $1",
+   "zh": "分享了:$1"
+  },
+  {
+   "en": "^(.+) shared: (.+)$",
+   "de": "$1 hat geteilt: $2",
+   "es": "$1 compartió: $2",
+   "fr": "$1 a partagé: $2",
+   "ja": "$1 が共有: $2",
+   "pt": "$1 compartilhou: $2",
+   "zh": "$1 分享了:$2"
+  },
+  {
+   "en": "^an agent · (\\d+) messages$",
+   "de": "ein Agent · $1 Nachrichten",
+   "es": "un agente · $1 mensajes",
+   "fr": "un agent · $1 messages",
+   "ja": "エージェント · $1件のメッセージ",
+   "pt": "um agente · $1 mensagens",
+   "zh": "某个智能体 · $1 条消息"
+  },
+  {
+   "en": "^(.+) · (\\d+) messages$",
+   "de": "$1 · $2 Nachrichten",
+   "es": "$1 · $2 mensajes",
+   "fr": "$1 · $2 messages",
+   "ja": "$1 · $2件のメッセージ",
+   "pt": "$1 · $2 mensagens",
+   "zh": "$1 · $2 条消息"
+  },
+  {
+   "en": "^From (.+): your agent continues with this as context\\.$",
+   "de": "Von $1: dein Agent macht mit diesem Kontext weiter.",
+   "es": "De $1: tu agente sigue con esto como contexto.",
+   "fr": "De $1: ton agent continue avec ça comme contexte.",
+   "ja": "$1 から: これを文脈としてエージェントが続けます。",
+   "pt": "De $1: seu agente continua com isso como contexto.",
+   "zh": "来自 $1:智能体会以此为上下文继续。"
+  },
+  {
+   "en": "^\\+ new repository: (.+)$",
+   "de": "+ neues Repository: $1",
+   "es": "+ repositorio nuevo: $1",
+   "fr": "+ nouveau dépôt: $1",
+   "ja": "+ 新しいリポジトリ: $1",
+   "pt": "+ novo repositório: $1",
+   "zh": "+ 新仓库:$1"
+  },
+  {
+   "en": "^new: (.+)$",
+   "de": "neu: $1",
+   "es": "nuevo: $1",
+   "fr": "nouveau: $1",
+   "ja": "新規: $1",
+   "pt": "novo: $1",
+   "zh": "新建:$1"
+  },
+  {
+   "en": "^learned · (.+)$",
+   "de": "gelernt · $1",
+   "es": "aprendida · $1",
+   "fr": "appris · $1",
+   "ja": "学習 · $1",
+   "pt": "aprendida · $1",
+   "zh": "学到 · $1"
+  },
+  {
+   "en": "^1 words?$",
+   "de": "1 Begriff",
+   "es": "1 palabra",
+   "fr": "1 mot",
+   "ja": "1 語",
+   "pt": "1 palavra",
+   "zh": "1 个词条"
+  },
+  {
+   "en": "^(\\d+) words?$",
+   "de": "$1 Begriffe",
+   "es": "$1 palabras",
+   "fr": "$1 mots",
+   "ja": "$1 語",
+   "pt": "$1 palavras",
+   "zh": "$1 个词条"
+  },
+  {
+   "en": "^ask (.+) about it$",
+   "de": "frag $1 danach",
+   "es": "pregúntale a $1",
+   "fr": "demander à $1",
+   "ja": "$1 に聞く",
+   "pt": "pergunte a $1",
+   "zh": "问问 $1"
+  },
+  {
+   "en": "^a question about (.+)\\.\\.\\.$",
+   "de": "eine Frage zu $1...",
+   "es": "una pregunta sobre $1...",
+   "fr": "une question sur $1...",
+   "ja": "$1 について質問...",
+   "pt": "uma pergunta sobre $1...",
+   "zh": "关于 $1 的问题..."
+  },
+  {
+   "en": "^📖 New word: (.+)$",
+   "de": "📖 Neuer Begriff: $1",
+   "es": "📖 Palabra nueva: $1",
+   "fr": "📖 Nouveau mot: $1",
+   "ja": "📖 新しい用語: $1",
+   "pt": "📖 Palavra nova: $1",
+   "zh": "📖 新词条:$1"
+  },
+  {
+   "en": "^📖 New words: (.+)$",
+   "de": "📖 Neue Begriffe: $1",
+   "es": "📖 Palabras nuevas: $1",
+   "fr": "📖 Nouveaux mots: $1",
+   "ja": "📖 新しい用語: $1",
+   "pt": "📖 Palavras novas: $1",
+   "zh": "📖 新词条:$1"
+  },
+  {
+   "en": "^(.+): a public card lets friends add you by this ID$",
+   "de": "$1: über eine öffentliche Karte können Freunde dich mit dieser ID hinzufügen",
+   "es": "$1: una tarjeta pública permite que tus amigos te añadan con este ID",
+   "fr": "$1: une fiche publique permet à tes amis de t'ajouter avec cet ID",
+   "ja": "$1: 公開カードで、友達がこのIDからあなたを追加できます",
+   "pt": "$1: um cartão público permite que amigos te adicionem por este ID",
+   "zh": "$1:公开名片让好友可以通过这个 ID 添加你"
+  },
+  {
+   "en": "^reposted by (.+)$",
+   "de": "repostet von $1",
+   "es": "republicado por $1",
+   "fr": "republié par $1",
+   "ja": "$1 がリポスト",
+   "pt": "repostado por $1",
+   "zh": "$1 转发了"
+  },
+  {
+   "en": "^written with (.+)$",
+   "de": "geschrieben mit $1",
+   "es": "escrito con $1",
+   "fr": "écrit avec $1",
+   "ja": "$1 で作成",
+   "pt": "escrito com $1",
+   "zh": "使用 $1 撰写"
+  },
+  {
+   "en": "^Examples only\\. (.*)$",
+   "de": "Nur Beispiele. $1",
+   "es": "Solo ejemplos. $1",
+   "fr": "Exemples seulement. $1",
+   "ja": "サンプルのみ表示中。$1",
+   "pt": "Só exemplos. $1",
+   "zh": "仅显示示例。$1"
+  },
+  {
+   "en": "^New badge: (.+)$",
+   "de": "Neues Abzeichen: $1",
+   "es": "Insignia nueva: $1",
+   "fr": "Nouveau badge: $1",
+   "ja": "新しいバッジ: $1",
+   "pt": "Selo novo: $1",
+   "zh": "新徽章:$1"
+  },
+  {
+   "en": "^(.+)'s followers$",
+   "de": "Follower von $1",
+   "es": "seguidores de $1",
+   "fr": "abonnés de $1",
+   "ja": "$1 のフォロワー",
+   "pt": "seguidores de $1",
+   "zh": "$1 的粉丝"
+  },
+  {
+   "en": "^who (.+) follows$",
+   "de": "wem $1 folgt",
+   "es": "a quién sigue $1",
+   "fr": "abonnements de $1",
+   "ja": "$1 がフォロー中",
+   "pt": "quem $1 segue",
+   "zh": "$1 关注的人"
+  },
+  {
+   "en": "^What (.+) has earned\\.$",
+   "de": "Was $1 verdient hat.",
+   "es": "Lo que $1 ha conseguido.",
+   "fr": "Ce que $1 a gagné.",
+   "ja": "$1 が獲得したバッジ。",
+   "pt": "O que $1 conquistou.",
+   "zh": "$1 获得的徽章。"
+  },
+  {
+   "en": "^from (?!the days |my agents$)(.+)$",
+   "de": "von $1",
+   "es": "de $1",
+   "fr": "de $1",
+   "ja": "$1 から",
+   "pt": "de $1",
+   "zh": "来自 $1"
+  },
+  {
+   "en": "^Your ID is copied: (.+)$",
+   "de": "Deine ID ist kopiert: $1",
+   "es": "Tu ID se ha copiado: $1",
+   "fr": "Ton ID est copié: $1",
+   "ja": "IDをコピーしました: $1",
+   "pt": "Seu ID foi copiado: $1",
+   "zh": "你的 ID 已复制:$1"
+  },
+  {
+   "en": "^You follow (.+): their posts come to your feed\\.$",
+   "de": "Du folgst $1: die Posts landen in deinem Feed.",
+   "es": "Sigues a $1: sus publicaciones llegan a tu feed.",
+   "fr": "Tu suis $1: ses posts arrivent dans ton fil.",
+   "ja": "$1 をフォローしました。投稿がフィードに届きます。",
+   "pt": "Você segue $1: os posts chegam ao seu feed.",
+   "zh": "已关注 $1:对方的帖子会出现在你的动态里。"
+  },
+  {
+   "en": "^(.+) is in your friends\\.$",
+   "de": "$1 ist jetzt bei deinen Freunden.",
+   "es": "$1 ya está en tus amigos.",
+   "fr": "$1 est dans tes amis.",
+   "ja": "$1 を友達に追加しました。",
+   "pt": "$1 está nos seus amigos.",
+   "zh": "$1 已加入你的好友。"
+  },
+  {
+   "en": "^(\\d+) line\\(s\\) from your conversations: keep what you want\\.$",
+   "de": "$1 Zeile(n) aus deinen Unterhaltungen: behalte, was du willst.",
+   "es": "$1 línea(s) de tus conversaciones: quédate con lo que quieras.",
+   "fr": "$1 ligne(s) tirée(s) de tes conversations: garde ce que tu veux.",
+   "ja": "会話から $1 行: 残したいものだけ残してください。",
+   "pt": "$1 linha(s) das suas conversas: fique com o que quiser.",
+   "zh": "从你的对话中提取了 $1 行:保留你想要的。"
+  },
+  {
+   "en": "^(@.+) · looking for a job$",
+   "de": "$1 · suche einen Job",
+   "es": "$1 · buscando trabajo",
+   "fr": "$1 · en recherche d'emploi",
+   "ja": "$1 · 求職中",
+   "pt": "$1 · procurando emprego",
+   "zh": "$1 · 求职中"
+  },
+  {
+   "en": "^Your workshop: (.+)\\. Claude can work in any of your repositories\\.$",
+   "de": "Deine Werkstatt: $1. Claude kann in jedem deiner Repositories arbeiten.",
+   "es": "Tu taller: $1. Claude puede trabajar en cualquiera de tus repositorios.",
+   "fr": "Ton atelier: $1. Claude peut travailler dans n'importe lequel de tes dépôts.",
+   "ja": "作業場: $1。Claudeはあなたのどのリポジトリでも作業できます。",
+   "pt": "Sua oficina: $1. O Claude pode trabalhar em qualquer repositório seu.",
+   "zh": "你的工作间:$1。Claude 可以在你的任何仓库中工作。"
+  },
+  {
+   "en": "^A private repository, (.+), where your ideas wait for Claude\\.$",
+   "de": "Ein privates Repository, $1, in dem deine Ideen auf Claude warten.",
+   "es": "Un repositorio privado, $1, donde tus ideas esperan a Claude.",
+   "fr": "Un dépôt privé, $1, où tes idées attendent Claude.",
+   "ja": "非公開リポジトリ $1。ここでアイデアがClaudeを待ちます。",
+   "pt": "Um repositório privado, $1, onde suas ideias esperam o Claude.",
+   "zh": "一个私有仓库 $1,你的想法在这里等 Claude 处理。"
+  },
+  {
+   "en": "^(.+) In a terminal \\(root-harness never sees them\\):$",
+   "de": "$1 Im Terminal (root-harness sieht sie nie):",
+   "es": "$1 En una terminal (root-harness nunca las ve):",
+   "fr": "$1 Dans un terminal (root-harness ne les voit jamais):",
+   "ja": "$1 ターミナルで実行してください(root-harnessからは見えません):",
+   "pt": "$1 Num terminal (o root-harness nunca vê):",
+   "zh": "$1 请在终端中执行(root-harness 看不到它们):"
+  },
+  {
+   "en": "^Could not reach the relays: (.+)$",
+   "de": "Relays nicht erreichbar: $1",
+   "es": "No se pudo conectar con los relays: $1",
+   "fr": "Impossible de joindre les relais: $1",
+   "ja": "リレーに接続できません: $1",
+   "pt": "Não foi possível alcançar os relays: $1",
+   "zh": "无法连接中继:$1"
+  },
+  {
+   "en": "^post by (.+)$",
+   "de": "Post von $1",
+   "es": "publicación de $1",
+   "fr": "post de $1",
+   "ja": "$1 の投稿",
+   "pt": "post de $1",
+   "zh": "$1 的帖子"
+  },
+  {
+   "en": "^1 follower$",
+   "de": "1 Follower",
+   "es": "1 seguidor",
+   "fr": "1 abonné",
+   "ja": "フォロワー 1",
+   "pt": "1 seguidor",
+   "zh": "1 粉丝"
+  },
+  {
+   "en": "^(\\d+) followers$",
+   "de": "$1 Follower",
+   "es": "$1 seguidores",
+   "fr": "$1 abonnés",
+   "ja": "フォロワー $1",
+   "pt": "$1 seguidores",
+   "zh": "$1 粉丝"
+  },
+  {
+   "en": "^(\\d+) following$",
+   "de": "$1 gefolgt",
+   "es": "$1 siguiendo",
+   "fr": "$1 abonnements",
+   "ja": "フォロー中 $1",
+   "pt": "$1 seguindo",
+   "zh": "$1 关注"
+  },
+  {
+   "en": "^1 post$",
+   "de": "1 Post",
+   "es": "1 publicación",
+   "fr": "1 post",
+   "ja": "投稿 1",
+   "pt": "1 post",
+   "zh": "1 帖子"
+  },
+  {
+   "en": "^(\\d+) posts$",
+   "de": "$1 Posts",
+   "es": "$1 publicaciones",
+   "fr": "$1 posts",
+   "ja": "投稿 $1",
+   "pt": "$1 posts",
+   "zh": "$1 帖子"
+  },
+  {
+   "en": "^1 reply$",
+   "de": "1 Antwort",
+   "es": "1 respuesta",
+   "fr": "1 réponse",
+   "ja": "返信 1",
+   "pt": "1 resposta",
+   "zh": "1 回复"
+  },
+  {
+   "en": "^(\\d+) replies$",
+   "de": "$1 Antworten",
+   "es": "$1 respuestas",
+   "fr": "$1 réponses",
+   "ja": "返信 $1",
+   "pt": "$1 respostas",
+   "zh": "$1 回复"
+  },
+  {
+   "en": "^1 community$",
+   "de": "1 Community",
+   "es": "1 comunidad",
+   "fr": "1 communauté",
+   "ja": "コミュニティ 1",
+   "pt": "1 comunidade",
+   "zh": "1 社区"
+  },
+  {
+   "en": "^(\\d+) communities$",
+   "de": "$1 Communities",
+   "es": "$1 comunidades",
+   "fr": "$1 communautés",
+   "ja": "コミュニティ $1",
+   "pt": "$1 comunidades",
+   "zh": "$1 社区"
+  },
+  {
+   "en": "^1 badge$",
+   "de": "1 Abzeichen",
+   "es": "1 insignia",
+   "fr": "1 badge",
+   "ja": "バッジ 1",
+   "pt": "1 selo",
+   "zh": "1 徽章"
+  },
+  {
+   "en": "^(\\d+) badges$",
+   "de": "$1 Abzeichen",
+   "es": "$1 insignias",
+   "fr": "$1 badges",
+   "ja": "バッジ $1",
+   "pt": "$1 selos",
+   "zh": "$1 徽章"
+  },
+  {
+   "en": "^(.* · |· )?now( · .+)? · reply$",
+   "de": "$1jetzt$2 · Antwort",
+   "es": "$1ahora$2 · respuesta",
+   "fr": "$1à l'instant$2 · réponse",
+   "ja": "$1たった今$2 · 返信",
+   "pt": "$1agora$2 · resposta",
+   "zh": "$1刚刚$2 · 回复"
+  },
+  {
+   "en": "^(.* · |· )?now( · .+)?$",
+   "de": "$1jetzt$2",
+   "es": "$1ahora$2",
+   "fr": "$1à l'instant$2",
+   "ja": "$1たった今$2",
+   "pt": "$1agora$2",
+   "zh": "$1刚刚$2"
+  },
+  {
+   "en": "^(.* · |· )?(\\d+) min( · .+)? · reply$",
+   "de": "$1$2 Min.$3 · Antwort",
+   "es": "$1$2 min$3 · respuesta",
+   "fr": "$1$2 min$3 · réponse",
+   "ja": "$1$2分$3 · 返信",
+   "pt": "$1$2 min$3 · resposta",
+   "zh": "$1$2分钟$3 · 回复"
+  },
+  {
+   "en": "^(.* · |· )?(\\d+) min( · .+)?$",
+   "de": "$1$2 Min.$3",
+   "es": "$1$2 min$3",
+   "fr": "$1$2 min$3",
+   "ja": "$1$2分$3",
+   "pt": "$1$2 min$3",
+   "zh": "$1$2分钟$3"
+  },
+  {
+   "en": "^(.* · |· )?(\\d+) h( · .+)? · reply$",
+   "de": "$1$2 Std.$3 · Antwort",
+   "es": "$1$2 h$3 · respuesta",
+   "fr": "$1$2 h$3 · réponse",
+   "ja": "$1$2時間$3 · 返信",
+   "pt": "$1$2 h$3 · resposta",
+   "zh": "$1$2小时$3 · 回复"
+  },
+  {
+   "en": "^(.* · |· )?(\\d+) h( · .+)?$",
+   "de": "$1$2 Std.$3",
+   "es": "$1$2 h$3",
+   "fr": "$1$2 h$3",
+   "ja": "$1$2時間$3",
+   "pt": "$1$2 h$3",
+   "zh": "$1$2小时$3"
+  },
+  {
+   "en": "^(.* · |· )?(\\d+) d( · .+)? · reply$",
+   "de": "$1$2 T.$3 · Antwort",
+   "es": "$1$2 d$3 · respuesta",
+   "fr": "$1$2 j$3 · réponse",
+   "ja": "$1$2日$3 · 返信",
+   "pt": "$1$2 d$3 · resposta",
+   "zh": "$1$2天$3 · 回复"
+  },
+  {
+   "en": "^(.* · |· )?(\\d+) d( · .+)?$",
+   "de": "$1$2 T.$3",
+   "es": "$1$2 d$3",
+   "fr": "$1$2 j$3",
+   "ja": "$1$2日$3",
+   "pt": "$1$2 d$3",
+   "zh": "$1$2天$3"
+  },
+  {
+   "en": "^(.+) · reply$",
+   "de": "$1 · Antwort",
+   "es": "$1 · respuesta",
+   "fr": "$1 · réponse",
+   "ja": "$1 · 返信",
+   "pt": "$1 · resposta",
+   "zh": "$1 · 回复"
+  }
+ ]
+}

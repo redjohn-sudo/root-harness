@@ -51,6 +51,7 @@ NOTIFS = DIR / "notifications.json"   # when you last looked, followers already 
 RELAYS = ["wss://relay.damus.io", "wss://nos.lol", "wss://relay.primal.net"]
 TAG = "root-harness"                  # on every post made here: the "for you" feed is this tag
 EXTRAS = "rh-profile"                 # kind 30078 identifier of your profile extras
+AT = "rh-at:"                         # kind 30078 identifier of an @name claim: the first claim wins
 MEDIA_HOST = "https://nostr.build/api/v2/nip96/upload"
 MEDIA_MAX = 20 * 1024 * 1024
 STATES = ("etudie", "travaille", "cherche")
@@ -86,6 +87,12 @@ def _write(path: Path, data) -> None:
     on_change()
 
 
+def at_norm(name: str) -> str:
+    """@Root_42 -> root_42 ; '' when it cannot be an @ (3 to 20 letters, digits or _)."""
+    n = (name or "").strip().lstrip("@").lower()
+    return n if re.fullmatch(r"[a-z0-9_]{3,20}", n) else ""
+
+
 def slug(text: str) -> str:
     return re.sub(r"[^a-z0-9-]+", "-", (text or "").lower()).strip("-")[:40]
 
@@ -95,7 +102,8 @@ def _work_item(w: dict) -> dict:
     url = str(w.get("url") or "")
     return {"kind": w.get("kind") if w.get("kind") in ("project", "hackathon", "progress") else "project",
             "title": str(w.get("title", ""))[:60], "text": str(w.get("text", ""))[:200], "when": str(w.get("when", ""))[:24],
-            "live": bool(w.get("live")), "url": url[:200] if re.match(r"https?://", url) else ""}
+            "live": bool(w.get("live")), "url": url[:200] if re.match(r"https?://", url) else "",
+            "image": str(w.get("image") or "")[:300] if str(w.get("image") or "").startswith("https://") else ""}
 
 
 def _tags(ev) -> list[list[str]]:
@@ -141,6 +149,7 @@ def profile_local() -> dict:
     p.setdefault("work", [])               # [{id, kind: project|hackathon|progress, title, text, when, live}]
     p.setdefault("pinned", [])             # badge coordinates (30009:<issuer>:<d>)
     p.setdefault("communities", [])        # slugs you joined
+    p.setdefault("at", "")                 # your @, once claimed (claim_at)
     return p
 
 
@@ -156,7 +165,9 @@ def profile_set(fields: dict) -> dict:
     if isinstance(fields.get("work"), list):
         p["work"] = [{"id": str(w.get("id") or uuid.uuid4().hex[:8]), "kind": w.get("kind") if w.get("kind") in ("project", "hackathon", "progress") else "project",
                       "title": str(w.get("title", ""))[:60], "text": str(w.get("text", ""))[:200], "when": str(w.get("when", ""))[:24],
-                      "live": bool(w.get("live")), "url": str(w.get("url", ""))[:200]} for w in fields["work"] if isinstance(w, dict) and w.get("title")][:12]
+                      "live": bool(w.get("live")), "url": str(w.get("url", ""))[:200],
+                      "image": str(w.get("image") or "")[:300] if str(w.get("image") or "").startswith("https://") else ""}
+                     for w in fields["work"] if isinstance(w, dict) and w.get("title")][:12]
     if isinstance(fields.get("pinned"), list):
         p["pinned"] = [str(a) for a in fields["pinned"] if isinstance(a, str) and a.startswith(f"{K_BADGE}:")][:8]
     if isinstance(fields.get("communities"), list):
@@ -186,11 +197,42 @@ def github_work(limit: int = 8) -> list[dict]:
     return out
 
 
+def github_showcase() -> list[dict]:
+    """The demos on your GitHub profile page (the <login>/<login> README): a title, a picture or GIF, a caption."""
+    import html
+    import subprocess
+    try:
+        login = json.loads(subprocess.run(["gh", "api", "user"], capture_output=True, text=True, timeout=20).stdout)["login"]
+        raw = subprocess.run(["gh", "api", f"repos/{login}/{login}/readme", "--jq", ".content"], capture_output=True, text=True, timeout=20).stdout
+        readme = base64.b64decode(raw).decode("utf-8", "replace")
+    except Exception:
+        return []
+    clean = lambda t: " ".join(html.unescape(re.sub(r"<[^>]+>", " ", t)).replace("Visit site →", "").split())
+    out = []
+    for table in re.findall(r"<table.*?</table>", readme, re.S):
+        titles = [clean(t) for t in re.findall(r"<th[^>]*>(.*?)</th>", table, re.S)]
+        rows = re.findall(r"<tr>(.*?)</tr>", table, re.S)
+        imgs = [re.findall(r'<img[^>]*src="([^"]+)"', c) for c in re.findall(r"<td[^>]*>(.*?)</td>", rows[1], re.S)] if len(rows) > 1 else []
+        texts = [clean(c) for c in re.findall(r"<td[^>]*>(.*?)</td>", rows[2], re.S)] if len(rows) > 2 else []
+        links = [re.findall(r'<a href="(https?://[^"]+)"', c) for c in re.findall(r"<th[^>]*>(.*?)</th>", table, re.S)]
+        for i, title in enumerate(titles):
+            src = (imgs[i] or [""])[0] if i < len(imgs) else ""
+            if not title or not src:
+                continue
+            if not src.startswith("https://"):
+                src = f"https://raw.githubusercontent.com/{login}/{login}/main/{src.lstrip('./')}"
+            out.append({"kind": "project", "title": title[:60], "text": (texts[i] if i < len(texts) else "")[:200], "when": "",
+                        "live": False, "url": (links[i] or [""])[0] if i < len(links) else "", "image": src})
+    return out
+
+
 def work_suggest() -> list[dict]:
     """What to put on your page: your public repositories, and what your agents saw you work on lately."""
     from . import conversations
     out, seen = [], set()
-    for w in github_work():
+    for w in github_showcase() + github_work():
+        if slug(w["title"])[:24] in seen:
+            continue
         seen.add(slug(w["title"])[:24])
         out.append(w)
     items = sorted(conversations.all_listed()["conversations"].values(), key=lambda c: -(c.get("updated") or 0))
@@ -306,7 +348,7 @@ class Network:
                 "picture": p["picture"] if p["picture"].startswith("https://") else "", "banner": p["banner"] if p["banner"].startswith("https://") else ""}
         extras = {"v": 1, "id": directory.handle(self.pseudo, self.me), "pseudo": self.pseudo, "name": p["name"], "show": p["show"],
                   "school": p["school"], "role": p["role"], "state": p["state"], "level": act["level"], "days": act["days"],
-                  "work": p["work"], "communities": p["communities"],
+                  "work": p["work"], "communities": p["communities"], "at": p.get("at", ""),
                   # a picture pasted as data stays small here (relays cap events near 100 KB); uploaded ones are just links
                   "picture": p["picture"][:48000], "banner": p["banner"][:48000]}
 
@@ -329,7 +371,8 @@ class Network:
         if local and hexkey == self.me:
             p, act = profile_local(), activity()
             return self._view_profile(hexkey, {"name": directory.slug(self.pseudo), "display_name": ""}, {**p, "pseudo": self.pseudo, "level": act["level"], "days": act["days"]})
-        return self._do(self._profile_remote(hexkey))
+        self._profiles.pop(hexkey, None)             # fresh, and through the same @ check as everywhere
+        return self._do(self._profiles_of({hexkey}))[hexkey]
 
     async def _profile_remote(self, hexkey: str) -> dict:
         pk = self._pk(hexkey)
@@ -361,6 +404,7 @@ class Network:
              "level": int(extras.get("level") or 0) if str(extras.get("level", "0")).isdigit() else 0,
              "work": [_work_item(w) for w in (extras.get("work") or []) if isinstance(w, dict) and w.get("title")][:12],
              "communities": [slug(c) for c in (extras.get("communities") or []) if slug(c)][:30],
+             "at": at_norm(extras.get("at", "")),
              "mine": hexkey == self.me}
         v["level_label"] = level_label(v["level"])
         if hexkey == self.me and not (meta or extras):
@@ -387,6 +431,13 @@ class Network:
                 (metas if ev.kind().as_u16() == K_PROFILE else extras)[ev.author().to_hex()] = data
             for h in missing:
                 self._view_profile(h, metas.get(h, {}), extras.get(h, {}))
+            # an @ shows only if that person really owns it (the first claim): nobody can wear someone else's
+            ats = {h: self._profiles[h]["at"] for h in missing if h in self._profiles and self._profiles[h].get("at")}
+            if ats:
+                owners = await self._at_owners(set(ats.values()))
+                for h, a in ats.items():
+                    if owners.get(a) != h:
+                        self._profiles[h]["at"] = ""
         return {h: self._profiles.get(h) or self._view_profile(h, {}, {}) for h in hexkeys}
 
     # -- posting ---------------------------------------------------------------------------------
@@ -721,8 +772,65 @@ class Network:
             _write(NOTIFS, state)
         return {"unread": got["unread"], "fresh": fresh[:5]}
 
+    # -- your @, like on X: the first one to claim a name has it -------------------------------------
+
+    async def _at_owners(self, names: set[str]) -> dict[str, str]:
+        n = _n()
+        names = {a for a in names if a}
+        if not names:
+            return {}
+        evs = await self._fetch([self._f().kind(n.Kind(K_APPDATA)).identifiers([AT + a for a in names]).limit(500)])
+        best: dict[str, tuple] = {}
+        for ev in evs:
+            d = _first(_tags(ev), "d")
+            a = d[len(AT):] if d.startswith(AT) else ""
+            try:
+                ok = a in names and json.loads(ev.content() or "{}").get("at") == a
+            except ValueError:
+                ok = False
+            if ok:
+                key = (ev.created_at().as_secs(), ev.author().to_hex())
+                if a not in best or key < best[a]:
+                    best[a] = key
+        return {a: k[1] for a, k in best.items()}
+
+    def at_owner(self, name: str) -> str | None:
+        a = at_norm(name)
+        return self._do(self._at_owners({a})).get(a) if a else None
+
+    def claim_at(self, name: str) -> dict:
+        """Take @name if nobody has it; your old @ is let go."""
+        a = at_norm(name)
+        if not a:
+            return {"error": "3 to 20 letters, digits or _."}
+        owner = self.at_owner(a)
+        if owner and owner != self.me:
+            return {"error": f"@{a} is taken."}
+        old = profile_local().get("at", "")
+
+        async def go():
+            n = _n()
+            ev = n.EventBuilder(n.Kind(K_APPDATA), json.dumps({"at": a})).tags([n.Tag.parse(["d", AT + a])]).finalize(self.keys)
+            sent = await self._send(ev)
+            if old and old != a:
+                await self._send(n.EventBuilder(n.Kind(K_APPDATA), "").tags([n.Tag.parse(["d", AT + old])]).finalize(self.keys))
+            return sent
+        sent = self._do(go())
+        p = profile_local()
+        p["at"] = a
+        _write(PROFILE, p)
+        self._profiles.pop(self.me, None)
+        self.publish_profile()
+        return {**sent, "at": a}
+
     def lookup(self, text: str) -> dict | None:
-        """vincent#k7f2qa9m -> that person's profile, through the public card (directory.py)."""
+        """@name, vincent#k7f2qa9m or an npub -> that person's profile."""
+        if (text or "").strip().startswith("@") or (at_norm(text) and "#" not in text and not text.strip().startswith("npub")):
+            owner = self.at_owner(text)
+            if owner:
+                return self.profile_view(owner)
+            if text.strip().startswith("@"):
+                return None
         card = asyncio.run(directory.lookup(text)) if directory.parse(text) else None
         if not card:
             try:

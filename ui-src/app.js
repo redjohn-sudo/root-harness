@@ -3,7 +3,8 @@
 // to reach the agents, the conversations, the friends and GitHub from there.
 import { tete, cligner } from './root.js'
 import { qr } from './ident.js'
-import { vueFil, vueProfil, vueNotifs, surveillerNotifs, evenementReseau } from './social.js'
+import { LANGUES, langue, appliquer } from './langue.js'
+import { vueFil, vueProfil, vueNotifs, vueCommus, surveillerNotifs, evenementReseau } from './social.js'
 
 let H = null                                  // the host
 const $ = (s, r = document) => r.querySelector(s)
@@ -17,6 +18,7 @@ const I = {
   chat: '<path d="M20 12a8 8 0 01-11.6 7.1L4 20l1-4.2A8 8 0 1120 12z"/>',
   fil: '<path d="M4 10.5L12 4l8 6.5V19a1.5 1.5 0 01-1.5 1.5h-13A1.5 1.5 0 014 19z"/><path d="M9.5 20.5v-6h5v6"/>',
   profil: '<circle cx="12" cy="8.5" r="3.6"/><path d="M4.5 20c.8-3.8 3.8-6 7.5-6s6.7 2.2 7.5 6"/>',
+  diese: '<path d="M9.5 4L7.5 20M16.5 4l-2 16M4.5 9h16M3.5 15h16"/>',
   cloche: '<path d="M6 16.5V11a6 6 0 0112 0v5.5l1.5 2H4.5z"/><path d="M10 20.5a2 2 0 004 0"/>',
   dossiers: '<path d="M3.5 7.5a2 2 0 012-2h4l2 2h7a2 2 0 012 2v8a2 2 0 01-2 2h-13a2 2 0 01-2-2z"/>',
   amis: '<circle cx="9" cy="9" r="3.2"/><path d="M3.5 19c.6-3 2.9-4.6 5.5-4.6s4.9 1.6 5.5 4.6"/><circle cx="17" cy="8" r="2.4"/><path d="M15.5 13.6c2.6.1 4.4 1.6 5 4.4"/>',
@@ -30,17 +32,18 @@ const I = {
 const ico = (n, w = 1.7) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">${I[n]}</svg>`
 
 // -- the shell ----------------------------------------------------------------------
-const ONGLETS = [['chat', 'Your agents'], ['fil', 'The feed'], ['profil', 'My profile'], ['notifs', 'Notifications'], ['discussions', 'Conversations'], ['amis', 'Friends & groups'], ['vibe', 'Vibe code'], ['encyclo', 'Encyclopedia'], ['reglages', 'Settings']]
-const ICONE = { chat: 'chat', fil: 'fil', profil: 'profil', notifs: 'cloche', discussions: 'dossiers', amis: 'amis', vibe: 'vibe', encyclo: 'livre', reglages: 'reglages' }
+const ONGLETS = [['chat', 'Your agents'], ['fil', 'The feed'], ['commus', 'Communities'], ['notifs', 'Notifications'], ['profil', 'My profile'], ['discussions', 'Conversations'], ['amis', 'Friends & groups'], ['vibe', 'Vibe code'], ['encyclo', 'Encyclopedia']]
+const ICONE = { chat: 'chat', fil: 'fil', commus: 'diese', profil: 'profil', notifs: 'cloche', discussions: 'dossiers', amis: 'amis', vibe: 'vibe', encyclo: 'livre', reglages: 'reglages' }
 
 function coquille() {
   document.body.innerHTML = `<div id="fond"></div>
   <div id="app">
     <nav id="rail"><div class="marque">${tete()}</div>
       ${ONGLETS.map(([k, t]) => `<button class="onglet" data-v="${k}" title="${t}">${ico(ICONE[k])}</button>`).join('')}
+      <button class="onglet bas" data-v="reglages" title="Settings">${ico('reglages')}</button>
     </nav>
     <main>
-      <section class="vue" id="v-chat"></section><section class="vue" id="v-fil"></section><section class="vue" id="v-profil"></section><section class="vue" id="v-notifs"></section><section class="vue" id="v-discussions"></section>
+      <section class="vue" id="v-chat"></section><section class="vue" id="v-fil"></section><section class="vue" id="v-profil"></section><section class="vue" id="v-notifs"></section><section class="vue" id="v-commus"></section><section class="vue" id="v-discussions"></section>
       <section class="vue" id="v-amis"></section><section class="vue" id="v-vibe"></section><section class="vue" id="v-encyclo"></section><section class="vue" id="v-reglages"></section>
     </main>
   </div>
@@ -59,7 +62,7 @@ export function aller(v) {
   VUE = v
   $$('.onglet').forEach((b) => b.classList.toggle('on', b.dataset.v === v))
   $$('.vue').forEach((s) => s.classList.toggle('on', s.id === 'v-' + v))
-  ;({ chat: vueChat, fil: () => vueFil(H), profil: () => vueProfil(H), notifs: () => vueNotifs(H), discussions: vueDiscussions, amis: vueAmis, vibe: vueVibe, encyclo: vueEncyclo, reglages: vueReglages })[v]()
+  ;({ chat: vueChat, fil: () => vueFil(H), profil: () => vueProfil(H), notifs: () => vueNotifs(H), commus: () => vueCommus(H), discussions: vueDiscussions, amis: vueAmis, vibe: vueVibe, encyclo: vueEncyclo, reglages: vueReglages })[v]()
 }
 
 export { feuille, fermerFeuille, qr }
@@ -285,7 +288,7 @@ function vueChat() {
 
 function accueil() {
   $('#c-fil').innerHTML = `<div class="bienvenue"><div class="grande-tete">${tete()}</div><div class="titre">what are we making?</div>
-    <div class="sous-titre" style="margin:8px auto 0">Ask your agent, vibe code on GitHub, or share what you did with a friend.</div></div>`
+    <div class="sous-titre" style="margin:8px auto 0">Ask, build, share.</div></div>`
 }
 function viderFil() { $('#c-fil').innerHTML = ''; OUTILS = {}; dernierOutil = null }
 function ajouter(html, fil = '#c-fil') {
@@ -459,20 +462,25 @@ async function feuillePartage(source) {
 // =====================================================================================
 let FERMES = new Set(), AGENT_FILTRE = ''
 // each agent gets its own colour, the same everywhere
-const couleur = (nom) => { let h = 0; for (const ch of nom || '') h = (h * 31 + ch.charCodeAt(0)) % 360; return `hsl(${h} 62% 66%)` }
-const pastilleAgent = (nom) => `<span class="point-agent" style="background:${couleur(nom)};box-shadow:0 0 8px ${couleur(nom)}"></span>`
+// each agent its own colour: Claude orange, Codex black, DeepSeek blue, GLM grey...
+const COULEURS = [[/claude/i, '#d97757'], [/codex|openai|gpt/i, '#0b0b0f'], [/deepseek/i, '#4d6bfe'], [/glm|zhipu/i, '#9aa0aa'],
+  [/kimi|moonshot/i, '#e8e8ec'], [/ollama|local/i, '#f2efe6'], [/gemini/i, '#6f9bff'], [/mistral/i, '#ff8a3d']]
+const couleur = (nom, modele = '') => { const t = (modele || '') + ' ' + (nom || ''), m = COULEURS.find(([r]) => r.test(modele || '')) || COULEURS.find(([r]) => r.test(t))
+  if (m) return m[1]; let h = 0; for (const ch of nom || '') h = (h * 31 + ch.charCodeAt(0)) % 360; return `hsl(${h} 62% 66%)` }
+const pastilleAgent = (nom, modele) => { const c = couleur(nom, modele)
+  return `<span class="point-agent" style="background:${c};box-shadow:0 0 0 1px rgba(255,255,255,.28),0 0 8px ${c}55"></span>` }
 async function vueDiscussions() {
   const v = $('#v-discussions')
-  v.innerHTML = `<div class="defile"><div class="colonne"><div class="titre">conversations</div><div class="sous-titre">Each one stays with the agent you had it with. Pick an agent to see only its conversations.</div>
+  v.innerHTML = `<div class="defile"><div class="colonne"><div class="titre">conversations</div><div class="sous-titre">Each one with its agent.</div>
     <input class="champ" id="d-cherche" placeholder="search a conversation, an agent, a model"><div class="boutons" id="d-agents"></div><div id="d-liste"><div class="vide">Loading...</div></div></div></div>`
   let D
   try { D = await H.convs.list() } catch { $('#d-liste').innerHTML = `<div class="vide">${H.kind === 'phone' ? 'Your conversations show here once your computer has synced them.' : 'Unavailable.'}</div>`; return }
   const agents = {}; D.conversations.forEach((c) => { agents[c.brain_name] = (agents[c.brain_name] || 0) + 1 })
   if (AGENT_FILTRE && !agents[AGENT_FILTRE]) AGENT_FILTRE = ''
   $('#d-agents').innerHTML = `<button class="bouton${AGENT_FILTRE ? '' : ' vert'}" data-a="">all · ${D.conversations.length}</button>`
-    + Object.entries(agents).sort((x, y) => y[1] - x[1]).map(([n, k]) => `<button class="bouton${AGENT_FILTRE === n ? ' vert' : ''}" data-a="${esc(n)}">${pastilleAgent(n)}${esc(n)} · ${k}</button>`).join('')
+    + Object.entries(agents).sort((x, y) => y[1] - x[1]).map(([n, k]) => `<button class="bouton${AGENT_FILTRE === n ? ' vert' : ''}" data-a="${esc(n)}">${pastilleAgent(n, (D.conversations.find((c) => c.brain_name === n) || {}).model_label)}${esc(n)} · ${k}</button>`).join('')
     + `<button class="bouton" id="d-dossier">+ folder</button>`
-  const ligne = (c, i) => `<div class="item${c.current ? ' on' : ''}" data-id="${esc(c.id)}" style="--i:${Math.min(i, 30)}">${pastilleAgent(c.brain_name)}<div class="tx"><div class="t">${esc(c.title)}</div>
+  const ligne = (c, i) => `<div class="item${c.current ? ' on' : ''}" data-id="${esc(c.id)}" style="--i:${Math.min(i, 30)}">${pastilleAgent(c.brain_name, c.model_label)}<div class="tx"><div class="t">${esc(c.title)}</div>
     <div class="m">${esc([c.brain_name, c.model_label, quand(c.updated)].filter(Boolean).join(' · '))}</div></div>${c.terminal ? '<span class="badge">terminal</span>' : ''}${c.folder && AGENT_FILTRE ? `<span class="badge">${esc((D.folders.find((f) => f.id === c.folder) || {}).name || '')}</span>` : ''}</div>`
   const rendre = () => {
     const q = $('#d-cherche').value.toLowerCase()
@@ -482,7 +490,7 @@ async function vueDiscussions() {
     else {
       for (const f of D.folders) { const L2 = L.filter((c) => c.folder === f.id); h += `<div class="section">▸ ${esc(f.name)} · ${L2.length}<span class="ligne"></span></div><div class="liste">${L2.map((c) => ligne(c, i++)).join('')}</div>` }
       const par = {}; L.filter((c) => !c.folder).forEach((c) => (par[c.brain_name] = par[c.brain_name] || []).push(c))
-      for (const [n, L2] of Object.entries(par)) h += `<div class="section">${pastilleAgent(n)} ${esc(n)} · ${L2.length}<span class="ligne"></span></div><div class="liste">${L2.map((c) => ligne(c, i++)).join('')}</div>`
+      for (const [n, L2] of Object.entries(par)) h += `<div class="section">${pastilleAgent(n, L2[0].model_label)} ${esc(n)} · ${L2.length}<span class="ligne"></span></div><div class="liste">${L2.map((c) => ligne(c, i++)).join('')}</div>`
     }
     $('#d-liste').innerHTML = (L.length ? h : '') || '<div class="vide">No conversation here.</div>'
     $$('#d-liste .item').forEach((el) => el.onclick = () => ouvrirDiscussion(el.dataset.id, D))
@@ -494,7 +502,7 @@ async function vueDiscussions() {
 }
 async function ouvrirDiscussion(id, D) {
   const c = D.conversations.find((x) => x.id === id)
-  const f = feuille(`<h3>${esc(c.title)}</h3><div class="sous-titre">${pastilleAgent(c.brain_name)}with ${esc([c.brain_name, c.model_label].filter(Boolean).join(' · '))} · ${quand(c.updated)}</div>
+  const f = feuille(`<h3>${esc(c.title)}</h3><div class="sous-titre">${pastilleAgent(c.brain_name, c.model_label)}with ${esc([c.brain_name, c.model_label].filter(Boolean).join(' · '))} · ${quand(c.updated)}</div>
     <div class="boutons"><button class="bouton plein" id="o-ouvrir">Continue with ${esc(c.brain_name)}</button><button class="bouton" id="o-partager">${ico('partage')} share</button></div>
     <div class="section">move to<span class="ligne"></span></div><div class="boutons">${D.folders.map((x) => `<button class="bouton" data-f="${esc(x.id)}">${esc(x.name)}</button>`).join('')}${c.folder ? '<button class="bouton" data-f="">out of the folder</button>' : ''}</div>
     <div class="boutons" style="margin-top:20px"><button class="bouton danger" id="o-suppr">${c.terminal ? 'hide' : 'delete'}</button></div>`)
@@ -535,7 +543,7 @@ async function vueAmis() {
 }
 function pastille(on) { const b = $('.onglet[data-v="amis"]'); let p = $('.pastille', b); if (on && !p) { p = document.createElement('span'); p.className = 'pastille'; b.appendChild(p) } else if (!on && p) p.remove() }
 function feuilleContact(npub, pseudo) {
-  const f = feuille(`<h3>add a friend</h3><div class="sous-titre">Their ID (like vincent#k7f2qa9m), from their Friends tab or their QR code.</div>
+  const f = feuille(`<h3>add a friend</h3><div class="sous-titre">Their @, their ID (like vincent#k7f2qa9m) or their QR code.</div>
     <input class="champ" id="k-id" placeholder="name#code" autocapitalize="off" autocomplete="off" value="${esc(npub || '')}">
     <div id="k-trouve"></div><div class="err" id="k-err"></div><div class="boutons"><button class="bouton plein" id="k-ok">Find</button></div>`)
   let trouve = npub ? { npub, pseudo: pseudo || '' } : null
@@ -597,7 +605,7 @@ let PROJET = null
 async function vueVibe() {
   const v = $('#v-vibe')
   if (PROJET) return vueProjet()
-  v.innerHTML = `<div class="defile"><div class="colonne"><div class="titre">vibe code</div><div class="sous-titre">Have an idea? Claude Agent builds it in any of your GitHub repositories, on GitHub's machines, with your plan. Your computer can stay off.</div>
+  v.innerHTML = `<div class="defile"><div class="colonne"><div class="titre">vibe code</div><div class="sous-titre">An idea? Claude builds it in your GitHub repositories, even with your computer off.</div>
     <div id="g-corps"><div class="vide">Looking at GitHub...</div></div></div></div>`
   const st = await H.vibe.status().catch((e) => ({ ready: false, why: String(e.message || e) }))
   if (!st.ready) { $('#g-corps').innerHTML = `<div class="verre carte"><div style="margin-bottom:6px">${esc(st.why || 'Not set up yet.')}</div>${H.kind === 'computer' ? '<button class="bouton vert" id="g-reglages">Set it up in Settings</button>' : '<div class="m" style="color:var(--encre-3);font-size:13px">Set it up once from root-harness on your computer: Settings, Vibe code.</div>'}</div>`
@@ -661,7 +669,7 @@ const CATS = [['', 'all'], ['agents', 'agents'], ['llm', 'LLM'], ['rag', 'RAG'],
 let ENC = null, ENC_CAT = '', ENC_Q = ''
 async function vueEncyclo() {
   const v = $('#v-encyclo')
-  v.innerHTML = `<div class="defile"><div class="colonne"><div class="titre">encyclopedia</div><div class="sous-titre">The words of agents, LLMs, RAG, code and security. Tap one to ask your agent about it.</div>
+  v.innerHTML = `<div class="defile"><div class="colonne"><div class="titre">encyclopedia</div><div class="sous-titre">The words of AI and code. Tap one to ask your agent.</div>
     <div class="verre carte"><div class="reglage" style="border:0;padding:0"><div class="l">Learn as I work<div class="d">After each answer, your agent adds the new technical words of the exchange, with a short definition.</div></div><span class="inter" id="e-auto"></span></div></div>
     <input class="champ" id="e-cherche" placeholder="search a word" value="${esc(ENC_Q)}"><div class="boutons" id="e-cats">${CATS.map(([k, t]) => `<button class="bouton${k === ENC_CAT ? ' vert' : ''}" data-c="${k}">${t}</button>`).join('')}<button class="bouton" id="e-ajout">+ a word</button></div>
     <div id="e-liste"><div class="vide">Loading...</div></div></div></div>`
@@ -713,18 +721,20 @@ function pastilleEncyclo(on) { const b = $('.onglet[data-v="encyclo"]'); let p =
 // settings
 // =====================================================================================
 async function vueReglages() {
-  const v = $('#v-reglages'), st = await H.account.state()
-  v.innerHTML = `<div class="defile"><div class="colonne"><div class="titre">settings</div><div class="sous-titre">Your account lives on your devices. Nothing here goes to a server of ours: there is none.</div>
-    <div class="section">account<span class="ligne"></span></div><div class="verre carte">
-      <div class="reglage">${tete()}<div class="l"><div>${esc(st.pseudo || '')}</div><div class="d" style="font-family:var(--mono);word-break:break-all">${esc(st.npub || '')}</div></div></div>
-      ${H.kind === 'computer' ? `<div class="reglage"><div class="l">Stay signed in<div class="d">No password when root-harness opens</div></div><span class="inter${st.stay ? ' on' : ''}" id="r-stay"></span></div>
-      <div class="reglage"><div class="l">Sync between my devices<div class="d">Your whole memory, sealed, on relays</div></div><span class="inter${st.sync ? ' on' : ''}" id="r-sync"></span></div>
-      <div class="reglage"><div class="l">Findable by my ID<div class="d">${esc(st.id || '')}: a public card lets friends add you by this ID</div></div><span class="inter${st.findable !== false ? ' on' : ''}" id="r-trouve"></span></div>` : ''}
-      <div class="boutons"><button class="bouton" id="r-lock">Lock</button>${H.kind === 'computer' ? '<button class="bouton" id="r-mdp">Change password</button><button class="bouton" id="r-kit">My recovery kit</button>' : '<button class="bouton danger" id="r-sortir">Sign out of this phone</button>'}</div></div>
-    <div class="section">background<span class="ligne"></span></div><div class="verre carte"><div class="boutons">${H.kind === 'computer' ? '<button class="bouton vert" id="r-image">Choose a picture</button>' : ''}<button class="bouton" id="r-sans">Plain night</button></div>
-      <div class="d" style="color:var(--encre-3);font-size:12.5px;margin-top:8px">${H.kind === 'phone' ? 'Your phone uses the picture of your computer.' : 'Your picture goes to your phone too, never to anyone else.'}</div></div>
+  const v = $('#v-reglages'), st = await H.account.state(), pc = H.kind === 'computer'
+  const inter = (id, titre, d, on) => `<div class="reglage"><div class="l">${titre}<div class="d">${d}</div></div><span class="inter${on ? ' on' : ''}" id="${id}"></span></div>`
+  v.innerHTML = `<div class="defile"><div class="colonne"><div class="titre">settings</div>
+    <div class="verre carte">
+      <div class="reglage">${tete()}<div class="l"><div>${esc(st.pseudo || '')}</div><div class="d" style="font-family:var(--mono)">${esc(st.at ? '@' + st.at : st.id || '')}</div></div></div>
+      ${pc ? inter('r-stay', 'Stay signed in', 'No password at launch', st.stay) + inter('r-sync', 'Sync my devices', 'Sealed, on relays', st.sync) + inter('r-trouve', 'Findable by my ID', 'Friends can add you', st.findable !== false) : ''}
+      <div class="boutons"><button class="bouton" id="r-lock">Lock</button>${pc ? '<button class="bouton" id="r-mdp">Password</button><button class="bouton" id="r-kit">Recovery kit</button>' : '<button class="bouton danger" id="r-sortir">Sign out</button>'}</div></div>
+    <div class="section">language<span class="ligne"></span></div>
+    <div class="verre carte"><select class="champ" id="r-langue">${LANGUES.map(([c, n]) => `<option value="${c}"${c === langue() ? ' selected' : ''}>${n}</option>`).join('')}</select></div>
+    <div class="section">background<span class="ligne"></span></div>
+    <div class="verre carte"><div class="boutons" style="margin-top:0">${pc ? '<button class="bouton" id="r-image">Choose a picture</button>' : ''}<button class="bouton" id="r-sans">Plain night</button></div></div>
     <div id="r-plus"></div>
-    <div class="d" style="color:var(--encre-4);font-size:12px;text-align:center;margin:34px 0 0">root-harness · free software under the AGPL-3.0 · <a href="https://github.com/redjohn-sudo/root-harness" target="_blank" rel="noopener">source code</a></div></div></div>`
+    <div class="d" style="color:var(--encre-4);font-size:12px;text-align:center;margin:34px 0 0">root-harness · AGPL-3.0 · <a href="https://github.com/redjohn-sudo/root-harness" target="_blank" rel="noopener">source</a></div></div></div>`
+  $('#r-langue').onchange = (e) => { appliquer(e.target.value); vueReglages() }
   $('#r-stay') && ($('#r-stay').onclick = async () => { await H.account.setStay(!st.stay); vueReglages() })
   $('#r-sync') && ($('#r-sync').onclick = async () => { await H.account.setSync(!st.sync); vueReglages() })
   $('#r-trouve') && ($('#r-trouve').onclick = async () => { await H.account.setFindable(st.findable === false); vueReglages() })
@@ -754,6 +764,7 @@ async function demarrer() {
 export async function lancer(host) {
   H = host
   coquille()
+  appliquer()
   surveillerNotifs(H)
   H.on((e) => {
     if (e.type === 'channel_message') {
