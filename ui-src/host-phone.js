@@ -405,6 +405,7 @@ host.network = {
     const h = hexDe(t); if (h) return net().profilDe(h); const r = await host.friends.lookup(t); return r && r.hex ? net().profilDe(r.hex) : null },
   upload: (file) => net().envoyerMedia(file),
   follow: (h, on) => net().suivre(h, on), people: (L) => net().gens(L), claimAt: (n) => net().reserverAt(n),
+  block: (h, on) => net().bloquer(h, on), blocked: () => net().bloques(), report: (id, a, r) => net().signaler(id, a, r),
   notifications: () => net().notifications(), notificationsSeen: async () => net().notifsVues(), notificationsNew: () => net().notifsNouvelles(),
   posting: (s, a) => appel('settings_posting', s === undefined ? null : s, a === undefined ? null : a),
   badges: (h) => net().badgesDe(h || me), pin: (c) => net().epingler(c), defineBadge: (i, n, d, img) => net().badgeDefinir(i, n, d, img || ''), award: (a, r) => net().badgeDonner(a, r), checkBadges: () => net().verifierBadges(),

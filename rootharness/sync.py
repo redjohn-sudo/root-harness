@@ -190,7 +190,7 @@ def local_items() -> dict:
     if p.get("private"):
         items["push"] = p
     net = network.raw()
-    if net["profile"] or net["mine"]["reactions"] or net["mine"]["reposts"]:
+    if net["profile"] or net["mine"]["reactions"] or net["mine"]["reposts"] or net["blocked"]:
         items["network"] = net
     env = HOME / ".env"
     if env.exists():

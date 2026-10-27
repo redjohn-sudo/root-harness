@@ -4557,9 +4557,220 @@
    "ja": "ソース",
    "pt": "código-fonte",
    "zh": "源代码"
+  },
+  "Delete this post": {
+   "de": "Diesen Post löschen",
+   "es": "Eliminar esta publicación",
+   "fr": "Supprimer ce post",
+   "ja": "この投稿を削除",
+   "pt": "Apagar este post",
+   "zh": "删除这条帖子"
+  },
+  "your post": {
+   "de": "dein Post",
+   "es": "tu publicación",
+   "fr": "ton post",
+   "ja": "あなたの投稿",
+   "pt": "seu post",
+   "zh": "你的帖子"
+  },
+  "Relays are asked to delete it, and it disappears here. A relay that keeps copies may still show it elsewhere.": {
+   "de": "Die Relays werden gebeten, ihn zu löschen, und hier verschwindet er. Ein Relay, das Kopien behält, kann ihn anderswo noch zeigen.",
+   "es": "Se pide a los relays que la borren y desaparece aquí. Un relay que guarde copias aún podría mostrarla en otro lugar.",
+   "fr": "On demande aux relais de le supprimer, et il disparaît ici. Un relais qui garde des copies peut encore le montrer ailleurs.",
+   "ja": "リレーに削除を依頼し、ここからは消えます。コピーを残すリレーでは、まだ表示されることがあります。",
+   "pt": "Pedimos aos relays para apagá-lo, e ele some daqui. Um relay que guarde cópias ainda pode mostrá-lo em outro lugar.",
+   "zh": "已请求中继删除,它会从这里消失。保留副本的中继仍可能在别处显示它。"
+  },
+  "Report this post": {
+   "de": "Diesen Post melden",
+   "es": "Denunciar esta publicación",
+   "fr": "Signaler ce post",
+   "ja": "この投稿を報告",
+   "pt": "Denunciar este post",
+   "zh": "举报这条帖子"
+  },
+  "Report this account": {
+   "de": "Dieses Konto melden",
+   "es": "Denunciar esta cuenta",
+   "fr": "Signaler ce compte",
+   "ja": "このアカウントを報告",
+   "pt": "Denunciar esta conta",
+   "zh": "举报这个账号"
+  },
+  "report": {
+   "de": "melden",
+   "es": "denunciar",
+   "fr": "signaler",
+   "ja": "報告",
+   "pt": "denunciar",
+   "zh": "举报"
+  },
+  "Spam": {
+   "de": "Spam",
+   "es": "Spam",
+   "fr": "Spam",
+   "ja": "スパム",
+   "pt": "Spam",
+   "zh": "垃圾信息"
+  },
+  "Pretends to be someone": {
+   "de": "Gibt sich als jemand anderes aus",
+   "es": "Se hace pasar por otra persona",
+   "fr": "Se fait passer pour quelqu'un",
+   "ja": "なりすまし",
+   "pt": "Finge ser outra pessoa",
+   "zh": "冒充他人"
+  },
+  "Nudity": {
+   "de": "Nacktheit",
+   "es": "Desnudos",
+   "fr": "Nudité",
+   "ja": "ヌード",
+   "pt": "Nudez",
+   "zh": "裸露内容"
+  },
+  "Illegal": {
+   "de": "Illegal",
+   "es": "Ilegal",
+   "fr": "Illégal",
+   "ja": "違法",
+   "pt": "Ilegal",
+   "zh": "违法"
+  },
+  "Something else": {
+   "de": "Etwas anderes",
+   "es": "Otra cosa",
+   "fr": "Autre chose",
+   "ja": "その他",
+   "pt": "Outra coisa",
+   "zh": "其他"
+  },
+  "Reported. Thank you.": {
+   "de": "Gemeldet. Danke.",
+   "es": "Denunciado. Gracias.",
+   "fr": "Signalé. Merci.",
+   "ja": "報告しました。ありがとうございます。",
+   "pt": "Denunciado. Obrigado.",
+   "zh": "已举报。谢谢。"
+  },
+  "Post deleted.": {
+   "de": "Post gelöscht.",
+   "es": "Publicación eliminada.",
+   "fr": "Post supprimé.",
+   "ja": "投稿を削除しました。",
+   "pt": "Post apagado.",
+   "zh": "帖子已删除。"
+  },
+  "Not deleted.": {
+   "de": "Nicht gelöscht.",
+   "es": "No se eliminó.",
+   "fr": "Pas supprimé.",
+   "ja": "削除できませんでした。",
+   "pt": "Não foi apagado.",
+   "zh": "未删除。"
+  },
+  "Not blocked.": {
+   "de": "Nicht blockiert.",
+   "es": "No se bloqueó.",
+   "fr": "Pas bloqué.",
+   "ja": "ブロックできませんでした。",
+   "pt": "Não foi bloqueado.",
+   "zh": "未屏蔽。"
+  },
+  "blocked": {
+   "de": "blockiert",
+   "es": "bloqueados",
+   "fr": "bloqués",
+   "ja": "ブロック中",
+   "pt": "bloqueados",
+   "zh": "已屏蔽"
+  },
+  "Blocked": {
+   "de": "Blockiert",
+   "es": "Bloqueados",
+   "fr": "Bloqués",
+   "ja": "ブロック中",
+   "pt": "Bloqueados",
+   "zh": "已屏蔽"
+  },
+  "You do not see their posts, replies or notifications.": {
+   "de": "Du siehst ihre Posts, Antworten und Benachrichtigungen nicht.",
+   "es": "No ves sus publicaciones, respuestas ni notificaciones.",
+   "fr": "Tu ne vois plus leurs posts, réponses ni notifications.",
+   "ja": "その人の投稿、返信、通知は表示されません。",
+   "pt": "Você não vê os posts, respostas nem notificações dessas pessoas.",
+   "zh": "你不会看到他们的帖子、回复或通知。"
+  },
+  "Unblock": {
+   "de": "Entsperren",
+   "es": "Desbloquear",
+   "fr": "Débloquer",
+   "ja": "ブロック解除",
+   "pt": "Desbloquear",
+   "zh": "取消屏蔽"
+  },
+  "Nobody blocked.": {
+   "de": "Niemand blockiert.",
+   "es": "Nadie bloqueado.",
+   "fr": "Personne n'est bloqué.",
+   "ja": "ブロック中の人はいません。",
+   "pt": "Ninguém bloqueado.",
+   "zh": "没有屏蔽任何人。"
+  },
+  "Unblocked.": {
+   "de": "Entsperrt.",
+   "es": "Desbloqueado.",
+   "fr": "Débloqué.",
+   "ja": "ブロックを解除しました。",
+   "pt": "Desbloqueado.",
+   "zh": "已取消屏蔽。"
+  },
+  "Not done.": {
+   "de": "Nicht erledigt.",
+   "es": "No se hizo.",
+   "fr": "Pas fait.",
+   "ja": "できませんでした。",
+   "pt": "Não foi feito.",
+   "zh": "未完成。"
+  },
+  "more": {
+   "de": "mehr",
+   "es": "más",
+   "fr": "plus",
+   "ja": "その他",
+   "pt": "mais",
+   "zh": "更多"
   }
  },
  "patterns": [
+  {
+   "en": "^Block (.+)$",
+   "de": "$1 blockieren",
+   "es": "Bloquear a $1",
+   "fr": "Bloquer $1",
+   "ja": "$1 をブロック",
+   "pt": "Bloquear $1",
+   "zh": "屏蔽 $1"
+  },
+  {
+   "en": "^(.+) is blocked: you will not see them any more\\.$",
+   "de": "$1 ist blockiert: du siehst diese Person nicht mehr.",
+   "es": "$1 está bloqueado: ya no lo verás.",
+   "fr": "$1 est bloqué : tu ne le verras plus.",
+   "ja": "$1 をブロックしました。今後は表示されません。",
+   "pt": "$1 foi bloqueado: você não vai mais vê-lo.",
+   "zh": "已屏蔽 $1:你将不再看到对方。"
+  },
+  {
+   "en": "^What is wrong\\? Relays and other apps can act on it\\. You can also block (.+)\\.$",
+   "de": "Was stimmt nicht? Relays und andere Apps können reagieren. Du kannst $1 auch blockieren.",
+   "es": "¿Qué pasa? Los relays y otras apps pueden actuar. También puedes bloquear a $1.",
+   "fr": "Qu'est-ce qui ne va pas ? Les relais et les autres applis peuvent agir. Tu peux aussi bloquer $1.",
+   "ja": "何が問題ですか?リレーや他のアプリが対応できます。$1 をブロックすることもできます。",
+   "pt": "O que há de errado? Relays e outros apps podem agir. Você também pode bloquear $1.",
+   "zh": "有什么问题?中继和其他应用可以处理。你也可以屏蔽 $1。"
+  },
   {
    "en": "^@(\\S+) is taken\\.$",
    "de": "@$1 ist vergeben.",

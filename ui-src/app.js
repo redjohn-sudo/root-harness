@@ -4,7 +4,7 @@
 import { tete, cligner } from './root.js'
 import { qr } from './ident.js'
 import { LANGUES, langue, appliquer } from './langue.js'
-import { vueFil, vueProfil, vueNotifs, vueCommus, surveillerNotifs, evenementReseau } from './social.js'
+import { vueFil, vueProfil, vueNotifs, vueCommus, surveillerNotifs, evenementReseau, feuilleBloques } from './social.js'
 
 let H = null                                  // the host
 const $ = (s, r = document) => r.querySelector(s)
@@ -727,7 +727,7 @@ async function vueReglages() {
     <div class="verre carte">
       <div class="reglage">${tete()}<div class="l"><div>${esc(st.pseudo || '')}</div><div class="d" style="font-family:var(--mono)">${esc(st.at ? '@' + st.at : st.id || '')}</div></div></div>
       ${pc ? inter('r-stay', 'Stay signed in', 'No password at launch', st.stay) + inter('r-sync', 'Sync my devices', 'Sealed, on relays', st.sync) + inter('r-trouve', 'Findable by my ID', 'Friends can add you', st.findable !== false) : ''}
-      <div class="boutons"><button class="bouton" id="r-lock">Lock</button>${pc ? '<button class="bouton" id="r-mdp">Password</button><button class="bouton" id="r-kit">Recovery kit</button>' : '<button class="bouton danger" id="r-sortir">Sign out</button>'}</div></div>
+      <div class="boutons"><button class="bouton" id="r-lock">Lock</button>${pc ? '<button class="bouton" id="r-mdp">Password</button><button class="bouton" id="r-kit">Recovery kit</button>' : '<button class="bouton danger" id="r-sortir">Sign out</button>'}<button class="bouton" id="r-bloques">Blocked</button></div></div>
     <div class="section">language<span class="ligne"></span></div>
     <div class="verre carte"><select class="champ" id="r-langue">${LANGUES.map(([c, n]) => `<option value="${c}"${c === langue() ? ' selected' : ''}>${n}</option>`).join('')}</select></div>
     <div class="section">background<span class="ligne"></span></div>
@@ -735,6 +735,7 @@ async function vueReglages() {
     <div id="r-plus"></div>
     <div class="d" style="color:var(--encre-4);font-size:12px;text-align:center;margin:34px 0 0">root-harness · AGPL-3.0 · <a href="https://github.com/redjohn-sudo/root-harness" target="_blank" rel="noopener">source</a></div></div></div>`
   $('#r-langue').onchange = (e) => { appliquer(e.target.value); vueReglages() }
+  $('#r-bloques').onclick = () => feuilleBloques(H)
   $('#r-stay') && ($('#r-stay').onclick = async () => { await H.account.setStay(!st.stay); vueReglages() })
   $('#r-sync') && ($('#r-sync').onclick = async () => { await H.account.setSync(!st.sync); vueReglages() })
   $('#r-trouve') && ($('#r-trouve').onclick = async () => { await H.account.setFindable(st.findable === false); vueReglages() })

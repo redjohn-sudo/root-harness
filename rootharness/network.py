@@ -48,6 +48,7 @@ DIR = HOME / "network"
 PROFILE = DIR / "profile.json"        # your extras: school, role, state, work list, pinned badges
 MINE = DIR / "mine.json"              # ids of your own reactions and reposts, to take them back
 NOTIFS = DIR / "notifications.json"   # when you last looked, followers already known, what was already pushed
+BLOCKED = DIR / "blocked.json"        # who you blocked (also published as your mute list, NIP-51)
 RELAYS = ["wss://relay.damus.io", "wss://nos.lol", "wss://relay.primal.net"]
 TAG = "root-harness"                  # on every post made here: the "for you" feed is this tag
 EXTRAS = "rh-profile"                 # kind 30078 identifier of your profile extras
@@ -59,6 +60,8 @@ LEVELS = ((20, "actively active"), (8, "very active"), (1, "active"))
 
 K_PROFILE, K_POST, K_FOLLOWS, K_REPOST, K_REACTION, K_AWARD, K_DELETE = 0, 1, 3, 6, 7, 8, 5
 K_PINNED, K_BADGE, K_COMMUNITY, K_APPDATA, K_AUTH = 30008, 30009, 34550, 30078, 27235
+K_MUTE, K_REPORT = 10000, 1984
+REPORTS = ("spam", "nudity", "illegal", "impersonation", "other")
 
 on_change = lambda: None     # the window points this at the sync
 
@@ -248,9 +251,13 @@ def work_suggest() -> list[dict]:
     return out
 
 
+def blocked_set() -> set[str]:
+    return set(_read(BLOCKED, {}).keys())
+
+
 def raw() -> dict:
     """Your local copies, for the sealed sync: extras and the ids of your own reactions."""
-    return {"profile": _read(PROFILE, {}), "mine": _read(MINE, {"reactions": {}, "reposts": {}})}
+    return {"profile": _read(PROFILE, {}), "mine": _read(MINE, {"reactions": {}, "reposts": {}}), "blocked": _read(BLOCKED, {})}
 
 
 def merge(remote: dict) -> None:
@@ -269,6 +276,11 @@ def merge(remote: dict) -> None:
                 changed = True
     if changed:
         _write(MINE, mine)
+    theirs_b = remote.get("blocked") or {}
+    if theirs_b:
+        b = _read(BLOCKED, {})
+        if any(h not in b for h in theirs_b):
+            _write(BLOCKED, {**theirs_b, **b})
 
 
 # -- the client -------------------------------------------------------------------------------
@@ -501,6 +513,11 @@ class Network:
         return {**sent, "removed": True}
 
     def delete_post(self, post_id: str) -> dict:
+        """A deletion request (NIP-09); this device also hides it, even if a relay keeps it."""
+        mine = _read(MINE, {"reactions": {}, "reposts": {}})
+        mine.setdefault("deleted", []).append(post_id)
+        mine["deleted"] = mine["deleted"][-500:]
+        _write(MINE, mine)
         return self._do(self._send(self._event(K_DELETE, "", [["e", post_id], ["k", str(K_POST)]])))
 
     # -- reading ----------------------------------------------------------------------------------
@@ -539,8 +556,13 @@ class Network:
         """Events -> posts with their authors, counts and what you did on them."""
         n = _n()
         posts, by_id = [], {}
+        blocked, deleted = blocked_set(), set(_read(MINE, {}).get("deleted", []))
         for ev in evs:
             p = self._post_of(ev)
+            if p and p["id"] in deleted:
+                continue
+            if p and (p["author"]["hex"] in blocked or (p.get("reposted_by") or {}).get("hex") in blocked):
+                continue                                   # someone you blocked: never shown
             if p and p["id"] not in by_id:
                 by_id[p["id"]] = p
                 posts.append(p)
@@ -708,9 +730,10 @@ class Network:
                                  self._f().kind(n.Kind(K_FOLLOWS)).pubkey(me).limit(500)])
         state = _read(NOTIFS, {"seen_at": 0, "followers": {}, "pushed_at": 0})
         items, targets, now = [], set(), int(time.time())
+        blocked = blocked_set()
         for ev in evs:
             who, kind, tags = ev.author().to_hex(), ev.kind().as_u16(), _tags(ev)
-            if who == self.me:
+            if who == self.me or who in blocked:
                 continue
             at = ev.created_at().as_secs()
             if kind == K_FOLLOWS:
@@ -822,6 +845,63 @@ class Network:
         self._profiles.pop(self.me, None)
         self.publish_profile()
         return {**sent, "at": a}
+
+    # -- keeping the network healthy: block, report, delete -------------------------------------------
+
+    def block(self, hexkey: str, on: bool = True) -> dict:
+        """Your mute list (NIP-51, kind 10000), kept whole: their posts, replies and notifications disappear here."""
+        if not re.fullmatch(r"[0-9a-f]{64}", hexkey or "") or hexkey == self.me:
+            return {"error": "Nobody to block."}
+
+        async def go():
+            n = _n()
+            evs = await self._fetch([self._f().kind(n.Kind(K_MUTE)).author(self._pk(self.me)).limit(1)])
+            ev = max(evs, key=lambda e: e.created_at().as_secs()) if evs else None
+            tags = [t for t in (_tags(ev) if ev else []) if t]
+            tags = [t for t in tags if t[:2] != ["p", hexkey]] + ([["p", hexkey]] if on else [])
+            out = n.EventBuilder(n.Kind(K_MUTE), ev.content() if ev else "").tags([n.Tag.parse(t) for t in tags]).finalize(self.keys)
+            return await self._send(out)
+        sent = self._do(go())
+        b = _read(BLOCKED, {})
+        if on:
+            b[hexkey] = int(time.time())
+        else:
+            b.pop(hexkey, None)
+        _write(BLOCKED, b)
+        if on:
+            try:
+                self.follow(hexkey, False)
+            except Exception:
+                pass
+        return {**sent, "blocked": on}
+
+    def blocked(self) -> list[dict]:
+        """Who you blocked, with their profiles (to unblock from the settings)."""
+        hexes = sorted(blocked_set(), key=lambda h: -_read(BLOCKED, {}).get(h, 0))
+        got = self._do(self._profiles_of(set(hexes))) if hexes else {}
+        return [got.get(h) or {"hex": h} for h in hexes]
+
+    def sync_blocked(self) -> int:
+        """Bring back the list published from another device of yours."""
+        async def go():
+            evs = await self._fetch([self._f().kind(_n().Kind(K_MUTE)).author(self._pk(self.me)).limit(1)])
+            return max(evs, key=lambda e: e.created_at().as_secs()) if evs else None
+        ev = self._do(go())
+        if not ev:
+            return len(blocked_set())
+        b = _read(BLOCKED, {})
+        for t in _tags(ev):
+            if len(t) > 1 and t[0] == "p" and re.fullmatch(r"[0-9a-f]{64}", t[1]):
+                b.setdefault(t[1], ev.created_at().as_secs())
+        _write(BLOCKED, b)
+        return len(b)
+
+    def report(self, post_id: str, author: str, reason: str = "other") -> dict:
+        """NIP-56 report: relays and other apps can act on it. You also stop seeing that person."""
+        reason = reason if reason in REPORTS else "other"
+        tags = [["p", author, reason]] + ([["e", post_id, reason]] if re.fullmatch(r"[0-9a-f]{64}", post_id or "") else [])
+        sent = self._do(self._send(self._event(K_REPORT, "", tags)))
+        return {**sent, "reported": reason}
 
     def lookup(self, text: str) -> dict | None:
         """@name, vincent#k7f2qa9m or an npub -> that person's profile."""

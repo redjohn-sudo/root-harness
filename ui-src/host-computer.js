@@ -59,6 +59,7 @@ const host = {
     upload: async (file) => api().net_upload(await dataUrl(file), file.name || 'file'),
     posting: (s, a) => api().settings_posting(s, a),
     follow: (h, on) => api().net_follow(h, on), people: (L) => api().net_people(L), claimAt: (n) => api().net_claim_at(n),
+    block: (h, on) => api().net_block(h, on), blocked: () => api().net_blocked(), report: (id, a, r) => api().net_report(id, a, r),
     notifications: () => api().net_notifications(), notificationsSeen: () => api().net_notifications_seen(), notificationsNew: () => api().net_notifications_new(),
     badges: (h) => api().net_badges(h || ''), pin: (c) => api().net_badges_pin(c), defineBadge: (i, n, d, img) => api().net_badge_define(i, n, d, img || ''), award: (a, r) => api().net_badge_award(a, r), checkBadges: () => api().net_badges_check(),
     communities: () => api().net_communities(), createCommunity: (n, d) => api().net_community_create(n, d || ''), join: (s, on) => api().net_community_join(s, on),

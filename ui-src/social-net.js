@@ -9,7 +9,7 @@ import { handle } from './ident.js'
 export const AT = 'rh-at:'
 export const atNorm = (n) => { n = String(n || '').trim().replace(/^@/, '').toLowerCase(); return /^[a-z0-9_]{3,20}$/.test(n) ? n : '' }
 export const TAG = 'root-harness', EXTRAS = 'rh-profile', MEDIA_HOST = 'https://nostr.build/api/v2/nip96/upload', MEDIA_MAX = 20 * 1024 * 1024
-const K = { profil: 0, post: 1, suivis: 3, suppr: 5, repost: 6, reaction: 7, award: 8, epingles: 30008, badge: 30009, commu: 34550, extras: 30078, auth: 27235 }
+const K = { profil: 0, post: 1, suivis: 3, suppr: 5, repost: 6, masques: 10000, signal: 1984, reaction: 7, award: 8, epingles: 30008, badge: 30009, commu: 34550, extras: 30078, auth: 27235 }
 const ETATS = ['etudie', 'travaille', 'cherche'], MONTRER = ['pseudo', 'name', 'both']
 const now = () => Math.floor(Date.now() / 1000)
 export const slug = (t) => (t || '').toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40)
@@ -52,6 +52,7 @@ export function reseau({ pool, relays, sk, me, pseudo, store, activite, expire =
   const profils = new Map()                                  // hex -> profile view
   const extras = () => extrasPropres(extrasVides(), store.get('rh-net-profile', {}) || {})
   const mine = () => store.get('rh-net-mine', { reactions: {}, reposts: {} }) || { reactions: {}, reposts: {} }
+  const bloques = () => new Set(Object.keys(store.get('rh-net-blocked', {}) || {}))
 
   // expire (seconds) is for tests only: the events vanish from the relays (NIP-40)
   const signer = (kind, content, tags) => finalizeEvent({ kind, created_at: now(), content, tags: [...tags, ['client', TAG], ...(expire ? [['expiration', String(now() + expire)]] : [])] }, sk)
@@ -142,8 +143,9 @@ export function reseau({ pool, relays, sk, me, pseudo, store, activite, expire =
       counts: { replies: 0, reposts: 0, reactions: 0 }, mine: { reaction: false, repost: false, reply: false }, reposted_by, raw: JSON.stringify(ev) }
   }
   async function hydrater(evs, limit) {
-    const parId = new Map(), posts = []
-    for (const ev of evs) { const p = postDe(ev); if (p && !parId.has(p.id)) { parId.set(p.id, p); posts.push(p) } }
+    const parId = new Map(), posts = [], B = bloques(), effaces = new Set(mine().deleted || [])
+    for (const ev of evs) { const p = postDe(ev); if (!p || effaces.has(p.id) || B.has(p.author.hex) || (p.reposted_by && B.has(p.reposted_by.hex))) continue   // blocked, or deleted by you
+      if (!parId.has(p.id)) { parId.set(p.id, p); posts.push(p) } }
     posts.sort((a, b) => b.at - a.at); posts.splice(limit)
     const ids = posts.map((p) => p.id)
     if (ids.length) for (const ev of await lire([{ kinds: [K.post, K.repost, K.reaction], '#e': ids, limit: 2000 }], 6000)) {
@@ -188,8 +190,9 @@ export function reseau({ pool, relays, sk, me, pseudo, store, activite, expire =
       const since = now() - days * 86400, st = etat(), items = [], cibles = new Set(), t0 = now()
       const evs = await lire([{ kinds: [K.post, K.repost, K.reaction, K.award], '#p': [me], since, limit: limit * 2 }, { kinds: [K.suivis], '#p': [me], limit: 500 }])
       const connus = Object.keys(st.followers).length > 0
+      const B = bloques()
       for (const ev of evs) {
-        if (ev.pubkey === me) continue
+        if (ev.pubkey === me || B.has(ev.pubkey)) continue
         const cible = first(ev.tags, 'e')
         if (ev.kind === K.suivis) { if (!ev.tags.some((t) => t[0] === 'p' && t[1] === me)) continue
           if (!(ev.pubkey in st.followers)) st.followers[ev.pubkey] = connus ? t0 : ev.created_at   // a follow counts once, when first seen
@@ -259,7 +262,23 @@ export function reseau({ pool, relays, sk, me, pseudo, store, activite, expire =
       delete m.reposts[postId]; store.set('rh-net-mine', m)
       return { ...(await envoyer(signer(K.suppr, '', [['e', rid], ['k', String(K.repost)]]))), removed: true }
     },
-    supprimer: (postId) => envoyer(signer(K.suppr, '', [['e', postId], ['k', String(K.post)]])),
+    supprimer(postId) { const m = mine(); m.deleted = [...(m.deleted || []), postId].slice(-500); store.set('rh-net-mine', m)
+      return envoyer(signer(K.suppr, '', [['e', postId], ['k', String(K.post)]])) },
+    // keeping the network healthy: your mute list (NIP-51), reports (NIP-56)
+    async bloquer(hex, on = true) {
+      if (!hexOk(hex) || hex === me) return { error: 'Nobody to block.' }
+      const L = await lire([{ kinds: [K.masques], authors: [me], limit: 1 }]), ev = L.sort((a, b) => b.created_at - a.created_at)[0]
+      const tags = (ev ? ev.tags.map((t) => [...t]) : []).filter((t) => !(t[0] === 'p' && t[1] === hex)).concat(on ? [['p', hex]] : [])
+      const sent = await envoyer(finalizeEvent({ kind: K.masques, created_at: now(), content: ev ? ev.content : '', tags }, sk))
+      const b = store.get('rh-net-blocked', {}) || {}; if (on) b[hex] = now(); else delete b[hex]; store.set('rh-net-blocked', b)
+      if (on) await this.suivre(hex, false).catch(() => {})
+      return { ...sent, blocked: on }
+    },
+    async bloques() { const L = [...bloques()]; if (!L.length) return []; const P = await profilsDe(new Set(L)); return L.map((h) => P[h] || { hex: h }) },
+    async signaler(postId, author, reason = 'other') {
+      reason = ['spam', 'nudity', 'illegal', 'impersonation', 'other'].includes(reason) ? reason : 'other'
+      return { ...(await envoyer(signer(K.signal, '', [['p', author, reason], ...(hexOk(postId) ? [['e', postId, reason]] : [])]))), reported: reason }
+    },
 
     // reading
     async fil(scope = 'for-you', { community = '', friends = [], days = 7, limit = 60 } = {}) {

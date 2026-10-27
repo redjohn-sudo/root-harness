@@ -610,6 +610,15 @@ class Api:
                 pass
         return net.feed(scope, community, people, int(days), int(limit))
 
+    def net_block(self, hexkey: str, on: bool = True):
+        return self._net().block(hexkey, bool(on))
+
+    def net_blocked(self):
+        return self._net().blocked()
+
+    def net_report(self, post_id: str, author: str, reason: str = "other"):
+        return self._net().report(post_id, author, reason)
+
     def net_claim_at(self, name: str):
         return self._net().claim_at(name)
 

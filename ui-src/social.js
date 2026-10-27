@@ -38,6 +38,7 @@ const I = {
   retour: '<path d="M15 5l-7 7 7 7"/>', fleche: '<path d="M12 19V5M5 12l7-7 7 7"/>',
   reglages: '<circle cx="12" cy="12" r="3"/><path d="M19.4 13.5l1.6 1.2-2 3.4-1.9-.8a7.6 7.6 0 01-2 1.2L14.8 21h-4l-.3-2.5a7.6 7.6 0 01-2-1.2l-1.9.8-2-3.4 1.6-1.2a7.7 7.7 0 010-2.4L4.6 9.9l2-3.4 1.9.8a7.6 7.6 0 012-1.2L10.8 3h4l.3 2.5a7.6 7.6 0 012 1.2l1.9-.8 2 3.4-1.6 1.2a7.7 7.7 0 010 2.4z"/>',
   diese: '<path d="M9.5 4L7.5 20M16.5 4l-2 16M4.5 9h16M3.5 15h16"/>',
+  points: '<circle cx="5.5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="18.5" cy="12" r="1.3"/>',
   personne: '<circle cx="12" cy="8.5" r="3.6"/><path d="M4.5 20c.8-3.8 3.8-6 7.5-6s6.7 2.2 7.5 6"/>',
 }
 const ico = (n, w = 1.7) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">${I[n]}</svg>`
@@ -117,7 +118,7 @@ function carte(p, i) {
       <div class="pact"><button data-a="rep" title="answer">${ico('repondre')}<span>${p.counts.replies || ''}</span></button>
         <button data-a="rt" class="${mine.repost ? 'on rt' : ''}" title="repost">${ico('republier')}<span>${p.counts.reposts || ''}</span></button>
         <button data-a="coeur" class="${mine.reaction ? 'on coeur' : ''}" title="like">${ico('coeur')}<span>${p.counts.reactions || ''}</span></button>
-        <button data-a="part" title="share">${ico('partage')}</button></div></div></article>`
+        <button data-a="part" title="share">${ico('partage')}</button><button data-a="plus" title="more">${ico('points')}</button></div></div></article>`
 }
 function brancher(el, posts, H, apres) {
   $$('.post', el).forEach((a) => {
@@ -145,6 +146,7 @@ function brancher(el, posts, H, apres) {
         apres && apres()
       } else if (k === 'rep') ouvrirFil(p, H, true)
       else if (k === 'part') partager(p, H)
+      else if (k === 'plus') menuPost(p, H)
     })
   })
 }
@@ -321,7 +323,7 @@ function rendrePage(v, mur, H) {
   v.innerHTML = `<div class="defile" style="padding-top:0"><div class="colonne">
     <div class="couverture"${p.banner ? ` style="background-image:url('${esc(p.banner)}')"` : ''}></div>
     <div class="p-haut">${avatar(p, 104)}<div class="boutons" style="margin:0 0 6px auto">${mine ? `<button class="rond-btn" id="p-reglages" title="Settings">${ico('reglages')}</button><button class="bouton" id="p-qr">Share my ID</button><button class="bouton plein" id="p-edit">Edit profile</button>`
-      : `<button class="bouton" id="p-retour">${ico('retour')} my page</button><button class="bouton" id="p-ami">Add as a friend</button><button class="bouton${mur.i_follow ? '' : ' plein'}" id="p-suivre">${mur.i_follow ? 'Following' : 'Follow'}</button>`}</div></div>
+      : `<button class="bouton" id="p-retour">${ico('retour')} my page</button><button class="rond-btn" id="p-plus" title="more">${ico('points')}</button><button class="bouton" id="p-ami">Add as a friend</button><button class="bouton${mur.i_follow ? '' : ' plein'}" id="p-suivre">${mur.i_follow ? 'Following' : 'Follow'}</button>`}</div></div>
     <div class="p-nom">${esc(nom(p))}${!mine && mur.follows_me ? '<span class="suit-toi">follows you</span>' : ''}</div><div class="p-id">${esc(sousNom(p))}</div>
     <div class="p-puces">${p.state === 'cherche' ? '<span class="etat cherche">● looking for a job</span>' : p.state ? `<span class="etat">${esc(ETATS[p.state])}</span>` : ''}
       ${p.school || p.role ? `<span class="etat">${esc([p.school, p.role].filter(Boolean).join(' · '))}</span>` : ''}${niveau(p.level, p.level_label)}</div>
@@ -346,6 +348,7 @@ function rendrePage(v, mur, H) {
     $('#p-qr').onclick = () => { if (p.id) { H.copy(p.id); toast('Your ID is copied: ' + p.id) } }
   } else {
     $('#p-retour').onclick = () => vueProfil(H, '')
+    $('#p-plus').onclick = () => menuPersonne(p, H)
     $('#p-suivre').onclick = async () => {
       const b = $('#p-suivre'), on = !mur.i_follow
       b.disabled = true
@@ -605,4 +608,54 @@ async function uneCommunaute(H, slug) {
   try { const posts = await H.network.feed('community', { community: slug }); retenir(cle, posts); if (COMMU_OUVERTE !== slug) return
     if (!vu) dessiner(posts); else if (!pareil(vu, posts)) calme(v, () => dessiner(posts)) }
   catch (e) { if (!vu && $('#c-liste')) $('#c-liste').innerHTML = `<div class="vide">${esc(e.message || 'Unavailable.')}</div>` }
+}
+
+// =====================================================================================
+// keeping the network healthy: delete your posts, block, report
+// =====================================================================================
+const RAISONS = [['spam', 'Spam'], ['impersonation', 'Pretends to be someone'], ['nudity', 'Nudity'], ['illegal', 'Illegal'], ['other', 'Something else']]
+function oublierVu() { DEJA.clear(); try { Object.keys(localStorage).filter((k) => k.startsWith('rh-vu:')).forEach((k) => localStorage.removeItem(k)) } catch {} }
+function retirer(sel) { $$(sel).forEach((el) => { el.style.transition = 'opacity .25s, transform .25s'; el.style.opacity = 0; el.style.transform = 'translateX(-12px)'; setTimeout(() => el.remove(), 260) }) }
+function menuPost(p, H) {
+  if (p.exemple) return toast('An example: nothing is sent.')
+  const a = p.author || {}, moi = !!a.mine
+  const f = feuille(`<h3>${moi ? 'your post' : esc(nom(a))}</h3><div class="sous-titre" style="margin-bottom:12px">${esc((p.text || '').slice(0, 120))}${(p.text || '').length > 120 ? '...' : ''}</div>
+    <div class="boutons">${moi ? '<button class="bouton danger" id="m-suppr">Delete this post</button>'
+      : `<button class="bouton danger" id="m-bloquer">Block ${esc(nom(a))}</button><button class="bouton" id="m-signaler">Report this post</button>`}</div>
+    ${moi ? '<div class="d" style="color:var(--encre-4);font-size:12px;margin-top:10px">Relays are asked to delete it, and it disappears here. A relay that keeps copies may still show it elsewhere.</div>' : ''}`)
+  $('#m-suppr', f) && ($('#m-suppr', f).onclick = async () => {
+    try { const r = await H.network.remove(p.id); if (r && r.error) throw new Error(r.error); fermerFeuille(); oublierVu(); retirer(`.post[data-id="${CSS.escape(p.id)}"]`); toast('Post deleted.') }
+    catch (e) { toast(e.message || 'Not deleted.') } })
+  $('#m-bloquer', f) && ($('#m-bloquer', f).onclick = () => bloquer(a, H))
+  $('#m-signaler', f) && ($('#m-signaler', f).onclick = () => signaler(p.id, a, H))
+}
+function menuPersonne(a, H) {
+  const f = feuille(`<h3>${esc(nom(a))}</h3><div class="boutons"><button class="bouton danger" id="m-bloquer">Block ${esc(nom(a))}</button><button class="bouton" id="m-signaler">Report this account</button></div>`)
+  $('#m-bloquer', f).onclick = () => bloquer(a, H)
+  $('#m-signaler', f).onclick = () => signaler('', a, H)
+}
+async function bloquer(a, H) {
+  try { const r = await H.network.block(a.hex, true); if (r && r.error) throw new Error(r.error)
+    fermerFeuille(); oublierVu()
+    retirer(`.post:has(.qui[data-hex="${CSS.escape(a.hex)}"])`)
+    toast(nom(a) + ' is blocked: you will not see them any more.')
+    if (PAGE === a.hex) vueProfil(H, '')
+  } catch (e) { toast(e.message || 'Not blocked.') }
+}
+function signaler(postId, a, H) {
+  const f = feuille(`<h3>report</h3><div class="sous-titre" style="margin-bottom:12px">What is wrong? Relays and other apps can act on it. You can also block ${esc(nom(a))}.</div>
+    <div class="liste">${RAISONS.map(([k, t], i) => `<div class="item" data-r="${k}" style="--i:${i}"><div class="tx"><div class="t">${t}</div></div></div>`).join('')}</div>`)
+  $$('[data-r]', f).forEach((el) => el.onclick = async () => {
+    try { const r = await H.network.report(postId, a.hex, el.dataset.r); if (r && r.error) throw new Error(r.error); fermerFeuille(); toast('Reported. Thank you.') }
+    catch (e) { toast(e.message || 'Not sent.') } })
+}
+export async function feuilleBloques(H) {
+  const f = feuille(`<h3>blocked</h3><div class="sous-titre" style="margin-bottom:10px">You do not see their posts, replies or notifications.</div><div class="liste" id="b-liste"><div class="vide">Loading...</div></div>`)
+  let L = []
+  try { L = await H.network.blocked() } catch (e) { $('#b-liste', f).innerHTML = `<div class="vide">${esc(e.message || 'Unavailable.')}</div>`; return }
+  const dessiner = () => {
+    $('#b-liste', f).innerHTML = L.map((g, i) => `<div class="item" style="--i:${i}">${avatar(g, 36)}<div class="tx"><div class="t">${esc(nom(g))}</div><div class="m">${esc(sousNom(g))}</div></div><button class="bouton" data-h="${esc(g.hex)}">Unblock</button></div>`).join('') || '<div class="vide">Nobody blocked.</div>'
+    $$('[data-h]', f).forEach((b) => b.onclick = async () => { try { await H.network.block(b.dataset.h, false); L = L.filter((g) => g.hex !== b.dataset.h); oublierVu(); dessiner(); toast('Unblocked.') } catch (e) { toast(e.message || 'Not done.') } })
+  }
+  dessiner()
 }
