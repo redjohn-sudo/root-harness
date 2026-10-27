@@ -22,8 +22,16 @@ from typing import Callable
 from . import permissions
 
 # The permission modes, in the order Shift+Tab cycles them (as in the terminal).
-MODES = ["default", "acceptEdits", "plan", "auto"]
+# No "auto": this in-app agent must never bypass the per-tool confirmation card,
+# so injected content cannot make it act on the world unattended.
+MODES = ["default", "acceptEdits", "plan"]
 EFFORTS_EXTRA = ["ultracode"]   # dynamic workflows, on top of any effort level
+
+# Tool names this agent may never use, whatever the mode: browser and computer
+# control (it inherits the user's MCP servers, Claude-in-Chrome among them) and
+# anything that could buy or act on the world from content it merely read.
+# A prefix match, denied in _can_use_tool before any card is shown.
+DENIED_TOOLS = ("mcp__claude-in-chrome", "mcp__claude_in_chrome", "computer")
 
 # Friendly titles for the permission card.
 TITLES = {"Bash": "Run a command", "Write": "Write a file", "Edit": "Edit a file",
@@ -77,7 +85,8 @@ class Session:
         options = sdk.ClaudeAgentOptions(
             setting_sources=["user", "project", "local"],   # your setup, as in the terminal
             system_prompt={"type": "preset", "preset": "claude_code"},
-            cwd=self.cwd, model=self.model, permission_mode=self.mode,
+            cwd=self.cwd, model=self.model,
+            permission_mode=self.mode if self.mode in MODES else "default",
             can_use_tool=self._can_use_tool,
             resume=self.resume_id, fork_session=self.fork,
             effort=self.effort if self.effort not in (None, *EFFORTS_EXTRA) else None)
@@ -96,6 +105,12 @@ class Session:
 
     async def _can_use_tool(self, name: str, args: dict, context):
         sdk = _sdk()
+        low = name.lower()
+        if any(low == d or low.startswith(d) for d in DENIED_TOOLS):
+            return sdk.PermissionResultDeny(
+                message=(f"{name} is blocked for the in-app agent: browser and computer "
+                         "control are not available here. Never act on the world (open "
+                         "pages, buy, send) from something you only read."))
         if name == "AskUserQuestion":
             answers = await asyncio.to_thread(permissions.ask_question, args.get("questions", []))
             if answers is None:
@@ -219,9 +234,9 @@ class Session:
         return self._do(self._collect(f"/effort {level}"), 60)
 
     def set_mode(self, mode: str) -> None:
-        self.mode = mode
+        self.mode = mode if mode in MODES else "default"
         if self.client:
-            self._do(self.client.set_permission_mode(mode), 10)
+            self._do(self.client.set_permission_mode(self.mode), 10)
 
     def close(self) -> None:
         async def stop():

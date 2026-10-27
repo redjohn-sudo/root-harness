@@ -23,7 +23,7 @@ from pathlib import Path
 
 import webview
 
-from . import permissions, brains, conversations, account, glossary
+from . import permissions, brains, conversations, account, glossary, bridge_claude
 
 UI = Path(__file__).parent / "ui" / "index.html"
 # Your settings live in your home folder, never in the repo.
@@ -1004,7 +1004,8 @@ The conversation:
             self.session.messages = messages
         self.session.effort = st.get("efforts", {}).get(bid) or self.brain.get("effort")
         if hasattr(self.session, "mode"):
-            self.session.mode = st.get("modes", {}).get(bid) or "default"
+            saved_mode = st.get("modes", {}).get(bid) or "default"
+            self.session.mode = saved_mode if saved_mode in bridge_claude.MODES else "default"
         if hasattr(self.session, "start"):
             self.session.start()          # Claude Code starts in the background
         elif not self.session.model:
