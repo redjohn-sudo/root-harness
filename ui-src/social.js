@@ -513,7 +513,7 @@ function editer(H, p) {
   let work = (p.work || []).map((w) => ({ ...w })), photo = p.picture, couv = p.banner, montrer = p.show || 'pseudo', etat = p.state || 'etudie', fPhoto = null, fCouv = null
   const f = feuille(`<h3>edit your profile</h3><div class="sous-titre" style="margin-bottom:10px">Everyone can see it.</div>
     <div class="ed-photo">${avatar(p, 64)}<label class="bouton">photo<input type="file" id="e-photo" accept="image/*" hidden></label><label class="bouton">cover<input type="file" id="e-couv" accept="image/*" hidden></label>${p.picture ? '<button class="bouton" id="e-sansphoto">Root\'s head</button>' : ''}</div>
-    <div class="d" style="font-size:13px;color:var(--encre-3);margin:4px 0 6px">your @, like on X: the first to take a name keeps it</div>
+    <div class="d" style="font-size:13px;color:var(--encre-3);margin:4px 0 6px">your @: the first to take a name keeps it</div>
     <div class="boite-btw" style="margin-bottom:10px"><input class="champ" id="e-at" placeholder="@yourname" value="${p.at ? '@' + esc(p.at) : ''}" autocomplete="off" autocapitalize="none"><button class="bouton" id="e-at-ok">Take it</button></div>
     <input class="champ" id="e-nom" placeholder="first and last name (optional)" value="${esc(p.name || '')}">
     <div class="d" style="font-size:13px;color:var(--encre-3);margin:12px 0 6px">show</div>

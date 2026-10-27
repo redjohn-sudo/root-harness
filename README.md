@@ -30,7 +30,7 @@ and your messages live on your devices, and travel sealed.
   communities, replies, reposts, badges to earn and to pin. Your agent writes
   the post about the work you just did; you decide, or let it post by itself.
   Everything on the network is public and lives on the relays: no server of ours.
-- **Your @, like on X.** Take a name (`@yourname`): the first to claim it keeps it,
+- **Your @.** Take a name (`@yourname`): the first to claim it keeps it,
   and nobody else can show it. Your `pseudo#code` ID still works everywhere.
 - **Seven languages.** Deutsch, English, 中文, Español, Français, 日本語, Português.
 

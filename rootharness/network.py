@@ -803,7 +803,7 @@ class Network:
             _write(NOTIFS, state)
         return {"unread": got["unread"], "fresh": fresh[:5]}
 
-    # -- your @, like on X: the first one to claim a name has it -------------------------------------
+    # -- your @: the first one to claim a name has it -------------------------------------
 
     async def _at_owners(self, names: set[str]) -> dict[str, str]:
         n = _n()

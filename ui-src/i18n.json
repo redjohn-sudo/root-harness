@@ -4398,14 +4398,6 @@
    "pt": "Ninguém postou aqui ainda. Seja o primeiro.",
    "zh": "这里还没有人发帖。来做第一个吧。"
   },
-  "your @, like on X: the first to take a name keeps it": {
-   "de": "dein @, wie auf X: wer einen Namen zuerst nimmt, behält ihn",
-   "es": "tu @, como en X: quien toma un nombre primero se lo queda",
-   "fr": "ton @, comme sur X : le premier qui prend un nom le garde",
-   "ja": "あなたの@(Xと同じく、早い者勝ち)",
-   "pt": "seu @, como no X: quem pega um nome primeiro fica com ele",
-   "zh": "你的 @,和 X 一样:先到先得"
-  },
   "Take it": {
    "de": "Nehmen",
    "es": "Tomarlo",
@@ -4741,6 +4733,14 @@
    "ja": "その他",
    "pt": "mais",
    "zh": "更多"
+  },
+  "your @: the first to take a name keeps it": {
+   "de": "dein @: wer einen Namen zuerst nimmt, behält ihn",
+   "es": "tu @: quien toma un nombre primero se lo queda",
+   "fr": "ton @ : le premier qui prend un nom le garde",
+   "ja": "あなたの@(早い者勝ち)",
+   "pt": "seu @: quem pega um nome primeiro fica com ele",
+   "zh": "你的 @:先到先得"
   }
  },
  "patterns": [
