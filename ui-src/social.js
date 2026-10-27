@@ -87,7 +87,7 @@ const sousNom = (p) => '@' + (p.at || p.id || (p.npub ? p.npub.slice(0, 14) + '.
 const avatar = (p, t = 44) => p.picture ? `<span class="av" style="width:${t}px;height:${t}px;background-image:url('${esc(p.picture)}')"></span>`
   : p.mine ? `<span class="av racine" style="width:${t}px;height:${t}px">${tete()}</span>`
   : `<span class="av lettre" style="width:${t}px;height:${t}px;--h:${p.hue ?? hue(p.hex)}">${esc((nom(p)[0] || '?').toUpperCase())}</span>`
-const COMMUS_BASE = [['agents', 'Agents'], ['security-ctf', 'Security & CTF'], ['42-paris', '42 Paris'], ['hackathons', 'Hackathons'], ['local-llms', 'Local LLMs'], ['design', 'Design']]
+const COMMUS_BASE = [['agents', 'Agents'], ['security-ctf', 'Security & CTF'], ['42-paris', '42 Paris'], ['hackathons', 'Hackathons'], ['local-llms', 'Local LLMs'], ['design', 'Design'], ['tech-news', 'Tech news'], ['actu-tech', 'Actu tech']]
 const nomCommu = (slug) => (COMMUS_BASE.find((c) => c[0] === slug) || [slug, slug.replace(/-/g, ' ')])[1]
 
 let MOI = null
