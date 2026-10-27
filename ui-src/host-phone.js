@@ -7,6 +7,8 @@
 //  - vibe code: GitHub's API, with the GitHub sign-in from your sealed memory;
 //  - your agents on the computer: sealed orders when it is on.
 // The password never leaves the phone.
+// Older iPhones (before iOS 15.4) lack Object.hasOwn, used by a library: give it to them.
+if (!Object.hasOwn) Object.hasOwn = (o, k) => Object.prototype.hasOwnProperty.call(o, k)
 import { scryptAsync } from '@noble/hashes/scrypt.js'
 import { sha256 } from '@noble/hashes/sha2.js'
 import { hmac } from '@noble/hashes/hmac.js'
