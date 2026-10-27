@@ -437,6 +437,13 @@ label.bouton,label.rond-btn{cursor:pointer}
 .suggest-at .sa b{font-weight:600}
 .suggest-at .sa span{color:var(--encre-3);font-size:13px}
 
+/* official accounts: a small green check; automated ones say so */
+.coche{display:inline-grid;place-items:center;width:17px;height:17px;flex:none;color:var(--vert-clair);vertical-align:-2px;margin-left:5px}
+.coche svg{width:17px;height:17px;display:block}
+.p-nom .coche{width:22px;height:22px;margin-left:8px;vertical-align:-1px}.p-nom .coche svg{width:22px;height:22px}
+.auto{display:inline-block;font-size:12px;color:var(--encre-3);border:1px solid var(--trait);border-radius:999px;padding:0 7px;margin-left:6px;line-height:18px;vertical-align:1px}
+.p-nom .auto{font-size:12.5px;line-height:20px;vertical-align:5px}
+
 /* a quiet refresh: no entrance animation */
 .sans-anim .post,.sans-anim .tr,.sans-anim .notif,.sans-anim .p-badges>span,.sans-anim .gb{animation:none!important;opacity:1!important}
 

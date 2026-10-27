@@ -62,6 +62,9 @@ K_PROFILE, K_POST, K_FOLLOWS, K_REPOST, K_REACTION, K_AWARD, K_DELETE = 0, 1, 3,
 K_PINNED, K_BADGE, K_COMMUNITY, K_APPDATA, K_AUTH = 30008, 30009, 34550, 30078, 27235
 K_MUTE, K_REPORT = 10000, 1984
 REPORTS = ("spam", "nudity", "illegal", "impersonation", "other")
+# official root-harness accounts (the check next to their name): shipped with the app, nobody can add themselves
+VERIFIED = {k: v for k, v in json.loads((Path(__file__).parent / "verified.json").read_text(encoding="utf-8")).items()} \
+    if (Path(__file__).parent / "verified.json").exists() else {}
 
 on_change = lambda: None     # the window points this at the sync
 
@@ -175,6 +178,8 @@ def profile_set(fields: dict) -> dict:
         p["pinned"] = [str(a) for a in fields["pinned"] if isinstance(a, str) and a.startswith(f"{K_BADGE}:")][:8]
     if isinstance(fields.get("communities"), list):
         p["communities"] = sorted({slug(c) for c in fields["communities"] if slug(c)})[:30]
+    if "bot" in fields:
+        p["bot"] = bool(fields["bot"])          # an automated account says so (NIP-24)
     _write(PROFILE, p)
     return p
 
@@ -356,11 +361,11 @@ class Network:
         """Kind 0 (what every Nostr app shows) + your root-harness extras (kind 30078)."""
         p, act = profile_local(), activity()
         shown = {"pseudo": self.pseudo, "name": p["name"] or self.pseudo, "both": f"{p['name']} ({self.pseudo})" if p["name"] else self.pseudo}[p["show"]]
-        meta = {"name": directory.slug(self.pseudo), "display_name": shown, "about": p["about"],
+        meta = {"name": directory.slug(self.pseudo), "display_name": shown, "about": p["about"], "bot": bool(p.get("bot")),
                 "picture": p["picture"] if p["picture"].startswith("https://") else "", "banner": p["banner"] if p["banner"].startswith("https://") else ""}
         extras = {"v": 1, "id": directory.handle(self.pseudo, self.me), "pseudo": self.pseudo, "name": p["name"], "show": p["show"],
                   "school": p["school"], "role": p["role"], "state": p["state"], "level": act["level"], "days": act["days"],
-                  "work": p["work"], "communities": p["communities"], "at": p.get("at", ""),
+                  "work": p["work"], "communities": p["communities"], "at": p.get("at", ""), "bot": bool(p.get("bot")),
                   # a picture pasted as data stays small here (relays cap events near 100 KB); uploaded ones are just links
                   "picture": p["picture"][:48000], "banner": p["banner"][:48000]}
 
@@ -417,6 +422,7 @@ class Network:
              "work": [_work_item(w) for w in (extras.get("work") or []) if isinstance(w, dict) and w.get("title")][:12],
              "communities": [slug(c) for c in (extras.get("communities") or []) if slug(c)][:30],
              "at": at_norm(extras.get("at", "")),
+             "bot": bool(meta.get("bot") or extras.get("bot")), "verified": hexkey in VERIFIED,
              "mine": hexkey == self.me}
         v["level_label"] = level_label(v["level"])
         if hexkey == self.me and not (meta or extras):

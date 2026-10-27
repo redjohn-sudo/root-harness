@@ -80,6 +80,9 @@ const ETATS = { etudie: 'student', travaille: 'working', cherche: 'looking for a
 const niveau = (n, label) => n ? `<span class="niveau n${n}" title="from the days spent working with agents"><i></i><i></i><i></i>${esc(label || ['', 'active', 'very active', 'actively active'][n])}</span>` : ''
 const hue = (hex) => Math.round(parseInt((hex || '7f').slice(0, 2), 16) * 360 / 255)
 const nom = (p) => (p.show === 'name' || p.show === 'both') && p.name ? p.name : p.pseudo || p.display || 'someone'
+// the check of an official root-harness account, and the mark of an automated one
+const marques = (p) => (p.verified ? `<span class="coche" title="Official root-harness account"><svg viewBox="0 0 24 24"><path d="M12 2.5l2.4 1.8 3-.2.9 2.9 2.4 1.8-.9 2.9.9 2.9-2.4 1.8-.9 2.9-3-.2L12 21.5l-2.4-1.8-3 .2-.9-2.9-2.4-1.8.9-2.9-.9-2.9 2.4-1.8.9-2.9 3 .2z" fill="currentColor"/><path d="M8.3 12.3l2.5 2.5 5-5.2" fill="none" stroke="#0e1b17" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>` : '')
+  + (p.bot ? '<span class="auto" title="Posts by itself">automated</span>' : '')
 const sousNom = (p) => '@' + (p.at || p.id || (p.npub ? p.npub.slice(0, 14) + '...' : 'unknown')) + (p.show === 'both' && p.name && p.pseudo ? ' · ' + p.pseudo : '')
 const avatar = (p, t = 44) => p.picture ? `<span class="av" style="width:${t}px;height:${t}px;background-image:url('${esc(p.picture)}')"></span>`
   : p.mine ? `<span class="av racine" style="width:${t}px;height:${t}px">${tete()}</span>`
@@ -137,7 +140,7 @@ function carte(p, i) {
   const a = p.author, rb = p.reposted_by, mine = p.mine || {}
   return `<article class="post" data-id="${esc(p.id)}" style="--i:${Math.min(i, 12)}">${avatar(a)}
     <div class="pc">${rb ? `<div class="pagent" style="margin:0 0 6px">${ico('republier')}reposted by ${esc(nom(rb))}</div>` : ''}
-      <div class="ph"><b class="qui" data-hex="${esc(a.hex || '')}">${esc(nom(a))}</b>${niveau(a.level, a.level_label)}<span class="m">${esc(sousNom(a))} · ${quand(p.at)}${p.community ? ' · ' + esc(nomCommu(p.community)) : ''}${p.reply_to ? ' · reply' : ''}</span></div>
+      <div class="ph"><b class="qui" data-hex="${esc(a.hex || '')}">${esc(nom(a))}</b>${marques(a)}${a.bot ? '' : niveau(a.level, a.level_label)}<span class="m">${esc(sousNom(a))} · ${quand(p.at)}${p.community ? ' · ' + esc(nomCommu(p.community)) : ''}${p.reply_to ? ' · reply' : ''}</span></div>
       <div class="ptx">${liensAt(riche(p.text))}</div>${medias(p)}
       ${p.agent ? `<div class="pagent">${ico('etincelle')}written with ${esc(p.agent)}</div>` : ''}
       ${p.exemple ? '<div class="pagent" style="color:var(--ambre)">an example</div>' : ''}
@@ -150,6 +153,7 @@ function brancher(el, posts, H, apres) {
   $$('.post', el).forEach((a) => {
     const p = posts.find((x) => x.id === a.dataset.id); if (!p) return
     $('.qui', a).onclick = (e) => { e.stopPropagation(); if (p.author.hex) ouvrirPage(H, p.author.hex) }
+    $$('.ptx a[href]', a).forEach((el) => el.addEventListener('click', (e) => e.stopPropagation()))   // a link opens itself, not the thread
     $$('.at', a).forEach((el) => el.onclick = async (e) => { e.stopPropagation()
       try { const g = await H.network.lookup('@' + el.dataset.at); if (!g) return toast('Nobody has @' + el.dataset.at + ' yet.'); ouvrirPage(H, g.hex) } catch (err) { toast(err.message || 'Not found.') } })
     $('.ptx', a).onclick = () => { if (!p.exemple) ouvrirFil(p, H) }
@@ -354,7 +358,7 @@ function rendrePage(v, mur, H) {
     <div class="couverture"${p.banner ? ` style="background-image:url('${esc(p.banner)}')"` : ''}></div>
     <div class="p-haut">${avatar(p, 104)}<div class="boutons" style="margin:0 0 6px auto">${mine ? `<button class="rond-btn" id="p-reglages" title="Settings">${ico('reglages')}</button><button class="bouton" id="p-qr">Share my ID</button><button class="bouton plein" id="p-edit">Edit profile</button>`
       : `<button class="bouton" id="p-retour">${ico('retour')} my page</button><button class="rond-btn" id="p-plus" title="more">${ico('points')}</button><button class="bouton" id="p-ami">Add as a friend</button><button class="bouton${mur.i_follow ? '' : ' plein'}" id="p-suivre">${mur.i_follow ? 'Following' : 'Follow'}</button>`}</div></div>
-    <div class="p-nom">${esc(nom(p))}${!mine && mur.follows_me ? '<span class="suit-toi">follows you</span>' : ''}</div><div class="p-id">${esc(sousNom(p))}</div>
+    <div class="p-nom">${esc(nom(p))}${marques(p)}${!mine && mur.follows_me ? '<span class="suit-toi">follows you</span>' : ''}</div><div class="p-id">${esc(sousNom(p))}</div>
     <div class="p-puces">${p.state === 'cherche' ? '<span class="etat cherche">● looking for a job</span>' : p.state ? `<span class="etat">${esc(ETATS[p.state])}</span>` : ''}
       ${p.school || p.role ? `<span class="etat">${esc([p.school, p.role].filter(Boolean).join(' · '))}</span>` : ''}${niveau(p.level, p.level_label)}</div>
     ${p.about ? `<div class="p-bio">${esc(p.about)}</div>` : ''}
@@ -413,7 +417,7 @@ async function listeGens(H, titre, hexes, vide) {
   if (!vu || !pareil(vu, gens)) dessinerGens(f, gens, vide, H)
 }
 function dessinerGens(f, gens, vide, H) {
-  $('#g-liste', f).innerHTML = gens.map((g, i) => `<div class="item personne" data-hex="${esc(g.hex)}" style="--i:${Math.min(i, 30)}">${avatar(g, 40)}<div class="tx"><div class="t">${esc(nom(g))} ${niveau(g.level, g.level_label)}</div>
+  $('#g-liste', f).innerHTML = gens.map((g, i) => `<div class="item personne" data-hex="${esc(g.hex)}" style="--i:${Math.min(i, 30)}">${avatar(g, 40)}<div class="tx"><div class="t">${esc(nom(g))}${marques(g)} ${g.bot ? '' : niveau(g.level, g.level_label)}</div>
     <div class="m">${esc(sousNom(g))}${g.state === 'cherche' ? ' · looking for a job' : g.school || g.role ? ' · ' + esc([g.school, g.role].filter(Boolean).join(' · ')) : ''}</div></div></div>`).join('') || `<div class="vide">${esc(vide)}</div>`
   $$('#g-liste .personne', f).forEach((el) => el.onclick = () => { fermerFeuille(); ouvrirPage(H, el.dataset.hex) })
 }

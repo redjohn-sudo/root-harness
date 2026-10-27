@@ -5,6 +5,7 @@ import { finalizeEvent, verifyEvent } from 'nostr-tools/pure'
 import * as nip19 from 'nostr-tools/nip19'
 import { getToken } from 'nostr-tools/nip98'
 import { handle } from './ident.js'
+import VERIFIED from '../rootharness/verified.json'   // official root-harness accounts: shipped with the app
 
 export const AT = 'rh-at:'
 export const atNorm = (n) => { n = String(n || '').trim().replace(/^@/, '').toLowerCase(); return /^[a-z0-9_]{3,20}$/.test(n) ? n : '' }
@@ -76,7 +77,8 @@ export function reseau({ pool, relays, sk, me, pseudo, store, activite, expire =
       picture: String(ex.picture || meta.picture || '').slice(0, 120000), banner: String(ex.banner || meta.banner || '').slice(0, 160000),
       school: String(ex.school || '').slice(0, 60), role: String(ex.role || '').slice(0, 80), state: ETATS.includes(ex.state) ? ex.state : '',
       level: Math.min(3, Math.max(0, parseInt(ex.level, 10) || 0)), work: (ex.work || []).filter((w) => w && w.title).slice(0, 12).map(travailPropre),
-      communities: (ex.communities || []).map(slug).filter(Boolean).slice(0, 30), at: atNorm(ex.at), mine: hex === me }
+      communities: (ex.communities || []).map(slug).filter(Boolean).slice(0, 30), at: atNorm(ex.at), mine: hex === me,
+      bot: !!(meta.bot || ex.bot), verified: Object.prototype.hasOwnProperty.call(VERIFIED, hex) }
     v.level_label = niveauLabel(v.level)
     profils.set(hex, v)
     return v
