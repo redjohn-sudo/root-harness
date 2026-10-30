@@ -45,7 +45,8 @@ const host = {
     since: (id) => api().instinct_since(id || 0), send: (t) => api().instinct_send(t),
   },
   mcp: {
-    list: () => api().mcp_list(), add: (n, c, a, d) => api().mcp_add(n, c, a || '', d || ''), remove: (n) => api().mcp_remove(n),
+    list: () => api().mcp_list(), add: (n, c, a, d) => api().mcp_add(n, c, a || '', d || ''),
+    addUrl: (n, u, t, d) => api().mcp_add_url(n, u, t || '', d || ''), remove: (n) => api().mcp_remove(n),
   },
   glossary: {
     list: () => api().glossary_list(), setAuto: (o) => api().glossary_set_auto(o), add: (t, d, c) => api().glossary_add(t, d, c),
@@ -120,9 +121,11 @@ function vibeEtat(v, esc) {
 async function mcpRender(box, esc, toast) {
   if (!box) return
   const { servers } = await api().mcp_list()
+  const where = (s) => s.url ? esc(s.url) : `${esc(s.command)} ${esc((s.args || []).join(' '))}`
   const row = (s) => `<div class="reglage"><div class="l">${esc(s.name)}
+      ${s.url ? '<span class="mcp-tag">remote</span>' : ''}
       ${s.connected ? `<span class="mcp-on">${s.tools.length} tool${s.tools.length === 1 ? '' : 's'}</span>` : '<span class="mcp-off">not connected</span>'}
-      <div class="d" style="font-family:var(--mono)">${esc(s.command)} ${esc((s.args || []).join(' '))}</div>
+      <div class="d" style="font-family:var(--mono)">${where(s)}</div>
       ${s.connected && s.tools.length ? `<div class="d">${esc(s.tools.join(', '))}</div>` : ''}
       ${(s.deny || []).length ? `<div class="d">blocked: ${esc(s.deny.join(', '))}</div>` : ''}</div>
     <button class="bouton danger mcp-x" data-n="${esc(s.name)}">Remove</button></div>`
@@ -130,17 +133,33 @@ async function mcpRender(box, esc, toast) {
     (servers.length ? servers.map(row).join('')
       : '<div class="l d">No MCP servers yet. Add one below and every brain gets its tools.</div>') +
     `<div class="mcp-add">
+      <div class="d">Local server (a command on this computer)</div>
       <input id="mcp-n" placeholder="name (e.g. files)">
       <input id="mcp-c" placeholder="command (e.g. npx)">
       <input id="mcp-a" placeholder="arguments (e.g. -y @modelcontextprotocol/server-filesystem ~/Documents)">
       <input id="mcp-d" placeholder="block (optional): tool names to hide, comma-separated">
-      <button class="bouton" id="mcp-go">Add server</button></div>`
+      <button class="bouton" id="mcp-go">Add local server</button></div>
+    <div class="mcp-add">
+      <div class="d">Remote server (a URL)</div>
+      <input id="mcp-rn" placeholder="name (e.g. github)">
+      <input id="mcp-ru" placeholder="url (e.g. https://host/mcp)">
+      <input id="mcp-rt" placeholder="token (optional): sent as a Bearer header">
+      <input id="mcp-rd" placeholder="block (optional): tool names to hide, comma-separated">
+      <button class="bouton" id="mcp-rgo">Add remote server</button></div>`
   box.querySelectorAll('.mcp-x').forEach((b) => { b.onclick = async () => { await api().mcp_remove(b.dataset.n); mcpRender(box, esc, toast) } })
   box.querySelector('#mcp-go').onclick = async () => {
     const go = box.querySelector('#mcp-go'), n = box.querySelector('#mcp-n').value, c = box.querySelector('#mcp-c').value, a = box.querySelector('#mcp-a').value, d = box.querySelector('#mcp-d').value
     go.textContent = 'Connecting...'; go.disabled = true
     const r = await api().mcp_add(n, c, a || "", d || "")
-    if (!r.ok) { toast(r.error || 'Could not connect.'); go.textContent = 'Add server'; go.disabled = false; return }
+    if (!r.ok) { toast(r.error || 'Could not connect.'); go.textContent = 'Add local server'; go.disabled = false; return }
+    toast(`Connected: ${r.tools.length} tool${r.tools.length === 1 ? '' : 's'}.`)
+    mcpRender(box, esc, toast)
+  }
+  box.querySelector('#mcp-rgo').onclick = async () => {
+    const go = box.querySelector('#mcp-rgo'), n = box.querySelector('#mcp-rn').value, u = box.querySelector('#mcp-ru').value, t = box.querySelector('#mcp-rt').value, d = box.querySelector('#mcp-rd').value
+    go.textContent = 'Connecting...'; go.disabled = true
+    const r = await api().mcp_add_url(n, u, t || "", d || "")
+    if (!r.ok) { toast(r.error || 'Could not connect.'); go.textContent = 'Add remote server'; go.disabled = false; return }
     toast(`Connected: ${r.tools.length} tool${r.tools.length === 1 ? '' : 's'}.`)
     mcpRender(box, esc, toast)
   }

@@ -515,3 +515,4 @@ label.bouton,label.rond-btn{cursor:pointer}
   border: 1px solid var(--trait); background: var(--verre-fort); color: var(--encre); font-size: 13px; }
 .mcp-add input:focus { outline: none; border-color: var(--led); }
 .mcp-add .bouton { flex: 0 0 auto; }
+.mcp-tag { margin-left: 8px; font-size: 11px; color: var(--ambre); }

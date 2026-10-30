@@ -1007,7 +1007,8 @@ The conversation:
         cfg, st = self._mcp_config(), mcp_tools.status()
         return {"servers": [
             {"name": n, "command": c.get("command", ""), "args": c.get("args", []),
-             "deny": c.get("deny", []), "connected": n in st, "tools": st.get(n, {}).get("tools", [])}
+             "url": c.get("url", ""), "deny": c.get("deny", []),
+             "connected": n in st, "tools": st.get(n, {}).get("tools", [])}
             for n, c in cfg.items()]}
 
     def mcp_add(self, name: str, command: str, args: str = "", deny: str = ""):
@@ -1024,6 +1025,25 @@ The conversation:
         if r["ok"]:
             cfg = self._mcp_config()
             cfg[name] = {"command": command, "args": parts, "deny": blocked}
+            self._mcp_write(cfg)
+        return r
+
+    def mcp_add_url(self, name: str, url: str, token: str = "", deny: str = ""):
+        """A remote MCP server (streamable HTTP). An optional token is sent as a
+        Bearer header. Stored in this computer's mcp_servers.json, never synced."""
+        from . import mcp_tools
+        name, url = (name or "").strip(), (url or "").strip()
+        if not name or not url:
+            return {"ok": False, "error": "A name and a URL are needed.", "tools": []}
+        headers = {"Authorization": f"Bearer {token.strip()}"} if (token or "").strip() else None
+        blocked = [t for t in re.split(r"[,\s]+", deny or "") if t]
+        r = mcp_tools.add_server(name, url=url, headers=headers, deny=blocked)
+        if r["ok"]:
+            cfg = self._mcp_config()
+            entry = {"url": url, "deny": blocked}
+            if headers:
+                entry["headers"] = headers
+            cfg[name] = entry
             self._mcp_write(cfg)
         return r
 

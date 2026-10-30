@@ -24,6 +24,7 @@ from contextlib import AsyncExitStack
 
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
+from mcp.client.streamable_http import streamable_http_client
 
 from . import permissions, tools
 
@@ -50,12 +51,28 @@ def _submit(coro, timeout: float = 30):
     return asyncio.run_coroutine_threadsafe(coro, _loop).result(timeout)
 
 
-async def _serve(params: StdioServerParameters, queue: asyncio.Queue, ready: asyncio.Future) -> None:
+async def _streams(oa: dict, stack: AsyncExitStack):
+    """Open the transport for one server and return its (read, write) streams.
+    `oa` is either a local command (stdio) or a remote url (streamable HTTP,
+    with optional auth headers). Everything is entered on `stack`, so it closes
+    in this same task."""
+    if oa.get("url"):
+        http_client = None
+        if oa.get("headers"):
+            import httpx2
+            http_client = await stack.enter_async_context(httpx2.AsyncClient(headers=oa["headers"]))
+        return await stack.enter_async_context(streamable_http_client(oa["url"], http_client=http_client))
+    params = StdioServerParameters(command=oa["command"], args=list(oa.get("args", [])),
+                                   env=oa.get("env") or None)
+    return await stack.enter_async_context(stdio_client(params))
+
+
+async def _serve(oa: dict, queue: asyncio.Queue, ready: asyncio.Future) -> None:
     """Own one server's session for its whole life, in this single task: open it,
     answer calls from the queue, and close it here when asked."""
     try:
         async with AsyncExitStack() as stack:
-            streams = await stack.enter_async_context(stdio_client(params))
+            streams = await _streams(oa, stack)
             session = await stack.enter_async_context(ClientSession(streams[0], streams[1]))
             await session.initialize()
             listed = await session.list_tools()
@@ -75,10 +92,10 @@ async def _serve(params: StdioServerParameters, queue: asyncio.Queue, ready: asy
             ready.set_exception(e)
 
 
-async def _start(params: StdioServerParameters):
+async def _start(oa: dict):
     queue: asyncio.Queue = asyncio.Queue()
     ready: asyncio.Future = _loop.create_future()
-    task = asyncio.ensure_future(_serve(params, queue, ready))
+    task = asyncio.ensure_future(_serve(oa, queue, ready))
     listed = await ready                              # raises if the server failed to start
     return queue, task, listed
 
@@ -141,7 +158,7 @@ def _reconnect(server: str) -> bool:
     if not info:
         return False
     try:
-        queue, task, _ = _submit(_start(info["params"]))
+        queue, task, _ = _submit(_start(info["oa"]))
     except Exception:                                # noqa: BLE001
         return False
     old_q, old_t = info["queue"], info["task"]
@@ -212,20 +229,24 @@ def _ensure_search_tool() -> None:
         "schema": {"query": str}, "kind": permissions.READ_ONLY, "run": run}
 
 
-def add_server(name: str, command: str, args=(), env: dict | None = None, deny=()) -> dict:
+def add_server(name: str, command: str = "", args=(), env: dict | None = None, deny=(),
+               url: str = "", headers: dict | None = None) -> dict:
     """Connect one server and register its tools. Replaces a server of the same
-    name. `deny` is a list of tool names to leave out (e.g. destructive ones).
-    Returns {ok, tools: [names], error}. Never raises: a bad server just reports
-    its error, so one broken server cannot take the others down."""
+    name. Give either a local `command` (stdio) or a remote `url` (streamable
+    HTTP, with optional `headers` for auth). `deny` lists tool names to leave
+    out (e.g. destructive ones). Returns {ok, tools: [names], error}. Never
+    raises: a bad server just reports its error, so one broken server cannot
+    take the others down."""
     _ensure_loop()
     remove_server(name)
-    params = StdioServerParameters(command=command, args=list(args), env=env or None)
+    oa = {"url": url, "headers": headers or None} if url else {
+        "command": command, "args": list(args), "env": env or None}
     try:
-        queue, task, listed = _submit(_start(params))
+        queue, task, listed = _submit(_start(oa))
     except Exception as e:                           # noqa: BLE001
         return {"ok": False, "tools": [], "error": f"{type(e).__name__}: {e}"}
     blocked = set(deny or ())
-    _servers[name] = {"queue": queue, "task": task, "params": params, "tools": []}
+    _servers[name] = {"queue": queue, "task": task, "oa": oa, "tools": []}
     names = [_register(name, t) for t in listed.tools if t.name not in blocked]
     _servers[name]["tools"] = names
     _ensure_search_tool()
@@ -259,7 +280,8 @@ def load(servers: dict) -> list[str]:
     added: list[str] = []
     errors: dict[str, str] = {}
     for name, cfg in servers.items():
-        r = add_server(name, cfg["command"], cfg.get("args", []), cfg.get("env"), cfg.get("deny", []))
+        r = add_server(name, cfg.get("command", ""), cfg.get("args", []), cfg.get("env"),
+                       cfg.get("deny", []), cfg.get("url", ""), cfg.get("headers"))
         if r["ok"]:
             added += [f"{name}__{t}" for t in r["tools"]]
         else:
