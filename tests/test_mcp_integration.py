@@ -64,6 +64,19 @@ def test_permission_gate_blocks_a_denied_tool():
         permissions.set_asker(lambda title, args: False)
 
 
+def test_deny_list_leaves_a_tool_out():
+    permissions.set_asker(lambda title, args: True)
+    r = mcp_tools.add_server("demo", sys.executable, [SERVER], deny=["add"])
+    try:
+        assert "shout" in r["tools"]
+        assert "add" not in r["tools"]
+        assert "demo__add" not in tools.REGISTRY     # blocked, never registered
+        assert "demo__shout" in tools.REGISTRY
+    finally:
+        mcp_tools.unload()
+        permissions.set_asker(lambda title, args: False)
+
+
 def test_unload_removes_the_tools():
     permissions.set_asker(lambda title, args: True)
     mcp_tools.load({"demo": {"command": sys.executable, "args": [SERVER]}})

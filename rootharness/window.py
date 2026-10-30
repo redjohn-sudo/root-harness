@@ -1007,10 +1007,10 @@ The conversation:
         cfg, st = self._mcp_config(), mcp_tools.status()
         return {"servers": [
             {"name": n, "command": c.get("command", ""), "args": c.get("args", []),
-             "connected": n in st, "tools": st.get(n, {}).get("tools", [])}
+             "deny": c.get("deny", []), "connected": n in st, "tools": st.get(n, {}).get("tools", [])}
             for n, c in cfg.items()]}
 
-    def mcp_add(self, name: str, command: str, args: str = ""):
+    def mcp_add(self, name: str, command: str, args: str = "", deny: str = ""):
         from . import mcp_tools
         name, command = (name or "").strip(), (command or "").strip()
         if not name or not command:
@@ -1019,10 +1019,11 @@ The conversation:
             parts = shlex.split(args or "")
         except ValueError as e:
             return {"ok": False, "error": f"Bad arguments: {e}", "tools": []}
-        r = mcp_tools.add_server(name, command, parts)
+        blocked = [t for t in re.split(r"[,\s]+", deny or "") if t]
+        r = mcp_tools.add_server(name, command, parts, deny=blocked)
         if r["ok"]:
             cfg = self._mcp_config()
-            cfg[name] = {"command": command, "args": parts}
+            cfg[name] = {"command": command, "args": parts, "deny": blocked}
             self._mcp_write(cfg)
         return r
 

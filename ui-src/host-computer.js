@@ -45,7 +45,7 @@ const host = {
     since: (id) => api().instinct_since(id || 0), send: (t) => api().instinct_send(t),
   },
   mcp: {
-    list: () => api().mcp_list(), add: (n, c, a) => api().mcp_add(n, c, a || ''), remove: (n) => api().mcp_remove(n),
+    list: () => api().mcp_list(), add: (n, c, a, d) => api().mcp_add(n, c, a || '', d || ''), remove: (n) => api().mcp_remove(n),
   },
   glossary: {
     list: () => api().glossary_list(), setAuto: (o) => api().glossary_set_auto(o), add: (t, d, c) => api().glossary_add(t, d, c),
@@ -123,7 +123,8 @@ async function mcpRender(box, esc, toast) {
   const row = (s) => `<div class="reglage"><div class="l">${esc(s.name)}
       ${s.connected ? `<span class="mcp-on">${s.tools.length} tool${s.tools.length === 1 ? '' : 's'}</span>` : '<span class="mcp-off">not connected</span>'}
       <div class="d" style="font-family:var(--mono)">${esc(s.command)} ${esc((s.args || []).join(' '))}</div>
-      ${s.connected && s.tools.length ? `<div class="d">${esc(s.tools.join(', '))}</div>` : ''}</div>
+      ${s.connected && s.tools.length ? `<div class="d">${esc(s.tools.join(', '))}</div>` : ''}
+      ${(s.deny || []).length ? `<div class="d">blocked: ${esc(s.deny.join(', '))}</div>` : ''}</div>
     <button class="bouton danger mcp-x" data-n="${esc(s.name)}">Remove</button></div>`
   box.innerHTML =
     (servers.length ? servers.map(row).join('')
@@ -132,12 +133,13 @@ async function mcpRender(box, esc, toast) {
       <input id="mcp-n" placeholder="name (e.g. files)">
       <input id="mcp-c" placeholder="command (e.g. npx)">
       <input id="mcp-a" placeholder="arguments (e.g. -y @modelcontextprotocol/server-filesystem ~/Documents)">
+      <input id="mcp-d" placeholder="block (optional): tool names to hide, comma-separated">
       <button class="bouton" id="mcp-go">Add server</button></div>`
   box.querySelectorAll('.mcp-x').forEach((b) => { b.onclick = async () => { await api().mcp_remove(b.dataset.n); mcpRender(box, esc, toast) } })
   box.querySelector('#mcp-go').onclick = async () => {
-    const go = box.querySelector('#mcp-go'), n = box.querySelector('#mcp-n').value, c = box.querySelector('#mcp-c').value, a = box.querySelector('#mcp-a').value
+    const go = box.querySelector('#mcp-go'), n = box.querySelector('#mcp-n').value, c = box.querySelector('#mcp-c').value, a = box.querySelector('#mcp-a').value, d = box.querySelector('#mcp-d').value
     go.textContent = 'Connecting...'; go.disabled = true
-    const r = await api().mcp_add(n, c, a || "")
+    const r = await api().mcp_add(n, c, a || "", d || "")
     if (!r.ok) { toast(r.error || 'Could not connect.'); go.textContent = 'Add server'; go.disabled = false; return }
     toast(`Connected: ${r.tools.length} tool${r.tools.length === 1 ? '' : 's'}.`)
     mcpRender(box, esc, toast)

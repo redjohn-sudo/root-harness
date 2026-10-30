@@ -102,10 +102,11 @@ def _register(server: str, session: ClientSession, tool) -> str:
     return full
 
 
-def add_server(name: str, command: str, args=(), env: dict | None = None) -> dict:
+def add_server(name: str, command: str, args=(), env: dict | None = None, deny=()) -> dict:
     """Connect one server and register its tools. Replaces a server of the same
-    name. Returns {ok, tools: [names], error}. Never raises: a bad server just
-    reports its error, so one broken server cannot take the others down."""
+    name. `deny` is a list of tool names to leave out (e.g. destructive ones).
+    Returns {ok, tools: [names], error}. Never raises: a bad server just reports
+    its error, so one broken server cannot take the others down."""
     _ensure_loop()
     remove_server(name)
     params = StdioServerParameters(command=command, args=list(args), env=env or None)
@@ -113,7 +114,8 @@ def add_server(name: str, command: str, args=(), env: dict | None = None) -> dic
         stack, session, listed = _run(_open(params))
     except Exception as e:                           # noqa: BLE001
         return {"ok": False, "tools": [], "error": f"{type(e).__name__}: {e}"}
-    names = [_register(name, session, t) for t in listed.tools]
+    blocked = set(deny or ())
+    names = [_register(name, session, t) for t in listed.tools if t.name not in blocked]
     _servers[name] = {"stack": stack, "session": session, "tools": names}
     return {"ok": True, "tools": [n.split("__", 1)[1] for n in names], "error": ""}
 
@@ -145,7 +147,7 @@ def load(servers: dict) -> list[str]:
     added: list[str] = []
     errors: dict[str, str] = {}
     for name, cfg in servers.items():
-        r = add_server(name, cfg["command"], cfg.get("args", []), cfg.get("env"))
+        r = add_server(name, cfg["command"], cfg.get("args", []), cfg.get("env"), cfg.get("deny", []))
         if r["ok"]:
             added += [f"{name}__{t}" for t in r["tools"]]
         else:
