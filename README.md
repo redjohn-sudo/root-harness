@@ -36,10 +36,13 @@ and your messages live on your devices, and travel sealed.
 
 ## Start
 
+Needs **Python 3.11 or newer** (on macOS the built-in `python3` is 3.9: too old,
+so install a recent one, e.g. `brew install python@3.12`, and use it below).
+
 ```bash
 git clone https://github.com/redjohn-sudo/root-harness
 cd root-harness
-python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+python3.12 -m venv .venv && .venv/bin/pip install -r requirements.txt
 .venv/bin/python app.py
 ```
 
