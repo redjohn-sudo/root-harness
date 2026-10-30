@@ -77,6 +77,53 @@ def test_deny_list_leaves_a_tool_out():
         permissions.set_asker(lambda title, args: False)
 
 
+async def _kill(task):
+    task.cancel()
+    try:
+        await task
+    except BaseException:                            # noqa: BLE001
+        pass
+
+
+def test_a_dropped_server_reconnects_and_the_call_succeeds():
+    permissions.set_asker(lambda title, args: True)
+    mcp_tools.add_server("demo", sys.executable, [SERVER])
+    try:
+        # simulate a drop: cancel the owner task (its stdio context closes in-task)
+        info = mcp_tools._servers["demo"]
+        mcp_tools._submit(_kill(info["task"]))
+        assert info["task"].done()
+        # the tool call should notice the dead task, reconnect, and still answer
+        assert "4" in tools.run("demo__add", {"a": 2, "b": 2})
+    finally:
+        mcp_tools.unload()
+        permissions.set_asker(lambda title, args: False)
+
+
+def test_concurrent_calls_to_one_server_are_safe():
+    # stdio cannot be touched from several tasks at once; the owner task
+    # serialises the calls, so parallel callers must all get correct answers.
+    import threading
+    permissions.set_asker(lambda title, args: True)
+    mcp_tools.add_server("demo", sys.executable, [SERVER])
+    results: dict[int, str] = {}
+
+    def call(i):
+        results[i] = tools.run("demo__add", {"a": i, "b": 1})
+
+    try:
+        threads = [threading.Thread(target=call, args=(i,)) for i in range(8)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+        for i in range(8):
+            assert str(i + 1) in results[i], (i, results[i])
+    finally:
+        mcp_tools.unload()
+        permissions.set_asker(lambda title, args: False)
+
+
 def test_unload_removes_the_tools():
     permissions.set_asker(lambda title, args: True)
     mcp_tools.load({"demo": {"command": sys.executable, "args": [SERVER]}})
