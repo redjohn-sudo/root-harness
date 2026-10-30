@@ -36,8 +36,16 @@ and your messages live on your devices, and travel sealed.
 
 ## Start
 
-Needs **Python 3.11 or newer** (on macOS the built-in `python3` is 3.9: too old,
-so install a recent one, e.g. `brew install python@3.12`, and use it below).
+One line, from your terminal (or your Claude Code terminal). It picks a recent
+Python, installs root-harness, and opens it. Your Claude is connected through
+your own logged-in Claude Code: no API key to paste.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/redjohn-sudo/root-harness/main/install.sh | bash
+```
+
+Or by hand. Needs **Python 3.11 or newer** (on macOS the built-in `python3` is
+3.9: too old, so install a recent one, e.g. `brew install python@3.12`).
 
 ```bash
 git clone https://github.com/redjohn-sudo/root-harness
