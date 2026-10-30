@@ -30,13 +30,29 @@ done
 say "Using $($PY --version)"
 
 # 2. Claude Code is what connects their Claude, through the SDK, with no key.
+#    If it is missing, install it for them (the official installer). Logging in
+#    is a browser step they do themselves: it cannot run inside a piped script.
+export PATH="$HOME/.local/bin:$PATH"
+NEED_LOGIN=0
 if command -v claude >/dev/null 2>&1; then
   say "Claude Code found: your Claude will be connected through your own login."
 else
-  warn "Claude Code was not found on this machine."
-  warn "root-harness will still install, but its Claude brain needs Claude Code"
-  warn "installed and logged in. Get it at https://claude.com/claude-code , run"
-  warn "'claude' once to log in, then start root-harness."
+  say "Claude Code was not found. Installing it (this is what connects your Claude)..."
+  if curl -fsSL https://claude.ai/install.sh | bash; then
+    hash -r 2>/dev/null || true
+    if command -v claude >/dev/null 2>&1; then
+      say "Claude Code installed."
+      NEED_LOGIN=1
+    else
+      warn "Claude Code was installed but is not on your PATH yet. Open a new"
+      warn "terminal, run 'claude' once to log in, then start root-harness."
+      NEED_LOGIN=1
+    fi
+  else
+    warn "Could not install Claude Code automatically. Install it yourself from"
+    warn "https://claude.com/claude-code , run 'claude' once to log in, then start"
+    warn "root-harness. It will still install now; its Claude brain waits for login."
+  fi
 fi
 
 # 3. Clone, or update an existing copy.
@@ -56,8 +72,17 @@ say "Installing dependencies (this can take a minute)..."
 .venv/bin/python -m pip install --quiet --upgrade pip
 .venv/bin/python -m pip install --quiet -r requirements.txt
 
-# 5. Open it.
+# 5. Open it, unless they still need to log in to the Claude Code we just
+#    installed (its Claude brain stays dark until that one browser step is done).
 say ""
+if [ "$NEED_LOGIN" = "1" ]; then
+  say "Almost there. Two steps, once:"
+  say "  1. Log in to Claude Code:   claude          (then press Ctrl-C after login)"
+  say "  2. Start root-harness:      cd \"$DEST\" && .venv/bin/python app.py"
+  say ""
+  say "Claude Code needs a Pro, Max, Team or Console account; the free plan does not include it."
+  exit 0
+fi
 say "Done. Opening root-harness."
 say "Next time, start it with:  cd \"$DEST\" && .venv/bin/python app.py"
 exec .venv/bin/python app.py

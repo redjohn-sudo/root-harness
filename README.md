@@ -38,7 +38,8 @@ and your messages live on your devices, and travel sealed.
 
 One line, from your terminal (or your Claude Code terminal). It picks a recent
 Python, installs root-harness, and opens it. Your Claude is connected through
-your own logged-in Claude Code: no API key to paste.
+your own logged-in Claude Code: no API key to paste. If you do not have Claude
+Code yet, the installer sets it up and shows you the one login step.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/redjohn-sudo/root-harness/main/install.sh | bash
