@@ -506,3 +506,12 @@ label.bouton,label.rond-btn{cursor:pointer}
   .p-haut{flex-wrap:wrap;gap:10px 12px;padding:0 10px}
   .grille-badges{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+
+/* MCP servers settings: status pills and the add form */
+.mcp-on { margin-left: 8px; font-size: 11px; color: var(--led); }
+.mcp-off { margin-left: 8px; font-size: 11px; color: var(--encre-3); }
+.mcp-add { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.mcp-add input { flex: 1 1 100%; min-width: 0; padding: 9px 11px; border-radius: 10px;
+  border: 1px solid var(--trait); background: var(--verre-fort); color: var(--encre); font-size: 13px; }
+.mcp-add input:focus { outline: none; border-color: var(--led); }
+.mcp-add .bouton { flex: 0 0 auto; }

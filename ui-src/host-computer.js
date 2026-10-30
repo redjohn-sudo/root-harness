@@ -44,6 +44,9 @@ const host = {
     available: () => api().instinct_available(), history: (n) => api().instinct_history(n || 40),
     since: (id) => api().instinct_since(id || 0), send: (t) => api().instinct_send(t),
   },
+  mcp: {
+    list: () => api().mcp_list(), add: (n, c, a) => api().mcp_add(n, c, a || ''), remove: (n) => api().mcp_remove(n),
+  },
   glossary: {
     list: () => api().glossary_list(), setAuto: (o) => api().glossary_set_auto(o), add: (t, d, c) => api().glossary_add(t, d, c),
     remove: (i) => api().glossary_remove(i), ask: (i, q, h) => api().glossary_ask(i, q, h),
@@ -77,7 +80,9 @@ const host = {
       ${r.on ? `<div class="reglage"><div class="l">Same Wi-Fi: open in Safari<div class="d" style="font-family:var(--mono)">${esc((r.url || '').replace('https://', 'http://'))}</div></div></div>` : ''}
       <div class="reglage"><div class="l">GitHub on my phone<div class="d">Vibe code from the phone</div></div><span class="inter${t.on ? ' on' : ''}" id="r-ghtel"></span></div>
       <div class="boutons"><button class="bouton" id="r-relier">Link a phone (QR code)</button></div></div>
-      <div class="section">vibe code<span class="ligne"></span></div><div class="verre carte" id="r-vibe">${vibeEtat(v, esc)}</div>`
+      <div class="section">vibe code<span class="ligne"></span></div><div class="verre carte" id="r-vibe">${vibeEtat(v, esc)}</div>
+      <div class="section">tools (MCP)<span class="ligne"></span></div><div class="verre carte" id="r-mcp"><div class="l d">Loading...</div></div>`
+    mcpRender(el.querySelector('#r-mcp'), esc, toast)
     el.querySelector('#r-relier').onclick = relierTelephone
     el.querySelector('#r-tel').onclick = async () => { await api().remote_set(!r.on); host.reglagesEnPlus(el, { feuille, fermerFeuille, toast, esc }) }
     el.querySelector('#r-ghtel').onclick = async () => { const x = await api().vibe_phone_token(!t.on); if (x && x.error) toast(x.error); host.reglagesEnPlus(el, { feuille, fermerFeuille, toast, esc }) }
@@ -108,6 +113,35 @@ function vibeEtat(v, esc) {
   if (v.step === 'secrets') return `<div class="l">${esc(v.why)} In a terminal (root-harness never sees them):</div>
     ${v.missing.map((m) => `<pre class="code">${esc(v.commands[m])}</pre>`).join('')}<div class="boutons"><button class="bouton" id="r-revoir">Check again</button></div>`
   return `<div class="l">${esc(v.why || v.error || 'Unavailable')}</div><div class="boutons"><button class="bouton" id="r-revoir">Check again</button></div>`
+}
+
+// MCP servers: list what is connected, add one (a local command), remove one.
+// Each server's tools then reach every brain, behind the usual permission card.
+async function mcpRender(box, esc, toast) {
+  if (!box) return
+  const { servers } = await api().mcp_list()
+  const row = (s) => `<div class="reglage"><div class="l">${esc(s.name)}
+      ${s.connected ? `<span class="mcp-on">${s.tools.length} tool${s.tools.length === 1 ? '' : 's'}</span>` : '<span class="mcp-off">not connected</span>'}
+      <div class="d" style="font-family:var(--mono)">${esc(s.command)} ${esc((s.args || []).join(' '))}</div>
+      ${s.connected && s.tools.length ? `<div class="d">${esc(s.tools.join(', '))}</div>` : ''}</div>
+    <button class="bouton danger mcp-x" data-n="${esc(s.name)}">Remove</button></div>`
+  box.innerHTML =
+    (servers.length ? servers.map(row).join('')
+      : '<div class="l d">No MCP servers yet. Add one below and every brain gets its tools.</div>') +
+    `<div class="mcp-add">
+      <input id="mcp-n" placeholder="name (e.g. files)">
+      <input id="mcp-c" placeholder="command (e.g. npx)">
+      <input id="mcp-a" placeholder="arguments (e.g. -y @modelcontextprotocol/server-filesystem ~/Documents)">
+      <button class="bouton" id="mcp-go">Add server</button></div>`
+  box.querySelectorAll('.mcp-x').forEach((b) => { b.onclick = async () => { await api().mcp_remove(b.dataset.n); mcpRender(box, esc, toast) } })
+  box.querySelector('#mcp-go').onclick = async () => {
+    const go = box.querySelector('#mcp-go'), n = box.querySelector('#mcp-n').value, c = box.querySelector('#mcp-c').value, a = box.querySelector('#mcp-a').value
+    go.textContent = 'Connecting...'; go.disabled = true
+    const r = await api().mcp_add(n, c, a || "")
+    if (!r.ok) { toast(r.error || 'Could not connect.'); go.textContent = 'Add server'; go.disabled = false; return }
+    toast(`Connected: ${r.tools.length} tool${r.tools.length === 1 ? '' : 's'}.`)
+    mcpRender(box, esc, toast)
+  }
 }
 
 window.addEventListener('pywebviewready', () => lancer(host))

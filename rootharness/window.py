@@ -13,6 +13,7 @@ import base64
 import json
 import os
 import re
+import shlex
 import shutil
 import time
 import uuid
@@ -92,6 +93,7 @@ class Api:
         self._new_session()
         permissions.set_asker(self._ask)
         permissions.set_questioner(self._question)
+        threading.Thread(target=self._mcp_boot, daemon=True).start()
 
     def bind(self, window):
         self._window = window
@@ -976,6 +978,61 @@ The conversation:
         from . import instinct
         ok, err = instinct.send(text)
         return {"ok": ok, "error": err}
+
+    # -- MCP: external tools for every brain (mcp_tools.py) -------------------
+    # A server is a local command, specific to this computer, so its config
+    # lives in its own file and is never synced. Tools arrive behind the card.
+    MCP_FILE = "mcp_servers.json"
+
+    def _mcp_config(self) -> dict:
+        try:
+            return json.loads((SETTINGS.parent / self.MCP_FILE).read_text()).get("servers", {})
+        except (OSError, ValueError):
+            return {}
+
+    def _mcp_write(self, servers: dict) -> None:
+        SETTINGS.parent.mkdir(parents=True, exist_ok=True)
+        (SETTINGS.parent / self.MCP_FILE).write_text(json.dumps({"servers": servers}, indent=2))
+
+    def _mcp_boot(self) -> None:
+        """Connect the saved servers at launch (in the background)."""
+        try:
+            from . import mcp_tools
+            mcp_tools.load(self._mcp_config())
+        except Exception:
+            pass
+
+    def mcp_list(self):
+        from . import mcp_tools
+        cfg, st = self._mcp_config(), mcp_tools.status()
+        return {"servers": [
+            {"name": n, "command": c.get("command", ""), "args": c.get("args", []),
+             "connected": n in st, "tools": st.get(n, {}).get("tools", [])}
+            for n, c in cfg.items()]}
+
+    def mcp_add(self, name: str, command: str, args: str = ""):
+        from . import mcp_tools
+        name, command = (name or "").strip(), (command or "").strip()
+        if not name or not command:
+            return {"ok": False, "error": "A name and a command are needed.", "tools": []}
+        try:
+            parts = shlex.split(args or "")
+        except ValueError as e:
+            return {"ok": False, "error": f"Bad arguments: {e}", "tools": []}
+        r = mcp_tools.add_server(name, command, parts)
+        if r["ok"]:
+            cfg = self._mcp_config()
+            cfg[name] = {"command": command, "args": parts}
+            self._mcp_write(cfg)
+        return r
+
+    def mcp_remove(self, name: str):
+        from . import mcp_tools
+        mcp_tools.remove_server((name or "").strip())
+        cfg = self._mcp_config()
+        cfg.pop((name or "").strip(), None)
+        self._mcp_write(cfg)
+        return {"ok": True}
 
     # -- vibe code: Claude on GitHub, in any repository (vibe.py) --------------
 

@@ -9,9 +9,9 @@ We use the official MCP SDK (the `mcp` package) and nothing heavier: just its
 client. Each tool a server offers is added to `tools.REGISTRY` like any native
 tool, behind the same permission card, so the agent still asks before it acts.
 
-A server is one subprocess we speak to over stdio. We keep the sessions open on
-a background event loop for the life of the window, and expose a plain blocking
-`run` to the rest of the harness.
+A server is one subprocess we speak to over stdio. Each keeps its own session,
+open on a background event loop for the life of the window, so one can be added
+or removed on its own. The rest of the harness sees a plain blocking `run`.
 """
 from __future__ import annotations
 
@@ -30,9 +30,7 @@ _PYTYPE = {"string": str, "integer": int, "number": float,
            "boolean": bool, "array": list, "object": dict}
 
 _loop: asyncio.AbstractEventLoop | None = None
-_stack: AsyncExitStack | None = None
-_sessions: dict[str, ClientSession] = {}
-_loaded: list[str] = []          # tool names we added, so we can remove them
+_servers: dict[str, dict] = {}   # name -> {"stack", "session", "tools": [registry names]}
 
 
 def _ensure_loop() -> None:
@@ -49,15 +47,15 @@ def _run(coro, timeout: float = 30):
     return asyncio.run_coroutine_threadsafe(coro, _loop).result(timeout)
 
 
-async def _connect(name: str, params: StdioServerParameters):
-    """Open one server, keep it open on the exit stack, return its tool list."""
-    assert _stack is not None
-    streams = await _stack.enter_async_context(stdio_client(params))
+async def _open(params: StdioServerParameters):
+    """Start one server, keep it open on its own stack, return (stack, session, tools)."""
+    stack = AsyncExitStack()
+    streams = await stack.enter_async_context(stdio_client(params))
     read, write = streams[0], streams[1]
-    session = await _stack.enter_async_context(ClientSession(read, write))
+    session = await stack.enter_async_context(ClientSession(read, write))
     await session.initialize()
-    _sessions[name] = session
-    return await session.list_tools()
+    listed = await session.list_tools()
+    return stack, session, listed
 
 
 def _text(result) -> str:
@@ -73,57 +71,77 @@ def _schema_of(tool) -> dict:
     return {arg: _PYTYPE.get((spec or {}).get("type"), str) for arg, spec in props.items()}
 
 
-def _register(server: str, tool) -> str:
+def _register(server: str, session: ClientSession, tool) -> str:
     """Add one MCP tool to the registry, behind a permission card."""
-    name = f"{server}__{tool.name}"
+    full = f"{server}__{tool.name}"
     desc = (getattr(tool, "description", None) or f"{tool.name} (MCP server {server})").strip()
 
     def run(**args) -> str:
         if not permissions.ask(f"Use {tool.name} (MCP: {server})", args):
             return "Denied by the user."
         try:
-            return _text(_run(_sessions[server].call_tool(tool.name, args)))
+            return _text(_run(session.call_tool(tool.name, args)))
         except Exception as e:                       # noqa: BLE001
             return f"MCP tool error: {type(e).__name__}: {e}"
 
-    tools.REGISTRY[name] = {"desc": desc, "schema": _schema_of(tool),
+    tools.REGISTRY[full] = {"desc": desc, "schema": _schema_of(tool),
                             "kind": permissions.NEEDS_OK, "run": run}
-    _loaded.append(name)
-    return name
+    return full
+
+
+def add_server(name: str, command: str, args=(), env: dict | None = None) -> dict:
+    """Connect one server and register its tools. Replaces a server of the same
+    name. Returns {ok, tools: [names], error}. Never raises: a bad server just
+    reports its error, so one broken server cannot take the others down."""
+    _ensure_loop()
+    remove_server(name)
+    params = StdioServerParameters(command=command, args=list(args), env=env or None)
+    try:
+        stack, session, listed = _run(_open(params))
+    except Exception as e:                           # noqa: BLE001
+        return {"ok": False, "tools": [], "error": f"{type(e).__name__}: {e}"}
+    names = [_register(name, session, t) for t in listed.tools]
+    _servers[name] = {"stack": stack, "session": session, "tools": names}
+    return {"ok": True, "tools": [n.split("__", 1)[1] for n in names], "error": ""}
+
+
+def remove_server(name: str) -> bool:
+    """Unregister a server's tools and close its session."""
+    info = _servers.pop(name, None)
+    if not info:
+        return False
+    for full in info["tools"]:
+        tools.REGISTRY.pop(full, None)
+    try:
+        _run(info["stack"].aclose())
+    except Exception:                                # noqa: BLE001
+        pass
+    return True
+
+
+def status() -> dict:
+    """{server name: {tools: [tool names], count}} for the servers now connected."""
+    return {name: {"tools": [t.split("__", 1)[1] for t in info["tools"]],
+                   "count": len(info["tools"])}
+            for name, info in _servers.items()}
 
 
 def load(servers: dict) -> list[str]:
-    """Connect to MCP servers and register their tools.
-
-    servers: {name: {"command": str, "args": [str, ...], "env": {str: str}}}.
-    Returns the list of tool names added to the registry. A server that fails to
-    start is skipped (its error is raised to the caller for the first one only;
-    callers that load several should catch per server)."""
-    global _stack
-    _ensure_loop()
-    if _stack is None:
-        _stack = AsyncExitStack()
+    """Connect to several servers. servers: {name: {command, args, env}}.
+    Returns the full registry names added; skips (and records) the ones that fail."""
     added: list[str] = []
+    errors: dict[str, str] = {}
     for name, cfg in servers.items():
-        params = StdioServerParameters(
-            command=cfg["command"], args=list(cfg.get("args", [])),
-            env=cfg.get("env") or None)
-        listed = _run(_connect(name, params))
-        for tool in listed.tools:
-            added.append(_register(name, tool))
+        r = add_server(name, cfg["command"], cfg.get("args", []), cfg.get("env"))
+        if r["ok"]:
+            added += [f"{name}__{t}" for t in r["tools"]]
+        else:
+            errors[name] = r["error"]
+    load.errors = errors        # type: ignore[attr-defined]
     return added
 
 
 def unload() -> None:
-    """Remove every MCP tool and close all sessions."""
-    global _stack
-    for name in _loaded:
-        tools.REGISTRY.pop(name, None)
-    _loaded.clear()
-    _sessions.clear()
-    if _stack is not None:
-        try:
-            _run(_stack.aclose())
-        except Exception:                            # noqa: BLE001
-            pass
-        _stack = None
+    """Remove every MCP server and its tools."""
+    for name in list(_servers):
+        remove_server(name)
