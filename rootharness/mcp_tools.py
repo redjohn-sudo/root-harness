@@ -71,21 +71,34 @@ def _schema_of(tool) -> dict:
     return {arg: _PYTYPE.get((spec or {}).get("type"), str) for arg, spec in props.items()}
 
 
+def _kind_of(tool) -> str:
+    """A tool the server marks read-only runs without asking; anything else, or
+    anything unmarked, asks first. We trust the hint only to relax, never to
+    arm: a missing or false hint stays behind the card."""
+    ann = getattr(tool, "annotations", None)
+    read_only = None
+    if ann is not None:
+        read_only = getattr(ann, "read_only_hint", None)
+        if read_only is None:
+            read_only = getattr(ann, "readOnlyHint", None)
+    return permissions.READ_ONLY if read_only is True else permissions.NEEDS_OK
+
+
 def _register(server: str, session: ClientSession, tool) -> str:
-    """Add one MCP tool to the registry, behind a permission card."""
+    """Add one MCP tool to the registry, with the right permission level."""
     full = f"{server}__{tool.name}"
     desc = (getattr(tool, "description", None) or f"{tool.name} (MCP server {server})").strip()
+    kind = _kind_of(tool)
 
     def run(**args) -> str:
-        if not permissions.ask(f"Use {tool.name} (MCP: {server})", args):
+        if kind == permissions.NEEDS_OK and not permissions.ask(f"Use {tool.name} (MCP: {server})", args):
             return "Denied by the user."
         try:
             return _text(_run(session.call_tool(tool.name, args)))
         except Exception as e:                       # noqa: BLE001
             return f"MCP tool error: {type(e).__name__}: {e}"
 
-    tools.REGISTRY[full] = {"desc": desc, "schema": _schema_of(tool),
-                            "kind": permissions.NEEDS_OK, "run": run}
+    tools.REGISTRY[full] = {"desc": desc, "schema": _schema_of(tool), "kind": kind, "run": run}
     return full
 
 

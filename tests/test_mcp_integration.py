@@ -44,6 +44,15 @@ def test_running_a_tool_returns_the_server_answer(demo):
     assert tools.run("demo__shout", {"text": "hello"}).strip() == "HELLO"
 
 
+def test_read_only_annotation_sets_the_permission_level(demo):
+    # the server marks `shout` read-only -> no card; `add` is not -> asks first
+    assert tools.REGISTRY["demo__shout"]["kind"] == permissions.READ_ONLY
+    assert tools.REGISTRY["demo__add"]["kind"] == permissions.NEEDS_OK
+    permissions.set_asker(lambda title, args: False)   # deny everything
+    assert tools.run("demo__shout", {"text": "hi"}).strip() == "HI"   # still runs
+    assert tools.run("demo__add", {"a": 1, "b": 1}) == "Denied by the user."
+
+
 def test_permission_gate_blocks_a_denied_tool():
     permissions.set_asker(lambda title, args: True)
     mcp_tools.load({"demo": {"command": sys.executable, "args": [SERVER]}})

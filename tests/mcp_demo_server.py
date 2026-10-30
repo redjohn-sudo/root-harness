@@ -4,6 +4,7 @@ Run on its own: `python tests/mcp_demo_server.py` speaks MCP over stdio. It
 needs no API key and touches nothing on the machine, so it is safe to show.
 """
 from mcp.server.mcpserver import MCPServer
+from mcp.types import ToolAnnotations
 
 mcp = MCPServer("rootharness-demo")
 
@@ -13,7 +14,8 @@ def add(a: int, b: int) -> int:
     return a + b
 
 
-@mcp.tool(description="Return the given text in upper case.")
+@mcp.tool(description="Return the given text in upper case.",
+          annotations=ToolAnnotations(readOnlyHint=True))
 def shout(text: str) -> str:
     return text.upper()
 
