@@ -23,7 +23,7 @@ import re
 import unicodedata
 from datetime import timedelta
 
-RELAYS = ["wss://relay.damus.io", "wss://nos.lol", "wss://relay.primal.net"]
+RELAYS = ["wss://nos.lol", "wss://relay.primal.net", "wss://relay.snort.social"]
 KIND = 30078
 PREFIX = "rh-handle:"
 CODE = 8

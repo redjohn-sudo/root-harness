@@ -27,6 +27,7 @@ class Session:
         self.effort: str | None = None    # set by the window (/effort)
         self.proc: subprocess.Popen | None = None
         self.thread: str | None = None
+        self.preamble = ""                # imported history, sent once with the first turn
         self._ids = itertools.count(1)
         self._changes: dict[str, list] = {}       # fileChange item id -> paths
 
@@ -106,6 +107,8 @@ class Session:
 
     def run_turn(self, prompt: str, on_event: Callable[[dict], None], images=None) -> None:
         self._ensure()
+        if self.preamble:
+            prompt, self.preamble = self.preamble + (prompt or ""), ""
         inputs = [{"type": "localImage", "path": i["path"]} for i in images or []]
         inputs.append({"type": "text", "text": prompt or "Look at this image."})
         params = {"threadId": self.thread, "input": inputs}

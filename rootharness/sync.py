@@ -45,7 +45,7 @@ from . import account, conversations, glossary, push, network
 
 HOME = Path(os.environ.get("ROOT_HARNESS_HOME") or Path.home() / ".root-harness")
 STATE = HOME / "sync.json"
-RELAYS = ["wss://relay.damus.io", "wss://nos.lol", "wss://relay.primal.net"]
+RELAYS = ["wss://nos.lol", "wss://relay.primal.net", "wss://relay.snort.social"]
 KIND = 30078            # NIP-78, replaceable per (author, label)
 LOGIN_LABEL = "root-harness-login"
 CHUNK = 30000           # characters per sealed piece (NIP-44 stops near 65 000)

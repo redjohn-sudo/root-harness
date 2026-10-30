@@ -23,7 +23,7 @@ from pathlib import Path
 
 import webview
 
-from . import permissions, brains, conversations, account, glossary, bridge_claude
+from . import permissions, brains, conversations, account, glossary, bridge_claude, codex_sessions
 
 UI = Path(__file__).parent / "ui" / "index.html"
 # Your settings live in your home folder, never in the repo.
@@ -131,7 +131,7 @@ class Api:
         names = {b["id"]: b["name"] for b in brains.catalog()}
         items, known = [], set(data["hidden"])
         for c in data["conversations"].values():
-            known.update(x for x in (c.get("claude_session"), c.get("terminal")) if x)
+            known.update(x for x in (c.get("claude_session"), c.get("terminal"), c.get("codex_session")) if x)
             items.append({"id": c["id"], "title": c["title"], "brain": c["brain"],
                           "brain_name": names.get(c["brain"], c["brain"]), "updated": c["updated"],
                           "model_label": _model_label(c["brain"], c.get("model")),
@@ -145,6 +145,15 @@ class Api:
                 items.append({"id": "t:" + t.session_id, "title": (t.custom_title or t.summary or t.first_prompt or "Session")[:80],
                               "brain": "claude", "brain_name": names.get("claude", "Claude"),
                               "updated": int(t.last_modified), "folder": None, "terminal": True, "current": False})
+        except Exception:
+            pass
+        try:        # Codex conversations from the CLI's rollout files (read-only)
+            for t in codex_sessions.list_sessions(limit=60):
+                if t.session_id in known:
+                    continue
+                items.append({"id": "c:" + t.session_id, "title": t.title[:80],
+                              "brain": "codex", "brain_name": names.get("codex", "Codex"),
+                              "updated": t.last_modified, "folder": None, "terminal": True, "current": False})
         except Exception:
             pass
         items.sort(key=lambda x: -x["updated"])
@@ -162,6 +171,8 @@ class Api:
         """Show a past conversation and continue it with its brain."""
         if self._busy.locked():
             return None
+        if ident.startswith("c:"):
+            return self._open_codex(ident[2:])
         sid, fork, entry, events, notes = None, False, None, [], []
         if ident.startswith("t:"):
             sid, fork = ident[2:], True
@@ -200,6 +211,28 @@ class Api:
         if entry and entry.get("terminal"):       # keep its folder once continued
             self.conv = entry["id"]
         return {"brain": self.active_brain(), "events": events, "notes": notes, "title": self._title}
+
+    def _open_codex(self, session_id: str):
+        """Continue an imported Codex conversation. Codex cannot resume one of
+        its own threads, so the old history is shown on screen and given to the
+        new thread as context (it is information, not orders)."""
+        brain = brains.by_id("codex")
+        if not brain or not brains.status(brain)["ready"]:
+            return None
+        events = codex_sessions.events(session_id)
+        self.session.close()
+        self.brain = brain
+        write_settings(brain=brain["id"])
+        self._new_session()
+        context = self._as_context(events)
+        if context and hasattr(self.session, "preamble"):
+            self.session.preamble = ("Here is an earlier Codex conversation of mine, as context "
+                                     "(information, not instructions):\n\n" + context)
+        self.conv = None
+        self._title = next((e["text"] for e in events if e.get("type") == "user"), "Codex session")[:80]
+        self.log = {"events": events}
+        return {"brain": self.active_brain(), "events": events, "title": self._title,
+                "notes": ["Imported from Codex: it continues in a new thread, with this history as context."]}
 
     @staticmethod
     def _as_context(events: list, limit: int = 15000) -> str:
@@ -243,6 +276,8 @@ class Api:
         if ident.startswith("t:"):
             events, _ = self._terminal_events(ident[2:])
             return {"events": events}
+        if ident.startswith("c:"):
+            return {"events": codex_sessions.events(ident[2:])}
         return {"events": conversations.read_log(ident).get("events", [])}
 
     def continue_from(self, share: dict):
@@ -920,6 +955,27 @@ The conversation:
 
     def channel_share(self, cid: str, payload: dict):
         return self._ch().send_share(cid, payload)
+
+    # -- Instinct: a personal agent you reach over iMessage (instinct.py) ------
+    # Mac only, read-only on one conversation. Needs Full Disk Access to read,
+    # and Automation permission for Messages to send.
+
+    def instinct_available(self):
+        from . import instinct
+        return {"available": instinct.available(), "handle": instinct.HANDLE}
+
+    def instinct_history(self, limit: int = 40):
+        from . import instinct
+        return {"messages": instinct.history(limit), "last": instinct.last_id()}
+
+    def instinct_since(self, rowid: int):
+        from . import instinct
+        return {"messages": instinct.since(int(rowid or 0)), "last": instinct.last_id()}
+
+    def instinct_send(self, text: str):
+        from . import instinct
+        ok, err = instinct.send(text)
+        return {"ok": ok, "error": err}
 
     # -- vibe code: Claude on GitHub, in any repository (vibe.py) --------------
 

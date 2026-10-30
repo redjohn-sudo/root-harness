@@ -521,9 +521,11 @@ async function ouvrirDiscussion(id, D) {
 // friends & groups: sealed channels between root-harness users
 // =====================================================================================
 let CANAL = null
+let INSTINCT = false, SUIVI_I = null
 async function vueAmis() {
   const v = $('#v-amis')
   if (CANAL) return vueCanal()
+  if (INSTINCT) return vueInstinct()
   v.innerHTML = `<div class="defile"><div class="colonne"><div class="titre">messages</div><div class="sous-titre">Sealed end to end: only the people in a conversation can read it.</div>
     <div class="boutons" style="margin:0 0 6px"><button class="bouton plein" id="a-nouveau">${ico('plus')} New message</button><button class="bouton" id="a-moi">My ID</button></div>
     <div id="a-liste"><div class="vide">Connecting...</div></div></div></div>`
@@ -535,12 +537,15 @@ async function vueAmis() {
       <div class="boutons" style="justify-content:center"><button class="bouton" id="a-copier">${ico('copie')} copy</button></div>`)
     $('#a-copier', f).onclick = async () => { await H.copy(montre); toast('Copied') } }
   const ov = await H.friends.overview().catch(() => ({ channels: [], contacts: [] }))
+  const inst = H.instinct ? await H.instinct.available().catch(() => ({ available: false })) : { available: false }
   const dem = ov.channels.filter((c) => c.request), ok = ov.channels.filter((c) => !c.request).sort((a, b) => (b.last || 0) - (a.last || 0))
   const ligne = (c, i) => `<div class="item" data-c="${esc(c.id)}" style="--i:${i}">${tete()}<div class="tx"><div class="t">${esc(c.name)}${c.members.length > 1 ? `<span class="badge" style="margin-left:8px">${c.members.length + 1}</span>` : ''}</div><div class="m">${esc(c.preview || 'no message yet')}</div></div>${c.unread ? `<span class="nb">${c.unread}</span>` : ''}</div>`
-  $('#a-liste').innerHTML = (dem.length ? `<div class="section">requests<span class="ligne"></span></div><div class="liste">${dem.map(ligne).join('')}</div>` : '')
+  $('#a-liste').innerHTML = (inst.available ? `<div class="section">assistant<span class="ligne"></span></div><div class="liste"><div class="item" id="a-instinct"><span class="inst-ava">✦</span><div class="tx"><div class="t">Instinct</div><div class="m">your iMessage assistant</div></div></div></div>` : '')
+    + (dem.length ? `<div class="section">requests<span class="ligne"></span></div><div class="liste">${dem.map(ligne).join('')}</div>` : '')
     + `<div class="section">conversations<span class="ligne"></span></div><div class="liste">${ok.map(ligne).join('') || '<div class="vide">No message yet. Start one with a friend, or with several people at once.</div>'}</div>`
-  $$('#a-liste .item').forEach((el) => { $('.tete', el).style.cssText = 'width:30px;height:30px;flex:none'
+  $$('#a-liste .item[data-c]').forEach((el) => { $('.tete', el).style.cssText = 'width:30px;height:30px;flex:none'
     el.onclick = () => { const c = ov.channels.find((x) => x.id === el.dataset.c); if (c.request) return feuilleContact(c.members[0]?.npub, c.members[0]?.pseudo); CANAL = c; vueCanal() } })
+  const bi = $('#a-instinct'); if (bi) bi.onclick = () => { INSTINCT = true; vueInstinct() }
   pastille(ov.channels.some((c) => c.unread))
 }
 // a new message: one person or several, by their @; an existing conversation with the same people opens instead
@@ -601,6 +606,32 @@ function bulleCanal(m) {
     return
   }
   ajouter(m.mine ? `<div class="msg moi">${esc(m.text)}</div>` : `<div class="msg agent" style="max-width:88%"><div class="corps"><div style="font-size:12px;color:var(--vert-clair);font-weight:600">${esc(m.name)}</div>${riche(m.text)}</div></div>`, '#k-fil')
+}
+
+// Instinct: a personal assistant reached over iMessage (computer only, read-only on one chat)
+async function vueInstinct() {
+  const v = $('#v-amis')
+  v.innerHTML = `<div class="tete-chat"><button class="rond-btn" id="i-retour">${ico('retour')}</button><span class="pilule-cerveau verre"><span class="inst-ava">✦</span><span>Instinct</span><span class="modele">iMessage</span></span></div>
+    <div class="defile"><div class="colonne fil" id="i-fil"></div></div>
+    <div class="composer"><div class="boite"><textarea id="i-entree" rows="1" placeholder="Message Instinct"></textarea>
+    <button class="rond-btn envoyer" id="i-envoyer"><svg class="fleche" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${I.fleche}</svg></button></div></div>`
+  $('#i-retour').onclick = () => { clearInterval(SUIVI_I); INSTINCT = false; vueAmis() }
+  const vus = new Set()
+  let last = 0
+  const bulle = (m) => { if (vus.has(m.id)) return; vus.add(m.id)
+    ajouter(m.from_me ? `<div class="msg moi">${esc(m.text)}</div>`
+      : `<div class="msg agent" style="max-width:88%"><div class="corps"><div style="font-size:12px;color:var(--vert-clair);font-weight:600">Instinct</div>${riche(m.text)}</div></div>`, '#i-fil') }
+  const r = await H.instinct.history(40).catch(() => null)
+  if (!r) { ajouter('<div class="sys">Can\'t reach Messages. Full Disk Access is needed.</div>', '#i-fil'); return }
+  r.messages.forEach(bulle); last = r.last
+  if (!r.messages.length) ajouter('<div class="sys">Your iMessage conversation with Instinct shows here.</div>', '#i-fil')
+  const refresh = async () => { const u = await H.instinct.since(last).catch(() => null); if (!u) return; u.messages.forEach(bulle); last = u.last || last }
+  const ta = $('#i-entree'), go = async () => { const t = ta.value.trim(); if (!t) return; ta.value = ''; ajuster(ta)
+    const s = await H.instinct.send(t); if (!s.ok) return ajouter(`<div class="sys">Not sent: ${esc(s.error || '')}</div>`, '#i-fil')
+    setTimeout(refresh, 600) }
+  $('#i-envoyer').onclick = go; ta.oninput = () => ajuster(ta)
+  ta.onkeydown = (e) => { if (e.key === 'Enter' && !e.shiftKey && !matchMedia('(pointer:coarse)').matches) { e.preventDefault(); go() } }
+  clearInterval(SUIVI_I); SUIVI_I = setInterval(() => { if (VUE === 'amis' && INSTINCT) refresh() }, 5000)
 }
 
 // =====================================================================================

@@ -40,6 +40,10 @@ const host = {
     send: (c, t) => api().channel_send(c, t), share: (c, p) => api().channel_share(c, p),
     addContact: (n, m) => api().channel_add_contact(n, m), createGroup: (n, m) => api().channel_create(n, m),
   },
+  instinct: {
+    available: () => api().instinct_available(), history: (n) => api().instinct_history(n || 40),
+    since: (id) => api().instinct_since(id || 0), send: (t) => api().instinct_send(t),
+  },
   glossary: {
     list: () => api().glossary_list(), setAuto: (o) => api().glossary_set_auto(o), add: (t, d, c) => api().glossary_add(t, d, c),
     remove: (i) => api().glossary_remove(i), ask: (i, q, h) => api().glossary_ask(i, q, h),

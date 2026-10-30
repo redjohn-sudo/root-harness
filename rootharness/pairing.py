@@ -22,7 +22,7 @@ import time
 from datetime import timedelta
 from typing import Callable
 
-RELAYS = ["wss://relay.damus.io", "wss://nos.lol", "wss://relay.primal.net"]
+RELAYS = ["wss://nos.lol", "wss://relay.primal.net", "wss://relay.snort.social"]
 LIFETIME = 300          # seconds a QR code stays valid
 
 

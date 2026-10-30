@@ -70,10 +70,22 @@ const CATALOGUE = [
 // how a badge from the network looks: a catalogue one, or an event badge somebody made
 const look = (b) => {
   const ident = b.a.split(':').slice(2).join(':'), cat = CATALOGUE.find((c) => c.id === ident)
-  if (cat && b.self) return { ...cat, nom: b.name || cat.nom, comment: b.description || cat.comment }
-  return { id: ident, nom: b.name || ident, comment: b.description || '', pix: b.self ? 'oeil' : 'lanterne', c: '#f0b35a', l: '#5a3d12', unique: !b.self, par: b.issuer_name }
+  if (cat && b.self) return { ...cat, nom: b.name || cat.nom, comment: b.description || cat.comment, image: b.image }
+  return { id: ident, nom: b.name || ident, comment: b.description || '', pix: b.self ? 'oeil' : 'lanterne', c: '#f0b35a', l: '#5a3d12', unique: !b.self, par: b.issuer_name, image: b.image }
 }
-const badge = (lk, gagne = true, t = 34) => `<span class="pix${gagne ? '' : ' verrou'}" style="width:${t}px;height:${t}px" title="${esc(gagne || !lk.secret ? lk.nom : 'secret badge')}">${pixels(gagne || !lk.secret ? PIX[lk.pix] || PIX.secret : PIX.secret, lk.c, lk.l)}</span>`
+const badge = (lk, gagne = true, t = 34) => `<span class="pix${gagne ? '' : ' verrou'}" style="width:${t}px;height:${t}px" title="${esc(gagne || !lk.secret ? lk.nom : 'secret badge')}">${gagne && /^(https:\/\/|data:image\/)/.test(lk.image || '') ? `<img class="pix-img" src="${esc(lk.image)}" alt="">` : pixels(gagne || !lk.secret ? PIX[lk.pix] || PIX.secret : PIX.secret, lk.c, lk.l)}</span>`
+// a PIX shape + two colours drawn to a 64x64 PNG data-URI, for a badge image
+const FORMES = ['hack', 'flamme', 'premier', 'livre', 'lune', 'lanterne', 'oeil']
+const badgePng = (forme, c, l) => {
+  const z = document.createElement('canvas'); z.width = z.height = 64
+  const g = z.getContext('2d'); g.imageSmoothingEnabled = false
+  const grille = PIX[forme] || PIX.hack
+  for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) {
+    const ch = grille[y][x]; if (ch === '#') g.fillStyle = c; else if (ch === 'o') g.fillStyle = l; else continue
+    g.fillRect(x * 8, y * 8, 8, 8)
+  }
+  return z.toDataURL('image/png')
+}
 
 // -- people -------------------------------------------------------------------------------
 const ETATS = { etudie: 'student', travaille: 'working', cherche: 'looking for a job' }
@@ -364,7 +376,7 @@ function rendrePage(v, mur, H) {
       ${p.school || p.role ? `<span class="etat">${esc([p.school, p.role].filter(Boolean).join(' · '))}</span>` : ''}${niveau(p.level, p.level_label)}</div>
     ${p.about ? `<div class="p-bio">${esc(p.about)}</div>` : ''}
     <div class="p-chiffres"><button class="p-lien" id="p-abonnes"><b>${(mur.followers || []).length}</b> follower${(mur.followers || []).length === 1 ? '' : 's'}</button><button class="p-lien" id="p-abonnements"><b>${(mur.following || []).length}</b> following</button><span><b>${mur.posts.length}</b> post${mur.posts.length === 1 ? '' : 's'}</span></div>
-    <div class="p-badges" id="p-badges">${montres.map((b, i) => `<span style="--i:${i}">${badge(look(b), true, 38)}</span>`).join('')}${mine || badges.length ? `<button class="bouton" id="p-tous">${mine ? 'all badges' : 'badges'}</button>` : ''}</div>
+    <div class="p-badges" id="p-badges">${montres.map((b, i) => { const r = look(b); return `<span style="--i:${i}">${badge(r, true, 38)}<b class="pb-n">${esc(r.nom)}</b></span>` }).join('')}${mine || badges.length ? `<button class="bouton" id="p-tous">${mine ? 'all badges' : 'badges'}</button>` : ''}</div>
     <div class="section">${mine ? 'my work' : 'work'}${p.state === 'cherche' ? ' · available for work' : ''}<span class="ligne"></span></div>
     <div class="p-travail">${travail(p.work)}</div>${!p.work.length ? `<div class="vide">${mine ? 'Add what you build, your hackathons, what is in progress: Edit profile.' : 'Nothing shown yet.'}</div>` : ''}
     <div class="p-onglets">${[['posts', 'Posts'], ['replies', 'Replies'], ['reposts', 'Reposts'], ['media', 'Photos & videos']].map(([k, t]) => `<button data-o="${k}" class="${k === ONGLET_P ? 'on' : ''}">${t}</button>`).join('')}</div>
@@ -495,6 +507,8 @@ function tousBadges(H, mur) {
       return `<button class="gb${b && b.pinned ? ' epingle' : ''}${gagne ? '' : ' non'}" data-a="${esc(b ? b.a : '')}" style="--i:${i}">${badge(lk, gagne, 46)}<div class="gb-n">${esc(cache ? 'secret badge' : lk.nom)}</div><div class="gb-d">${esc(cache ? 'Nobody says how.' : lk.comment)}</div>${lk.unique ? `<div class="gb-u">${esc(lk.par ? 'from ' + lk.par : 'event')}</div>` : b && b.self ? '<div class="gb-u" style="color:var(--encre-4)">self-certified</div>' : ''}</button>` }).join('')}</div>
     ${mine ? `<div class="section">a badge for an event<span class="ligne"></span></div><div class="d" style="font-size:13px;color:var(--encre-3);margin-bottom:8px">Make one for a hackathon, a team, a night: it is unique, and you give it to the friends you choose.</div>
       <input class="champ" id="b-nom" placeholder="its name, like Lanterns · Oct 2026"><input class="champ" id="b-d" placeholder="one line about it">
+      <div class="b-pick"><span class="pix" id="b-apercu" style="width:40px;height:40px"></span><div class="b-formes" id="b-formes">${FORMES.map((s, i) => `<button class="b-forme${i ? '' : ' on'}" data-forme="${s}">${badge({ pix: s, c: '#6fd4b6', l: '#1f4d42', nom: s }, true, 30)}</button>`).join('')}</div></div>
+      <div class="b-couleurs"><label>colour<input type="color" id="b-c" value="#6fd4b6"></label><label>shade<input type="color" id="b-l" value="#1f4d42"></label></div>
       <div class="boutons" id="b-amis"></div><div class="boutons"><button class="bouton plein" id="b-ok">Create and give it</button></div>` : ''}`)
   if (mine) $$('[data-a]', f).forEach((el) => el.onclick = async () => {
     const a = el.dataset.a; if (!a) return toast('Not unlocked yet.')
@@ -502,12 +516,16 @@ function tousBadges(H, mur) {
     try { const r = await H.network.pin(next); if (r.error) throw new Error(r.error); fermerFeuille(); vueProfil(H) } catch (e) { toast(e.message || 'Not pinned.') }
   })
   if (!mine) return
+  let forme = FORMES[0]
+  const majApercu = () => { $('#b-apercu', f).innerHTML = `<img class="pix-img" src="${badgePng(forme, $('#b-c', f).value, $('#b-l', f).value)}" alt="">` }
+  $$('#b-formes [data-forme]', f).forEach((el) => el.onclick = () => { forme = el.dataset.forme; $$('#b-formes [data-forme]', f).forEach((x) => x.classList.remove('on')); el.classList.add('on'); majApercu() })
+  $('#b-c', f).oninput = majApercu; $('#b-l', f).oninput = majApercu; majApercu()
   const choisis = new Set()
   H.friends.overview().then((o) => { $('#b-amis', f).innerHTML = (o.contacts || []).map((c) => `<button class="bouton" data-hex="${esc(c.hex)}">${esc(c.name)}</button>`).join('') || '<div class="vide">Add friends first, in Friends & groups.</div>'
     $$('#b-amis [data-hex]', f).forEach((b) => b.onclick = () => { const h = b.dataset.hex; choisis.has(h) ? choisis.delete(h) : choisis.add(h); b.classList.toggle('vert', choisis.has(h)) }) }).catch(() => {})
   $('#b-ok', f).onclick = async () => {
     const n = $('#b-nom', f).value.trim(); if (!n) return toast('Give it a name.')
-    try { const d = await H.network.defineBadge(n, n, $('#b-d', f).value); if (d.error) throw new Error(d.error)
+    try { const d = await H.network.defineBadge(n, n, $('#b-d', f).value, badgePng(forme, $('#b-c', f).value, $('#b-l', f).value)); if (d.error) throw new Error(d.error)
       const r = await H.network.award(d.a, [mur.profile.hex, ...choisis]); if (r.error) throw new Error(r.error)
       fermerFeuille(); toast('Badge created and given.'); setTimeout(() => vueProfil(H), 900)
     } catch (e) { toast(e.message || 'Not created.') }

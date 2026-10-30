@@ -351,8 +351,19 @@ label.bouton,label.rond-btn{cursor:pointer}
 .p-chiffres{display:flex;flex-wrap:wrap;gap:6px 22px;margin-top:14px;padding:0 4px;font-size:13.5px;color:var(--encre-3)}
 .p-chiffres b{color:var(--encre);font-weight:600;margin-right:3px}
 .p-badges{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:16px;padding:0 4px}
-.p-badges>span{display:inline-grid;line-height:0;animation:pop .5s var(--ease) both;animation-delay:calc(var(--i,0)*50ms)}
+.p-badges>span{display:inline-grid;justify-items:center;line-height:0;animation:pop .5s var(--ease) both;animation-delay:calc(var(--i,0)*50ms)}
 .p-badges .pix:hover{transform:translateY(-2px)}
+.pix .pix-img{width:100%;height:100%;display:block;image-rendering:pixelated;border-radius:5px}
+.p-badges .pb-n{margin-top:4px;max-width:58px;font-size:9.5px;font-weight:600;line-height:1.15;color:var(--encre-3);text-align:center;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.b-pick{display:flex;align-items:center;gap:10px;margin:8px 0}
+.b-formes{display:flex;gap:6px;flex-wrap:wrap}
+.b-forme{padding:3px;border-radius:8px;border:1px solid var(--trait);background:none;cursor:pointer}
+.b-forme.on{border-color:var(--led)}
+.b-forme .pix{background:none;box-shadow:none;padding:0}
+.b-couleurs{display:flex;gap:18px;align-items:center;margin:0 0 10px;font-size:13px;color:var(--encre-3)}
+.b-couleurs label{display:flex;align-items:center;gap:6px}
+.b-couleurs input[type=color]{width:30px;height:24px;border:none;background:none;padding:0;border-radius:6px;cursor:pointer}
+.inst-ava{width:30px;height:30px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:15px;color:#0e1b17;font-weight:700;background:linear-gradient(135deg,var(--led),var(--vert-clair))}
 .p-badges .bouton{padding:8px 13px;font-size:13px;margin-left:4px}
 .tr{display:flex;flex-direction:column;padding:14px 16px;border-radius:var(--r-pt);opacity:0;animation:monte .5s var(--ease) forwards;animation-delay:calc(var(--i,0)*45ms)}
 .tr-q{display:flex;align-items:center;gap:7px;font-size:12px;letter-spacing:.04em;color:var(--encre-3)}

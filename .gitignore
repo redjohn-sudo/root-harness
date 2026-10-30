@@ -7,3 +7,4 @@ __pycache__/
 shares/
 rootharness/ui/background.local.*
 ui-src/node_modules/
+.wrangler/

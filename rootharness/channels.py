@@ -38,7 +38,7 @@ from typing import Callable
 HOME = Path(os.environ.get("ROOT_HARNESS_HOME") or Path.home() / ".root-harness")
 STATE = HOME / "channels.json"
 LOGS = HOME / "channels"
-RELAYS = ["wss://relay.damus.io", "wss://nos.lol", "wss://relay.primal.net"]
+RELAYS = ["wss://nos.lol", "wss://relay.primal.net", "wss://relay.snort.social"]
 LOOKBACK = 3 * 86400        # gift wraps are back-dated up to 2 days (NIP-59)
 
 
