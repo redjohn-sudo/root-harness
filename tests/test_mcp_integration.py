@@ -124,6 +124,14 @@ def test_concurrent_calls_to_one_server_are_safe():
         permissions.set_asker(lambda title, args: False)
 
 
+def test_find_tools_discovers_mcp_tools(demo):
+    hits = mcp_tools.search("upper")
+    assert "demo__shout" in [h["name"] for h in hits]     # shout's desc: "upper case"
+    assert tools.REGISTRY["find_tools"]["kind"] == permissions.READ_ONLY
+    out = tools.run("find_tools", {"query": "sum"})        # add's desc: "the sum"
+    assert "demo__add" in out
+
+
 def test_unload_removes_the_tools():
     permissions.set_asker(lambda title, args: True)
     mcp_tools.load({"demo": {"command": sys.executable, "args": [SERVER]}})

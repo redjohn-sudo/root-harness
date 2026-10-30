@@ -18,6 +18,7 @@ to that task through a queue and sees a plain blocking `run`.
 from __future__ import annotations
 
 import asyncio
+import re
 import threading
 from contextlib import AsyncExitStack
 
@@ -178,6 +179,39 @@ def _register(server: str, tool) -> str:
     return full
 
 
+def search(query: str, limit: int = 10) -> list[dict]:
+    """The MCP tools (name holds '__') whose name or description match `query`,
+    best first. An empty query returns them all (up to the limit)."""
+    terms = [t for t in re.split(r"\W+", (query or "").lower()) if t]
+    scored = []
+    for name, spec in tools.REGISTRY.items():
+        if "__" not in name:
+            continue
+        hay = (name + " " + spec.get("desc", "")).lower()
+        score = sum(hay.count(t) for t in terms) if terms else 1
+        if score > 0:
+            scored.append((score, name, spec.get("desc", "")))
+    scored.sort(key=lambda x: -x[0])
+    return [{"name": n, "desc": d} for _, n, d in scored[:limit]]
+
+
+def _ensure_search_tool() -> None:
+    """A read-only native tool so a brain can discover MCP tools on demand,
+    instead of being handed every tool of every server up front."""
+    if "find_tools" in tools.REGISTRY:
+        return
+
+    def run(query: str = "") -> str:
+        hits = search(query)
+        if not hits:
+            return "No matching MCP tools."
+        return "\n".join(f"{h['name']}: {h['desc']}" for h in hits)
+
+    tools.REGISTRY["find_tools"] = {
+        "desc": "Search the connected MCP tools by keyword; returns tool names you can then call.",
+        "schema": {"query": str}, "kind": permissions.READ_ONLY, "run": run}
+
+
 def add_server(name: str, command: str, args=(), env: dict | None = None, deny=()) -> dict:
     """Connect one server and register its tools. Replaces a server of the same
     name. `deny` is a list of tool names to leave out (e.g. destructive ones).
@@ -194,6 +228,7 @@ def add_server(name: str, command: str, args=(), env: dict | None = None, deny=(
     _servers[name] = {"queue": queue, "task": task, "params": params, "tools": []}
     names = [_register(name, t) for t in listed.tools if t.name not in blocked]
     _servers[name]["tools"] = names
+    _ensure_search_tool()
     return {"ok": True, "tools": [n.split("__", 1)[1] for n in names], "error": ""}
 
 
@@ -237,3 +272,5 @@ def unload() -> None:
     """Remove every MCP server and its tools."""
     for name in list(_servers):
         remove_server(name)
+    if not _servers:
+        tools.REGISTRY.pop("find_tools", None)
