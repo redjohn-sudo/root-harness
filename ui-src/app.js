@@ -3,7 +3,8 @@
 // to reach the agents, the conversations, the friends and GitHub from there.
 import { tete, cligner } from './root.js'
 import { qr } from './ident.js'
-import { LANGUES, langue, appliquer } from './langue.js'
+import { LANGUES, langue, appliquer, t } from './langue.js'
+import { plateforme, mod, entree as estEntree, touches, ariaTouches, marquer, installerZoom, zoomActuel } from './plateforme.js'
 import { vueFil, vueProfil, vueNotifs, vueCommus, vueRecherche, choisirGens, surveillerNotifs, evenementReseau, feuilleBloques } from './social.js'
 
 let H = null                                  // the host
@@ -67,9 +68,37 @@ function coquille() {
   $('#voile').onclick = fermerFeuille
   $('#feuille').addEventListener('click', (e) => { if (e.target.closest('.fermer')) fermerFeuille() })   // sheets that rewrite themselves keep their ✕
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('#feuille').classList.contains('on')) fermerFeuille() })
+  document.addEventListener('keydown', raccourci)
+  // a label that opens a file picker answers the keyboard like a button
+  document.addEventListener('keydown', (e) => { const l = e.target.closest && e.target.closest('label[tabindex]')
+    if (l && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); l.querySelector('input[type=file]')?.click() } })
+  // a link always opens in the system's browser, never inside the window
+  document.addEventListener('click', (e) => { const a = e.target.closest && e.target.closest('a[href]')
+    if (a && /^https?:/i.test(a.href) && a.target !== '_blank') { a.target = '_blank'; a.rel = 'noopener' } }, true)
+  // a file dropped anywhere never replaces the interface; in the chat, an image joins the message
+  const fichiers = (e) => [...(e.dataTransfer?.types || [])].includes('Files')
+  const champ = (e) => !fichiers(e) && e.target.closest && e.target.closest('input,textarea')      // text into a field: the system's own drop
+  const depot = (e) => { if (champ(e)) return; e.preventDefault()
+    const ok = fichiers(e) && VUE === 'chat' && !$('#porte').classList.contains('on'); e.dataTransfer.dropEffect = ok ? 'copy' : 'none'
+    const b = $('#v-chat .composer .boite'); if (b) { b.classList.toggle('depot', ok); clearTimeout(depot.t); depot.t = setTimeout(() => b.classList.remove('depot'), 160) } }
+  document.addEventListener('dragenter', depot); document.addEventListener('dragover', depot)
+  document.addEventListener('drop', (e) => { if (champ(e)) return; e.preventDefault(); $('#v-chat .composer .boite')?.classList.remove('depot')
+    if (fichiers(e) && VUE === 'chat' && !$('#porte').classList.contains('on')) [...e.dataTransfer.files].forEach(ajouterImage) })
+  // a pasted picture joins the message; text copied from a document (which also carries a picture of itself) stays text
+  document.addEventListener('paste', (e) => { if (VUE !== 'chat' || $('#porte').classList.contains('on') || !e.clipboardData) return
+    const d = e.clipboardData, f = d.files && d.files.length ? [...d.files] : [...(d.items || [])].filter((i) => i.kind === 'file').map((i) => i.getAsFile())
+    const images = f.filter((x) => x && x.type.startsWith('image/'))
+    if (!images.length || (d.getData('text/plain').trim() && [...(d.types || [])].includes('text/html'))) return
+    e.preventDefault(); images.forEach(ajouterImage) })
   addEventListener('mousemove', (e) => { const r = document.documentElement.style
     r.setProperty('--mx', (e.clientX / innerWidth - .5).toFixed(3)); r.setProperty('--my', (e.clientY / innerHeight - .5).toFixed(3)) })
   cligner()
+}
+
+// shortcuts: Cmd on a Mac, Ctrl elsewhere (zoom: plateforme.js)
+function raccourci(e) {
+  if (!mod(e) || e.altKey || e.shiftKey || $('#porte').classList.contains('on')) return
+  if (e.key.toLowerCase() === 'k' || e.code === 'KeyK') { e.preventDefault(); fermerFeuille(); aller('discussions'); $('#d-cherche')?.focus() }
 }
 
 let VUE = 'chat'
@@ -121,6 +150,15 @@ export function riche(texte) {
   }).join('')
 }
 
+// GitHub's tool, gh, installed the way this computer installs things
+function installerGh() {
+  const c = (x) => `<div class="commande">${x}</div>`
+  const p = plateforme()
+  if (p === 'windows') return c('winget install --id GitHub.cli')
+  if (p === 'linux') return c('sudo apt install gh # Debian, Ubuntu') + c('sudo dnf install gh # Fedora') + '<a class="lien" href="https://github.com/cli/cli#installation" target="_blank" rel="noopener">cli.github.com</a>'
+  return c('brew install gh')
+}
+
 // =====================================================================================
 // the account: pseudo + password, on your devices only
 // =====================================================================================
@@ -130,7 +168,7 @@ async function porte() {
   const c = $('#carte-porte'), o = $('#porte'); o.classList.add('on')
   const val = (id) => $('#' + id).value
   const erreur = (t) => { $('#p-err').textContent = t; c.classList.remove('secoue'); void c.offsetWidth; c.classList.add('secoue') }
-  const entree = (ids, go) => ids.forEach((i) => $('#' + i).onkeydown = (e) => { if (e.key === 'Enter' && !$('#p-go')?.disabled) go() })
+  const entree = (ids, go) => ids.forEach((i) => $('#' + i).onkeydown = (e) => { if (estEntree(e) && !$('#p-go')?.disabled) go() })
   const occupe = (t) => { const b = $('#p-go'); b.dataset.t = b.dataset.t || b.textContent; b.textContent = t; b.disabled = true; $('#p-barre')?.classList.add('on') }
   const libre = () => { const b = $('#p-go'); if (b.dataset.t) b.textContent = b.dataset.t; b.disabled = false; $('#p-barre')?.classList.remove('on') }
   const rate = (e) => (e && e.message) || 'It did not go through: try again.'
@@ -171,7 +209,7 @@ async function porte() {
       const g = document.createElement('div'); g.className = 'carte-porte fantome'
       ;[...zone.childNodes].forEach((n) => g.appendChild(n.cloneNode(true)))
       $$('[id]', g).forEach((x) => x.removeAttribute('id'))
-      Object.assign(g.style, { left: r.left + 'px', top: r.top + 'px', width: r.width + 'px' }); g.style.setProperty('--sens', sens)
+      const z = zoomActuel(); Object.assign(g.style, { left: r.left / z + 'px', top: r.top / z + 'px', width: r.width / z + 'px' }); g.style.setProperty('--sens', sens)
       g.style.setProperty('--accent', getComputedStyle(o).getPropertyValue('--accent'))
       document.body.appendChild(g); setTimeout(() => g.remove(), 380)
     }
@@ -298,7 +336,7 @@ async function porte() {
     if (r.done) return githubOk(r.login)
     if (r.error === 'gh_missing') {
       ecran(`<h2>one tool first</h2><p>root-harness talks to GitHub through its official tool, <b>gh</b>. Install it in a terminal, then come back:</p>
-        <div class="commande">brew install gh</div><div class="err" id="p-err"></div><button class="bouton plein" id="p-go">Done, connect GitHub</button><span class="lien" id="p-plus-tard">Later</span>`, 3)
+        ${installerGh()}<div class="err" id="p-err"></div><button class="bouton plein" id="p-go">Done, connect GitHub</button><span class="lien" id="p-plus-tard">Later</span>`, 3)
       $('#p-go').onclick = lancerGithub; $('#p-plus-tard').onclick = plusTard; return
     }
     if (r.error) return erreur(r.error)
@@ -449,7 +487,7 @@ function vueChat() {
     v.dataset.fait = 1
     v.innerHTML = `<div class="tete-chat"><button class="pilule-cerveau verre" id="c-cerveau">${tete()}<span id="c-nom">...</span><span class="modele" id="c-modele"></span></button>
       <span class="etat" id="c-etat"><span class="point" id="c-point"></span><span id="c-etat-t"></span></span>
-      <button class="rond-btn" id="c-convs" title="Conversations">${ico('dossiers')}</button><button class="rond-btn" id="c-partager" title="Share with a friend">${ico('partage')}</button><button class="rond-btn" id="c-nouveau" title="New chat">${ico('plus')}</button></div>
+      <button class="rond-btn" id="c-convs" title="Conversations (${touches('mod', 'K')})" aria-keyshortcuts="${ariaTouches('mod', 'K')}">${ico('dossiers')}</button><button class="rond-btn" id="c-partager" title="Share with a friend">${ico('partage')}</button><button class="rond-btn" id="c-nouveau" title="New chat">${ico('plus')}</button></div>
       <div class="defile" id="c-defile"><div class="colonne fil" id="c-fil"></div></div>
       <div class="composer"><div class="pieces" id="c-pieces"></div><div class="menu" id="c-menu"></div>
         <div class="boite"><button class="rond-btn" id="c-img" title="Add an image">${ico('image')}</button><input type="file" accept="image/*" id="c-fichier" hidden multiple>
@@ -465,10 +503,6 @@ function vueChat() {
     const ta = $('#c-entree')
     ta.addEventListener('input', () => { ajuster(ta); menuSlash() })
     ta.addEventListener('keydown', clavier)
-    document.addEventListener('paste', (e) => { if (VUE !== 'chat') return
-      const f = [...(e.clipboardData?.items || [])].filter((i) => i.type.startsWith('image/')).map((i) => i.getAsFile()); if (f.length) { e.preventDefault(); f.forEach(ajouterImage) } })
-    document.addEventListener('dragover', (e) => e.preventDefault())
-    document.addEventListener('drop', (e) => { if (VUE === 'chat' && e.dataTransfer?.files?.length) { e.preventDefault(); [...e.dataTransfer.files].forEach(ajouterImage) } })
     accueil()
     H.agent.history().then((h) => { if (h && h.events && h.events.length) { viderFil(); h.events.forEach((e) => montrer(e, true)); $$('.outil').forEach((o) => o.classList.add('fait')) } }).catch(() => {})
   }
@@ -599,6 +633,7 @@ async function menuSlash() {
 function choisirCommande(i) { const x = MENU.items[i]; if (!x) return; const ta = $('#c-entree'); ta.value = x.c + ' '; fermerMenu(); ta.focus()
   if (['/model', '/effort', '/brain', '/mode', '/new', '/share'].includes(x.c)) envoyer() }
 function clavier(e) {
+  if (e.isComposing || e.keyCode === 229) return       // a word being composed (Japanese, Chinese...): its keys are its own
   if (MENU.on && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) { e.preventDefault(); MENU.sel = (MENU.sel + (e.key === 'ArrowDown' ? 1 : -1) + MENU.items.length) % MENU.items.length
     $$('#c-menu .it').forEach((el, i) => el.classList.toggle('sel', i === MENU.sel)); return }
   if (MENU.on && (e.key === 'Tab' || (e.key === 'Enter' && !e.shiftKey))) { e.preventDefault(); return choisirCommande(MENU.sel) }
@@ -784,7 +819,7 @@ async function vueCanal() {
   const ta = $('#k-entree'), go = async () => { const t = ta.value.trim(); if (!t) return; ta.value = ''; ajuster(ta)
     const m = await H.friends.send(c.id, t); if (m) bulleCanal(m); else ajouter('<div class="sys">Not sent: are you online?</div>', '#k-fil') }
   $('#k-envoyer').onclick = go; ta.oninput = () => ajuster(ta)
-  ta.onkeydown = (e) => { if (e.key === 'Enter' && !e.shiftKey && !matchMedia('(pointer:coarse)').matches) { e.preventDefault(); go() } }
+  ta.onkeydown = (e) => { if (estEntree(e) && !e.shiftKey && !matchMedia('(pointer:coarse)').matches) { e.preventDefault(); go() } }
 }
 function bulleCanal(m) {
   if (m.share) {
@@ -821,7 +856,7 @@ async function vueInstinct() {
     const s = await H.instinct.send(t); if (!s.ok) return ajouter(`<div class="sys">Not sent: ${esc(s.error || '')}</div>`, '#i-fil')
     setTimeout(refresh, 600) }
   $('#i-envoyer').onclick = go; ta.oninput = () => ajuster(ta)
-  ta.onkeydown = (e) => { if (e.key === 'Enter' && !e.shiftKey && !matchMedia('(pointer:coarse)').matches) { e.preventDefault(); go() } }
+  ta.onkeydown = (e) => { if (estEntree(e) && !e.shiftKey && !matchMedia('(pointer:coarse)').matches) { e.preventDefault(); go() } }
   clearInterval(SUIVI_I); SUIVI_I = setInterval(() => { if (VUE === 'amis' && INSTINCT) refresh() }, 5000)
 }
 
@@ -886,7 +921,7 @@ async function vueProjet() {
     if (!PROJET.number) PROJET = { ...PROJET, number: r.number }
     etatP('Claude is starting on GitHub (about a minute)...', 'travail'); rafraichir() }
   $('#p-envoyer').onclick = go; ta.oninput = () => ajuster(ta)
-  ta.onkeydown = (e) => { if (e.key === 'Enter' && !e.shiftKey && !matchMedia('(pointer:coarse)').matches) { e.preventDefault(); go() } }
+  ta.onkeydown = (e) => { if (estEntree(e) && !e.shiftKey && !matchMedia('(pointer:coarse)').matches) { e.preventDefault(); go() } }
 }
 
 // =====================================================================================
@@ -933,7 +968,7 @@ function feuilleTerme(t) {
     if (r.error) return ajouter(`<div class="sys">${esc(r.error)}</div>`, '#t-fil')
     fil.push({ role: 'user', content: q }, { role: 'assistant', content: r.answer }); bulleAgent(r.answer, '#t-fil')
   }
-  $('#t-go', f).onclick = go; $('#t-q', f).onkeydown = (e) => { if (e.key === 'Enter') go() }
+  $('#t-go', f).onclick = go; $('#t-q', f).onkeydown = (e) => { if (estEntree(e)) go() }
   $('#t-suppr', f) && ($('#t-suppr', f).onclick = async () => { await H.glossary.remove(t.id); fermerFeuille(); vueEncyclo() })
 }
 function feuilleMot() {
@@ -951,6 +986,12 @@ function pastilleEncyclo(on) {         // on its sub-tab, and on the Network tab
 // =====================================================================================
 // settings
 // =====================================================================================
+// what the keyboard does, written the way this computer writes it ([label, keys, computer only])
+const RACCOURCIS = [['Send', () => [touches('Enter')]], ['New line', () => [touches('shift', 'Enter')]], ['Find a conversation', () => [touches('mod', 'K')]],
+  ['Change the permission mode', () => [touches('shift', 'Tab')]], ['Stop the agent, close a sheet', () => [touches('Esc')]],
+  ['Zoom in, zoom out', () => [touches('mod', '='), touches('mod', '-')], true], ['Actual size', () => [touches('mod', '0')], true],
+  ['Zoom with the mouse wheel', () => [touches('mod'), t('wheel')], true]]
+const clavierVisible = () => H.kind === 'computer' || matchMedia('(pointer:fine)').matches
 async function vueReglages() {
   const v = $('#v-reglages'), st = await H.account.state(), pc = H.kind === 'computer'
   const inter = (id, titre, d, on) => `<div class="reglage"><div class="l">${titre}<div class="d">${d}</div></div><span class="inter${on ? ' on' : ''}" id="${id}"></span></div>`
@@ -963,6 +1004,7 @@ async function vueReglages() {
     <div class="verre carte"><select class="champ" id="r-langue">${LANGUES.map(([c, n]) => `<option value="${c}"${c === langue() ? ' selected' : ''}>${n}</option>`).join('')}</select></div>
     <div class="section">background<span class="ligne"></span></div>
     <div class="verre carte"><div class="boutons" style="margin-top:0">${pc ? '<button class="bouton" id="r-image">Choose a picture</button>' : ''}<button class="bouton" id="r-sans">Plain night</button></div></div>
+    ${clavierVisible() ? `<div class="section">keyboard<span class="ligne"></span></div><div class="verre carte">${RACCOURCIS.filter((r) => pc || !r[2]).map(([l, k]) => `<div class="reglage"><div class="l">${l}</div><span class="touches" data-brut>${k().map((x) => `<kbd>${esc(x)}</kbd>`).join('')}</span></div>`).join('')}</div>` : ''}
     <div id="r-plus"></div>
     <div class="d" style="color:var(--encre-4);font-size:12px;text-align:center;margin:34px 0 0">root-harness · AGPL-3.0 · <a href="https://github.com/redjohn-sudo/root-harness" target="_blank" rel="noopener">source</a></div></div></div>`
   $('#r-langue').onchange = (e) => { appliquer(e.target.value); vueReglages() }
@@ -996,6 +1038,8 @@ async function demarrer() {
 
 export async function lancer(host) {
   H = host
+  marquer()
+  if (H.kind === 'computer') installerZoom()
   coquille()
   appliquer()
   H.on((e) => {

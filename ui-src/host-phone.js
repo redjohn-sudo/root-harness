@@ -20,6 +20,7 @@ import * as nip19 from 'nostr-tools/nip19'
 import { SimplePool } from 'nostr-tools/pool'
 import { lancer, partageSur } from './app.js'
 import { code, parse, handle } from './ident.js'
+import { plateforme } from './plateforme.js'
 import { reseau } from './social-net.js'
 import BASE from '../rootharness/glossary_base.json'
 
@@ -357,11 +358,12 @@ const host = {
 
 // -- notifications: your computer pushes them when your agent needs you (push.py) --------
 const b64u = (s) => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - s.length % 4) % 4)), (c) => c.charCodeAt(0))
-const appareil = () => /iPhone/.test(navigator.userAgent) ? 'iPhone' : /iPad/.test(navigator.userAgent) ? 'iPad' : /Android/.test(navigator.userAgent) ? 'Android' : 'phone'
+const appareil = () => plateforme() === 'ios' ? (/iPhone|iPod/.test(navigator.userAgent) ? 'iPhone' : 'iPad') : plateforme() === 'android' ? 'Android' : 'phone'
 const SW = window.isSecureContext && 'serviceWorker' in navigator ? navigator.serviceWorker.register('sw.js').catch(() => null) : Promise.resolve(null)
 async function notifEtat() {
   if (!window.isSecureContext) return { why: 'Notifications need root-harness opened over https (its online address or your private link). Here it is opened over plain http on your Wi-Fi.' }
-  if (/iPhone|iPad/.test(navigator.userAgent) && !navigator.standalone) return { why: 'On iPhone, add root-harness to your Home Screen first (Share, Add to Home Screen), then open it from there.' }
+  // an iPad too, even when it says it is a Mac
+  if (plateforme() === 'ios' && !navigator.standalone) return { why: 'On iPhone, add root-harness to your Home Screen first (Share, Add to Home Screen), then open it from there.' }
   const reg = await SW
   if (!reg || !('PushManager' in window) || !('Notification' in window)) return { why: 'This browser cannot receive notifications.' }
   if (Notification.permission === 'denied') return { why: 'Notifications are blocked for root-harness in this phone\'s settings.' }

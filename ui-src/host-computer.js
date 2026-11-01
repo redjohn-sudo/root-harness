@@ -79,7 +79,7 @@ const host = {
     const r = await api().remote_state(), v = await api().vibe_status(), t = await api().vibe_phone_token_state()
     el.innerHTML = `<div class="section">phone<span class="ligne"></span></div><div class="verre carte">
       <div class="reglage"><div class="l">Use from my phone<div class="d">Your phone drives this computer</div></div><span class="inter${r.on ? ' on' : ''}" id="r-tel"></span></div>
-      ${r.on ? `<div class="reglage"><div class="l">Same Wi-Fi: open in Safari<div class="d" style="font-family:var(--mono)">${esc((r.url || '').replace('https://', 'http://'))}</div></div></div>` : ''}
+      ${r.on ? `<div class="reglage"><div class="l">Same Wi-Fi: open this on your phone<div class="d" style="font-family:var(--mono)">${esc((r.url || '').replace('https://', 'http://'))}</div></div></div>` : ''}
       <div class="reglage"><div class="l">GitHub on my phone<div class="d">Vibe code from the phone</div></div><span class="inter${t.on ? ' on' : ''}" id="r-ghtel"></span></div>
       <div class="boutons"><button class="bouton" id="r-relier">Link a phone (QR code)</button></div></div>
       <div class="section">vibe code<span class="ligne"></span></div><div class="verre carte" id="r-vibe">${vibeEtat(v, esc)}</div>

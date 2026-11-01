@@ -8,15 +8,20 @@
   --lueur:rgba(111,212,182,.35);
   --r:22px; --r-pt:14px;
   --ease:cubic-bezier(.16,1,.3,1); --ease-in:cubic-bezier(.65,0,.35,1);
-  --police:-apple-system,"SF Pro Text","Inter",system-ui,sans-serif; --mono:ui-monospace,"SF Mono",Menlo,monospace;
+  /* each system's own letters: SF on Apple, Segoe on Windows, the desktop's font on Linux (system-ui), then the emoji */
+  --police:-apple-system,"SF Pro Text","Segoe UI Variable Text","Segoe UI","Inter",system-ui,"Cantarell","Ubuntu","Noto Sans",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji";
+  --mono:ui-monospace,"SF Mono",Menlo,"Cascadia Mono",Consolas,monospace;
+  color-scheme:dark;                     /* native lists, pickers and scrollbars come dark too (Windows, Linux) */
   --rail:64px; --col:760px;
   --bas: env(safe-area-inset-bottom); --haut: env(safe-area-inset-top);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{font:15px/1.5 var(--police);color:var(--encre);background:#11131c;overflow:hidden;-webkit-font-smoothing:antialiased}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 input,textarea,select{font:inherit;color:inherit}
+select option{background:#1a1d2a;color:var(--encre)}
 a{color:var(--vert-clair)}
 
 /* -- the background: your picture, under a night veil (Lanterns' indigo) -- */
@@ -43,8 +48,9 @@ a{color:var(--vert-clair)}
 main{flex:1;min-width:0;display:flex;flex-direction:column;position:relative}
 
 /* -- views slide in, one at a time -- */
-.vue{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;pointer-events:none;transform:translateY(8px);transition:opacity .28s var(--ease),transform .34s var(--ease);will-change:opacity,transform}
-.vue.on{opacity:1;pointer-events:auto;transform:none}
+.vue{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;pointer-events:none;transform:translateY(8px);visibility:hidden;
+  transition:opacity .28s var(--ease),transform .34s var(--ease),visibility 0s .34s;will-change:opacity,transform}
+.vue.on{opacity:1;pointer-events:auto;transform:none;visibility:visible;transition:opacity .28s var(--ease),transform .34s var(--ease)}   /* Tab never lands in a hidden view */
 .defile{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:calc(28px + var(--haut)) 20px 140px}
 .colonne{max-width:var(--col);margin:0 auto}
 .titre{font-size:40px;font-weight:300;letter-spacing:-.02em;line-height:1.1;margin:10px 0 6px;text-transform:lowercase}
@@ -104,7 +110,7 @@ pre.code{font:12px var(--mono);background:rgba(0,0,0,.35);border-radius:10px;pad
 @keyframes respire{50%{opacity:.35}}
 .fil{display:flex;flex-direction:column;gap:14px;padding-top:8px}
 .fil>*{animation:monte .5s var(--ease)}
-.bienvenue{text-align:center;padding:34vh 10px 0}
+.bienvenue{text-align:center;padding:calc(34vh / var(--zoom,1)) 10px 0}
 .bienvenue .grande-tete{width:92px;height:92px;margin:0 auto 18px;filter:drop-shadow(0 10px 30px rgba(0,0,0,.4))}
 .bienvenue .titre{font-size:34px}
 .msg{max-width:min(620px,88%);line-height:1.6;word-break:break-word}
@@ -175,10 +181,10 @@ body.travail .envoyer{background:var(--ambre)}
 .menu .titre-menu{font-size:11px;letter-spacing:.08em;color:var(--encre-3);padding:6px 12px 4px;text-transform:lowercase}
 #voile{position:fixed;inset:0;z-index:20;background:rgba(5,6,12,.45);opacity:0;pointer-events:none;transition:opacity .35s}
 #voile.on{opacity:1;pointer-events:auto}
-.feuille{position:fixed;z-index:21;left:50%;bottom:0;width:min(560px,100%);max-height:82vh;overflow-y:auto;padding:20px 20px calc(20px + var(--bas));
+.feuille{position:fixed;z-index:21;left:50%;bottom:0;width:min(560px,100%);max-height:calc(82vh / var(--zoom,1));overflow-y:auto;padding:20px 20px calc(20px + var(--bas));
   border-radius:26px 26px 0 0;background:rgba(18,20,30,.94);border:1px solid var(--trait);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);
-  transform:translate(-50%,105%);transition:transform .5s var(--ease)}
-.feuille.on{transform:translate(-50%,0)}
+  transform:translate(-50%,105%);visibility:hidden;transition:transform .5s var(--ease),visibility 0s .5s}
+.feuille.on{transform:translate(-50%,0);visibility:visible;transition:transform .5s var(--ease)}
 .feuille h3{font-size:22px;font-weight:300;margin-bottom:4px;padding-right:40px}
 .feuille .fermer{position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.08);color:var(--encre-2);font-size:14px;transition:background .2s,transform .2s var(--ease)}
 .feuille .fermer:hover{background:rgba(255,255,255,.15)}.feuille .fermer:active{transform:scale(.9)}
@@ -189,8 +195,8 @@ body.travail .envoyer{background:var(--ambre)}
 /* -- the account screen -- */
 #porte{position:fixed;inset:0;z-index:40;display:grid;place-items:center;padding:20px;
   background:#1a0f08;
-  opacity:0;pointer-events:none;transition:opacity .5s,--accent 1.2s}
-#porte.on{opacity:1;pointer-events:auto}
+  opacity:0;pointer-events:none;visibility:hidden;transition:opacity .5s,--accent 1.2s,visibility 0s .5s}
+#porte.on{opacity:1;pointer-events:auto;visibility:visible;transition:opacity .5s,--accent 1.2s}
 #porte .carte-porte{width:min(380px,100%);text-align:center;padding:30px 24px 24px;transform:translateY(16px);transition:transform .7s var(--ease)}
 #porte.on .carte-porte{transform:none}
 .carte-porte .grande-tete{width:84px;height:84px;margin:0 auto 14px}
@@ -226,7 +232,7 @@ body.travail .envoyer{background:var(--ambre)}
 .rangee .champ{margin-top:6px;padding:8px 10px;font-size:14px}
 .puce{width:22px;height:22px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:12px;background:rgba(255,255,255,.08);color:var(--encre-3)}
 .puce.oui{background:rgba(63,157,132,.3);color:var(--vert-clair)}
-#porte .carte-porte{max-height:calc(100vh - 40px);overflow-y:auto}
+#porte .carte-porte{max-height:calc(100vh / var(--zoom,1) - 40px);overflow-y:auto;overflow-x:hidden}   /* the sliding screens never flash a sideways scrollbar (Windows, Linux) */
 textarea.champ{resize:none;font:13px var(--mono)}
 
 .point-agent{display:inline-block;width:8px;height:8px;border-radius:50%;flex:none;margin-right:6px;vertical-align:1px}
@@ -569,7 +575,7 @@ main.sous .vue.on{padding-top:52px}
 .code-gh span{display:inline-block;animation:pop .5s var(--ease) both;animation-delay:calc(.35s + var(--i) * 55ms)}
 .attend{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;font-size:13px;color:var(--encre-3)}
 .attend i{width:7px;height:7px;border-radius:50%;background:var(--vert-clair);box-shadow:0 0 10px var(--lueur);animation:respire 1.4s ease-in-out infinite}
-.commande{font:14px var(--mono);padding:10px 12px;border-radius:12px;background:rgba(0,0,0,.25);border:1px solid var(--trait);margin:4px 0 6px;-webkit-user-select:all;user-select:all}
+.commande{font:14px var(--mono);white-space:pre-wrap;overflow-wrap:anywhere;padding:10px 12px;border-radius:12px;background:rgba(0,0,0,.25);border:1px solid var(--trait);margin:4px 0 6px;-webkit-user-select:all;user-select:all}
 .cle-zone{margin-top:14px;text-align:left}
 .choix-cle{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
 .puce-choix{padding:6px 12px;border-radius:999px;font-size:13px;color:var(--encre-3);border:1px solid var(--trait);transition:all .25s var(--ease)}
@@ -622,3 +628,29 @@ main.sous .vue.on{padding-top:52px}
 .fonds i.on{opacity:1;transform:none}
 .fonds::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(14,8,4,.2),rgba(14,8,4,.52))}
 @media (prefers-reduced-motion:reduce){ .fonds i{transform:none;transition:opacity .4s} }
+
+/* -- the same window on Windows, Linux and macOS -- */
+/* keyboard focus: a green ring; fields show it with their own border */
+:focus-visible{outline:2px solid var(--vert-clair);outline-offset:2px}
+:is(input,textarea,select):focus-visible{outline:none}
+input:is([type=range],[type=color]):focus-visible{outline:2px solid var(--vert-clair);outline-offset:2px}
+label[tabindex]:focus-visible{outline:2px solid var(--vert-clair);outline-offset:2px}
+/* outside Apple, scrollbars are always drawn: thin and dark, like the rest */
+:where(.pf-windows,.pf-linux) *{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.22) transparent}
+:where(.pf-windows,.pf-linux) ::-webkit-scrollbar{width:10px;height:10px;background:transparent}
+:where(.pf-windows,.pf-linux) ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2) padding-box;border:3px solid transparent;border-radius:8px}
+:where(.pf-windows,.pf-linux) ::-webkit-scrollbar-thumb:hover{background-color:rgba(255,255,255,.34)}
+:where(.pf-windows,.pf-linux) ::-webkit-scrollbar-track,:where(.pf-windows,.pf-linux) ::-webkit-scrollbar-corner{background:transparent}
+/* no blur here (or less transparency asked): the glass turns nearly opaque so text stays readable */
+html.opaque{--verre:rgba(20,22,33,.92);--verre-fort:rgba(17,19,29,.96)}
+.opaque .msg.moi{background:rgba(44,47,61,.94)}
+.opaque .demande{background:rgba(48,36,16,.95)}
+.opaque #sousbar{background:rgba(17,19,29,.96)}
+.opaque .recadrage{background:rgba(6,8,14,.92)}
+.opaque #porte .carte-porte{background:linear-gradient(180deg,rgba(78,56,40,.96),rgba(40,22,11,.97))}
+@media (max-width:720px){ .opaque #rail{background:rgba(12,14,22,.97)} }
+/* shortcuts, written the way this computer writes them */
+.touches{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;flex:none;max-width:60%}
+.touches kbd{font:12.5px/1.4 var(--police);padding:2px 8px;border-radius:7px;border:1px solid var(--trait-fort);border-bottom-width:2px;background:rgba(255,255,255,.06);color:var(--encre-2);white-space:nowrap}
+/* a picture held over the chat: the composer shows where it lands */
+.composer .boite.depot{border-color:rgba(111,212,182,.7);box-shadow:0 18px 50px rgba(0,0,0,.35),0 0 0 4px rgba(111,212,182,.16)}

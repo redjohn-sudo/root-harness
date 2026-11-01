@@ -5,6 +5,7 @@
 // (locked, offline), examples show what it looks like and nothing is sent.
 import { tete } from './root.js'
 import { esc, riche, feuille, fermerFeuille, toast, aller, copier } from './app.js'
+import { entree, zoomActuel } from './plateforme.js'
 
 const $ = (s, r = document) => r.querySelector(s)
 const $$ = (s, r = document) => [...r.querySelectorAll(s)]
@@ -223,7 +224,7 @@ async function ouvrirFil(p, H, repondre = false) {
     } catch (e) { toast(e.message || 'Not sent.') }
     $('#t-go', f).disabled = false
   }
-  $('#t-go', f).onclick = go; $('#t-q', f).onkeydown = (e) => { if (e.key === 'Enter' && !$('.suggest-at.on', f)) go() }
+  $('#t-go', f).onclick = go; $('#t-q', f).onkeydown = (e) => { if (entree(e) && !$('.suggest-at.on', f)) go() }
   suggererAt($('#t-q', f), H)
   if (repondre) setTimeout(() => $('#t-q', f).focus(), 300)
 }
@@ -254,7 +255,7 @@ export async function vueFil(H) {
     <div class="titre">the feed</div><div class="sous-titre">What people build with their agents.</div>
     <div class="pagent" id="f-travail" style="display:none;margin:-10px 0 14px;cursor:pointer">${ico('etincelle')}your agent is working: scroll here, it tells you when it is done. Back to it</div>
     <div class="verre carte ecrire">${avatar(m, 40)}<div class="ec"><textarea class="champ" id="f-t" rows="2" placeholder="what did you build today?"></textarea>
-      <div class="ec-bas"><button class="bouton" id="f-agent">${ico('etincelle')} my agent writes it</button><label class="rond-btn" title="a photo or a video">${ico('image')}<input type="file" id="f-img" accept="image/*,video/*" hidden></label>
+      <div class="ec-bas"><button class="bouton" id="f-agent">${ico('etincelle')} my agent writes it</button><label class="rond-btn" title="a photo or a video" tabindex="0" role="button">${ico('image')}<input type="file" id="f-img" accept="image/*,video/*" hidden></label>
       <select class="champ petit" id="f-commu"><option value="">no community</option>${commus.map((c) => `<option value="${esc(c)}">${esc(nomCommu(c))}</option>`).join('')}</select>
       <button class="bouton plein" id="f-ok">Post</button></div><div id="f-apercu"></div></div></div>
     <div class="boutons" id="f-onglets">${[['for-you', 'for you'], ['friends', 'friends']].map(([k, t]) => `<button class="bouton${k === FIL ? ' vert' : ''}" data-f="${k}">${t}</button>`).join('')}</div>
@@ -293,7 +294,7 @@ export async function vueFil(H) {
     const t = $('#f-cherche').value.trim(); if (!t) return
     try { const p = await H.network.lookup(t); if (!p) return toast('Nobody found with that.'); ouvrirPage(H, p.hex) } catch (e) { toast(e.message || 'Not found.') }
   }
-  $('#f-go').onclick = trouver; $('#f-cherche').onkeydown = (e) => { if (e.key === 'Enter') trouver() }
+  $('#f-go').onclick = trouver; $('#f-cherche').onkeydown = (e) => { if (entree(e)) trouver() }
   $('#f-travail').onclick = () => aller('chat')
   travailEnCours()
   chargerFil(H)
@@ -542,7 +543,7 @@ function tousBadges(H, mur) {
 function editer(H, p) {
   let work = (p.work || []).map((w) => ({ ...w })), photo = p.picture, couv = p.banner, montrer = p.show || 'pseudo', etat = p.state || 'etudie', fPhoto = null, fCouv = null, cPhoto = p.picture_frame || null, cCouv = p.banner_frame || null
   const f = feuille(`<h3>edit your profile</h3><div class="sous-titre" style="margin-bottom:10px">Everyone can see it.</div>
-    <div class="ed-photo">${avatar(p, 64)}<label class="bouton">photo or GIF<input type="file" id="e-photo" accept="image/*" hidden></label><label class="bouton">cover<input type="file" id="e-couv" accept="image/*" hidden></label>${p.picture ? '<button class="bouton" id="e-sansphoto">Root\'s head</button>' : ''}</div>
+    <div class="ed-photo">${avatar(p, 64)}<label class="bouton" tabindex="0" role="button">photo or GIF<input type="file" id="e-photo" accept="image/*" hidden></label><label class="bouton" tabindex="0" role="button">cover<input type="file" id="e-couv" accept="image/*" hidden></label>${p.picture ? '<button class="bouton" id="e-sansphoto">Root\'s head</button>' : ''}</div>
     <div class="d" style="font-size:13px;color:var(--encre-3);margin:4px 0 6px">your @: the first to take a name keeps it</div>
     <div class="boite-btw" style="margin-bottom:10px"><input class="champ" id="e-at" placeholder="@yourname" value="${p.at ? '@' + esc(p.at) : ''}" autocomplete="off" autocapitalize="none"><button class="bouton" id="e-at-ok">Take it</button></div>
     <input class="champ" id="e-nom" placeholder="first and last name (optional)" value="${esc(p.name || '')}">
@@ -765,7 +766,7 @@ export function choisirGens(H, { titre = 'new message', bouton = 'Start' } = {},
     catch (e) { $('#cg-err', f).textContent = e.message || 'Not found.' }
     $('#cg-add', f).textContent = 'Add'
   }
-  $('#cg-q', f).oninput = lister; $('#cg-q', f).onkeydown = (e) => { if (e.key === 'Enter') chercher() }; $('#cg-add', f).onclick = chercher
+  $('#cg-q', f).oninput = lister; $('#cg-q', f).onkeydown = (e) => { if (entree(e)) chercher() }; $('#cg-add', f).onclick = chercher
   $('#cg-ok', f).onclick = async () => { $('#cg-ok', f).disabled = true; try { await ok([...choisis.values()], $('#cg-nom', f).value.trim()) } catch (e) { $('#cg-err', f).textContent = e.message || 'Not done.'; $('#cg-ok', f).disabled = false } }
   lister(); setTimeout(() => $('#cg-q', f).focus(), 250)
 }
@@ -796,7 +797,7 @@ export async function vueRecherche(H) {
     $$('#s-res [data-c]').forEach((el) => el.onclick = () => { COMMU_OUVERTE = el.dataset.c; aller('commus') })
   }
   $('#s-q').oninput = () => { clearTimeout(minuteur); minuteur = setTimeout(() => montrer(false), 200) }
-  $('#s-q').onkeydown = (e) => { if (e.key === 'Enter') montrer(true) }
+  $('#s-q').onkeydown = (e) => { if (entree(e)) montrer(true) }
   $('#s-go').onclick = () => montrer(true)
   montrer(false); setTimeout(() => $('#s-q') && $('#s-q').focus(), 300)
 }
@@ -807,7 +808,7 @@ export async function vueRecherche(H) {
 // =====================================================================================
 function recadrer(fichier, forme) {
   return new Promise((fini) => {
-    const anime = fichier.type === 'image/gif', W = Math.min(forme === 'rond' ? 280 : 540, innerWidth - 84), Hh = forme === 'rond' ? W : Math.round(W / 3)
+    const anime = fichier.type === 'image/gif', W = Math.min(forme === 'rond' ? 280 : 540, innerWidth / zoomActuel() - 84), Hh = forme === 'rond' ? W : Math.round(W / 3)
     const url = URL.createObjectURL(fichier), img = new Image()
     const o = document.createElement('div'); o.className = 'recadrage'
     o.innerHTML = `<div class="rc-boite verre"><h3>${forme === 'rond' ? 'frame your photo' : 'frame your cover'}</h3>
@@ -823,8 +824,9 @@ function recadrer(fichier, forme) {
     img.onload = () => { nw = img.naturalWidth; nh = img.naturalHeight; s0 = Math.max(W / nw, Hh / nh); ox = (W - nw * s0) / 2; oy = (Hh - nh * s0) / 2; im.src = url; dessiner() }
     img.src = url
     let tire = null
-    cadreEl.onpointerdown = (e) => { tire = { x: e.clientX, y: e.clientY, ox, oy }; cadreEl.setPointerCapture(e.pointerId) }
-    cadreEl.onpointermove = (e) => { if (!tire) return; ox = tire.ox + e.clientX - tire.x; oy = tire.oy + e.clientY - tire.y; dessiner() }
+    // the pointer moves in screen pixels, the picture in the page's own (they differ once the window is zoomed)
+    cadreEl.onpointerdown = (e) => { tire = { x: e.clientX, y: e.clientY, ox, oy, k: cadreEl.getBoundingClientRect().width / cadreEl.offsetWidth || 1 }; cadreEl.setPointerCapture(e.pointerId) }
+    cadreEl.onpointermove = (e) => { if (!tire) return; ox = tire.ox + (e.clientX - tire.x) / tire.k; oy = tire.oy + (e.clientY - tire.y) / tire.k; dessiner() }
     cadreEl.onpointerup = cadreEl.onpointercancel = () => { tire = null }
     cadreEl.onwheel = (e) => { e.preventDefault(); zoomEl.value = Math.min(4, Math.max(1, z * (e.deltaY < 0 ? 1.06 : 0.94))); zoomEl.oninput() }
     zoomEl.oninput = () => { const c = { x: (W / 2 - ox) / (s0 * z), y: (Hh / 2 - oy) / (s0 * z) }; z = +zoomEl.value; ox = W / 2 - c.x * s0 * z; oy = Hh / 2 - c.y * s0 * z; dessiner() }

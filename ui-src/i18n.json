@@ -4518,14 +4518,6 @@
    "pt": "Seu celular controla este computador",
    "zh": "用手机控制这台电脑"
   },
-  "Same Wi-Fi: open in Safari": {
-   "de": "Gleiches WLAN: in Safari öffnen",
-   "es": "Misma wifi: abrir en Safari",
-   "fr": "Même Wi-Fi : ouvrir dans Safari",
-   "ja": "同じWi-Fiで、Safariで開く",
-   "pt": "Mesmo Wi-Fi: abrir no Safari",
-   "zh": "同一 Wi-Fi:在 Safari 中打开"
-  },
   "Vibe code from the phone": {
    "de": "Vibe-Coding vom Telefon",
    "es": "Vibe coding desde el teléfono",
@@ -5373,6 +5365,110 @@
    "ja": "まずコンピューターでアカウントを作成してから、このスマートフォンをリンクしてください。",
    "pt": "Crie primeiro sua conta no computador e depois vincule este celular.",
    "zh": "请先在电脑上创建账号,再关联这部手机。"
+  },
+  "Same Wi-Fi: open this on your phone": {
+   "de": "Gleiches WLAN: auf deinem Handy öffnen",
+   "es": "Misma wifi: ábrelo en tu móvil",
+   "fr": "Même Wi-Fi : ouvre ceci sur ton téléphone",
+   "ja": "同じWi-Fiで、スマホでこれを開く",
+   "pt": "Mesmo Wi-Fi: abra isto no seu celular",
+   "zh": "同一 Wi-Fi:在手机上打开这个"
+  },
+  "keyboard": {
+   "de": "tastatur",
+   "es": "teclado",
+   "fr": "clavier",
+   "ja": "キーボード",
+   "pt": "teclado",
+   "zh": "键盘"
+  },
+  "New line": {
+   "de": "Neue Zeile",
+   "es": "Nueva línea",
+   "fr": "Nouvelle ligne",
+   "ja": "改行",
+   "pt": "Nova linha",
+   "zh": "换行"
+  },
+  "Find a conversation": {
+   "de": "Eine Unterhaltung finden",
+   "es": "Buscar una conversación",
+   "fr": "Trouver une conversation",
+   "ja": "会話を探す",
+   "pt": "Encontrar uma conversa",
+   "zh": "查找对话"
+  },
+  "Change the permission mode": {
+   "de": "Berechtigungsmodus wechseln",
+   "es": "Cambiar el modo de permisos",
+   "fr": "Changer le mode de permission",
+   "ja": "権限モードを切り替える",
+   "pt": "Mudar o modo de permissão",
+   "zh": "切换权限模式"
+  },
+  "Stop the agent, close a sheet": {
+   "de": "Agent stoppen, Fenster schließen",
+   "es": "Detener el agente, cerrar un panel",
+   "fr": "Arrêter l'agent, fermer un volet",
+   "ja": "エージェントを止める、パネルを閉じる",
+   "pt": "Parar o agente, fechar um painel",
+   "zh": "停止智能体,关闭面板"
+  },
+  "Zoom in, zoom out": {
+   "de": "Vergrößern, verkleinern",
+   "es": "Ampliar, reducir",
+   "fr": "Agrandir, réduire",
+   "ja": "拡大、縮小",
+   "pt": "Ampliar, reduzir",
+   "zh": "放大、缩小"
+  },
+  "Actual size": {
+   "de": "Originalgröße",
+   "es": "Tamaño real",
+   "fr": "Taille réelle",
+   "ja": "実際のサイズ",
+   "pt": "Tamanho real",
+   "zh": "实际大小"
+  },
+  "Zoom with the mouse wheel": {
+   "de": "Mit dem Mausrad zoomen",
+   "es": "Zoom con la rueda del ratón",
+   "fr": "Zoomer avec la molette",
+   "ja": "マウスホイールでズーム",
+   "pt": "Zoom com a roda do mouse",
+   "zh": "用鼠标滚轮缩放"
+  },
+  "wheel": {
+   "de": "Mausrad",
+   "es": "rueda",
+   "fr": "molette",
+   "ja": "ホイール",
+   "pt": "roda",
+   "zh": "滚轮"
+  },
+  "Ctrl": {
+   "de": "Strg",
+   "es": "Ctrl",
+   "fr": "Ctrl",
+   "ja": "Ctrl",
+   "pt": "Ctrl",
+   "zh": "Ctrl"
+  },
+  "Shift": {
+   "de": "Umschalt",
+   "es": "Mayús",
+   "fr": "Maj",
+   "ja": "Shift",
+   "pt": "Shift",
+   "zh": "Shift"
+  },
+  "Enter": {
+   "de": "Eingabe",
+   "es": "Intro",
+   "fr": "Entrée",
+   "ja": "Enter",
+   "pt": "Enter",
+   "zh": "Enter"
   }
  },
  "patterns": [
@@ -6113,6 +6209,15 @@
    "ja": "別のデバイスでサインインするときのニックネームは $1 です。",
    "pt": "Para entrar em outro dispositivo, seu apelido é $1.",
    "zh": "在其他设备上登录时,你的昵称是 $1。"
+  },
+  {
+   "en": "^Conversations \\((.+)\\)$",
+   "de": "Unterhaltungen ($1)",
+   "es": "Conversaciones ($1)",
+   "fr": "Conversations ($1)",
+   "ja": "会話 ($1)",
+   "pt": "Conversas ($1)",
+   "zh": "对话 ($1)"
   }
  ]
 }
