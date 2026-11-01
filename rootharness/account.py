@@ -26,6 +26,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import shutil
 from pathlib import Path
 
 HOME = Path(os.environ.get("ROOT_HARNESS_HOME") or Path.home() / ".root-harness")
@@ -131,7 +132,10 @@ def create(pseudo: str, password: str, again: str, sync: bool = True):
     if password != again:
         return None, "The two passwords are different."
     # keep an identity that already exists on this Mac, so your ID does not change
-    old = _keyring().get_password(*KEYCHAIN)
+    try:
+        old = _keyring().get_password(*KEYCHAIN)
+    except Exception:      # a new key here would quietly change your ID: ask to fix the keychain first
+        return None, "The system keychain did not answer. Unlock it (or allow root-harness) and try again."
     keys = n.Keys.parse(old) if old else n.Keys.generate()
     _save({"pseudo": pseudo, "npub": keys.public_key().to_bech32(),
            "locked_key": keys.secret_key().encrypt(password).to_bech32(), "stay": False, "sync": bool(sync)})
@@ -235,7 +239,8 @@ def restore_words(words: str, pseudo: str, password: str, again: str):
 
 def reset() -> None:
     """Forgotten password: start over with a new identity. The old channels
-    belonged to the old identity, so they go too."""
+    and the old public page (@, bio, projects) belonged to the old identity,
+    so they go too: the new key must not publish them again."""
     _forget_in_keychain()
     ACCOUNT.unlink(missing_ok=True)
     (HOME / "channels.json").unlink(missing_ok=True)
@@ -243,6 +248,7 @@ def reset() -> None:
     if folder.is_dir():
         for f in folder.glob("*.json"):
             f.unlink()
+    shutil.rmtree(HOME / "network", ignore_errors=True)
 
 
 def _forget_in_keychain() -> None:

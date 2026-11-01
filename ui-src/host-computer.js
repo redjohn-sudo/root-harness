@@ -23,7 +23,7 @@ const host = {
   setup: {
     detect: () => api().setup_detect(), key: (n, v) => api().setup_key(n, v),
     phone: (on) => api().remote_set(on), githubPhone: (on) => api().vibe_phone_token(on), workshop: () => api().vibe_create(),
-    githubStart: () => api().setup_github_start(), githubStatus: () => api().setup_github_status(),
+    githubStart: () => api().setup_github_start(), githubStatus: () => api().setup_github_status(), githubCancel: () => api().setup_github_cancel(),
   },
   agent: {
     active: () => api().active_brain(), brains: () => api().brains_list(), chooseBrain: (i) => api().choose_brain(i),

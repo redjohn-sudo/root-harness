@@ -9,7 +9,15 @@ import { vueFil, vueProfil, vueNotifs, vueCommus, vueRecherche, choisirGens, sur
 let H = null                                  // the host
 const $ = (s, r = document) => r.querySelector(s)
 const $$ = (s, r = document) => [...r.querySelectorAll(s)]
-export const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
+// a shared conversation comes from a friend: keep only its title, agent and plain messages
+export function partageSur(s) {
+  s = s && typeof s === 'object' ? s : {}
+  const ch = (x, n) => (typeof x === 'string' ? x : '').slice(0, n)
+  const events = (Array.isArray(s.events) ? s.events : []).filter((e) => e && (e.type === 'user' || e.type === 'text') && typeof e.text === 'string')
+    .slice(0, 200).map((e) => ({ type: e.type, text: e.text.slice(0, 6000) }))
+  return { title: ch(s.title, 120), agent: ch(s.agent, 60), events }
+}
+export const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
 const quand = (ms) => { const d = (Date.now() - ms) / 1000
   return d < 60 ? 'now' : d < 3600 ? Math.floor(d / 60) + ' min' : d < 86400 ? Math.floor(d / 3600) + ' h' : d < 604800 ? Math.floor(d / 86400) + ' d' : new Date(ms).toLocaleDateString() }
 
@@ -55,8 +63,9 @@ function coquille() {
   <div id="voile"></div><div class="feuille" id="feuille"></div><div class="toast" id="toast"></div>
   <div id="porte"><div class="fonds"></div><div class="carte-porte verre" id="carte-porte"></div></div>`
   $$('.onglet').forEach((b) => b.onclick = () => aller(b.dataset.v))
-  $$('#sousbar .sous-onglet').forEach((b) => b.onclick = () => aller(b.dataset.v))
+  $$('#sousbar .sous-onglet').forEach((b) => b.onclick = () => aller(b.dataset.v, true))
   $('#voile').onclick = fermerFeuille
+  $('#feuille').addEventListener('click', (e) => { if (e.target.closest('.fermer')) fermerFeuille() })   // sheets that rewrite themselves keep their ✕
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('#feuille').classList.contains('on')) fermerFeuille() })
   addEventListener('mousemove', (e) => { const r = document.documentElement.style
     r.setProperty('--mx', (e.clientX / innerWidth - .5).toFixed(3)); r.setProperty('--my', (e.clientY / innerHeight - .5).toFixed(3)) })
@@ -65,7 +74,7 @@ function coquille() {
 
 let VUE = 'chat'
 const GROUPE = (v) => ['fil', 'recherche', 'commus', 'profil', 'encyclo'].includes(v) ? 'reseau' : v
-export function aller(v) {
+export function aller(v, moi = false) {      // moi: the profile sub-tab, always your own page
   if (v === 'reseau') v = 'fil'          // the network entry lands on the feed
   VUE = v
   const g = GROUPE(v), dansReseau = g === 'reseau'
@@ -74,10 +83,14 @@ export function aller(v) {
   $('main').classList.toggle('sous', dansReseau)
   $('#sousbar').style.display = dansReseau ? 'flex' : 'none'
   $$('.vue').forEach((s) => s.classList.toggle('on', s.id === 'v-' + v))
-  ;({ chat: vueChat, fil: () => vueFil(H), profil: () => vueProfil(H), notifs: () => vueNotifs(H), commus: () => vueCommus(H), recherche: () => vueRecherche(H), discussions: vueDiscussions, amis: vueAmis, vibe: vueVibe, encyclo: vueEncyclo, reglages: vueReglages })[v]()
+  ;({ chat: vueChat, fil: () => vueFil(H), profil: () => vueProfil(H, moi ? '' : undefined), notifs: () => vueNotifs(H), commus: () => vueCommus(H), recherche: () => vueRecherche(H), discussions: vueDiscussions, amis: vueAmis, vibe: vueVibe, encyclo: vueEncyclo, reglages: vueReglages })[v]()
 }
 
 export { feuille, fermerFeuille, qr }
+export async function copier(texte, dit = 'Copied') {
+  const ok = await Promise.resolve().then(() => H.copy(texte)).catch(() => false)
+  toast(ok ? dit : "Couldn't copy."); return ok
+}
 export function toast(t) { const e = $('#toast'); e.textContent = t; e.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove('on'), 2600) }
 function feuille(html) {
   const f = $('#feuille'); f.innerHTML = '<div class="poignee"></div><button class="fermer" title="Close">✕</button>' + html
@@ -117,9 +130,10 @@ async function porte() {
   const c = $('#carte-porte'), o = $('#porte'); o.classList.add('on')
   const val = (id) => $('#' + id).value
   const erreur = (t) => { $('#p-err').textContent = t; c.classList.remove('secoue'); void c.offsetWidth; c.classList.add('secoue') }
-  const entree = (ids, go) => ids.forEach((i) => $('#' + i).onkeydown = (e) => { if (e.key === 'Enter') go() })
+  const entree = (ids, go) => ids.forEach((i) => $('#' + i).onkeydown = (e) => { if (e.key === 'Enter' && !$('#p-go')?.disabled) go() })
   const occupe = (t) => { const b = $('#p-go'); b.dataset.t = b.dataset.t || b.textContent; b.textContent = t; b.disabled = true; $('#p-barre')?.classList.add('on') }
   const libre = () => { const b = $('#p-go'); if (b.dataset.t) b.textContent = b.dataset.t; b.disabled = false; $('#p-barre')?.classList.remove('on') }
+  const rate = (e) => (e && e.message) || 'It did not go through: try again.'
   const fini = async () => { o.classList.remove('on'); await demarrer() }
 
   // sign-up: one question per screen, everything set once, then nothing to configure
@@ -141,6 +155,7 @@ async function porte() {
   photo(0)
   // each screen slides in, the last one leaves as a ghost, the card breathes to its new height
   const ecran = (html, etape = -1, sens = 1) => {
+    ecran.n = (ecran.n || 0) + 1
     sens = sens === -1 ? -1 : 1
     o.dataset.etape = etape < 0 ? '' : etape     // each step has its own light
     photo(etape)
@@ -168,7 +183,7 @@ async function porte() {
       clearTimeout(ecran.t); ecran.t = setTimeout(() => { c.style.height = ''; c.classList.remove('respire') }, 560)
     }
   }
-  const coche = () => '<svg class="coche" viewBox="0 0 52 52"><circle cx="26" cy="26" r="23"/><path d="M15 27l7.5 7.5L37 19"/></svg>'
+  const coche = () => '<svg class="coche-ok" viewBox="0 0 52 52"><circle cx="26" cy="26" r="23"/><path d="M15 27l7.5 7.5L37 19"/></svg>'
   const I = { at: '', mdp: '' }
   let D = null                                   // what this computer already has (setup.detect), asked once
   const detecte = async () => D || (D = await H.setup.detect())
@@ -205,15 +220,19 @@ async function porte() {
       b.style.background = ['#f87171', '#f87171', '#f0b35a', '#6fd4b6', '#6fd4b6'][Math.floor(f)]
       $('#p-force-t').textContent = val('p-mdp') ? ['too weak', 'weak', 'okay', 'strong', 'excellent'][Math.floor(f)] : '' }
     const go = async () => { if (force(val('p-mdp')) < 2) return erreur('Make it a bit longer: a short sentence is perfect.')
-      occupe('Creating your account...'); const r = await H.account.create(I.at, val('p-mdp'), val('p-mdp2'))
-      if (r.error) { libre(); return erreur(r.error) }
-      I.mdp = val('p-mdp'); if (I.trouvable === false) await H.account.setFindable(false)
+      occupe('Creating your account...'); let r
+      try { r = await H.account.create(I.at, val('p-mdp'), val('p-mdp2')) } catch (e) { libre(); return erreur(rate(e)) }
+      if (!r || r.error) { libre(); return erreur((r && r.error) || rate()) }
+      I.mdp = val('p-mdp')
+      if (I.trouvable === false) await Promise.resolve().then(() => H.account.setFindable(false)).catch(() => toast('Not hidden yet: turn off "Findable by my ID" in Settings.'))
       $('#p-go').textContent = 'Taking @' + I.at + '...'; const a = await prendre(I.at); libre()
       a.ok ? pris() : autreAt(a.error) }
     $('#p-go').onclick = go; entree(['p-mdp', 'p-mdp2'], go); $('#p-ret').onclick = () => creer(-1); $('#p-mdp').focus()
   }
   const prendre = async (at) => {
-    try { const x = await H.network.claimAt(at); return x && !x.error ? { ok: true } : { error: (x && x.error) || 'Not taken.' } }
+    try { const x = await H.network.claimAt(at)
+      if (x && !x.error && x.relays === 0) return { error: 'Not confirmed by the network: try again.' }
+      return x && !x.error ? { ok: true } : { error: (x && x.error) || 'Not taken.' } }
     catch (e) { return { error: e.message || 'The network did not answer.' } }
   }
   const pris = () => {                            // a beat to see it is yours, then the recovery kit
@@ -230,7 +249,13 @@ async function porte() {
 
   // 3. the recovery kit
   const kit = async (sens) => {
-    const r = await H.account.recoveryWords(I.mdp); const mots = r.words || []
+    let r; try { r = await H.account.recoveryWords(I.mdp) } catch (e) { r = { error: rate(e) } }
+    const mots = (r && r.words) || []
+    if (!mots.length) {
+      ecran(`<h2>your recovery kit</h2><p>Your 24 words could not be shown. Your account is made: try again.</p>
+        <div class="err" id="p-err"></div><button class="bouton plein" id="p-go">Try again</button>`, 2, sens)
+      $('#p-go').onclick = () => kit(); return erreur((r && r.error) || rate())
+    }
     ecran(`<h2>your recovery kit</h2><p>These 24 words are your account. Write them on paper and keep them safe: they bring everything back if you forget your password. Never share them.</p>
       <div class="mots">${mots.map((m, i) => `<span style="--i:${i}"><em>${i + 1}</em>${esc(m)}</span>`).join('')}</div>
       <button class="bouton plein" id="p-go">I wrote them down</button>`, 2, sens)
@@ -247,21 +272,34 @@ async function porte() {
   }
 
   // 4. GitHub, through gh's own web sign-in: its one-time code shows here
+  const plusTard = () => {                       // leaving GitHub: a late answer must not come back, the sign-in stops
+    ecran.n++; if (H.setup.githubCancel) Promise.resolve().then(() => H.setup.githubCancel()).catch(() => {}); agents() }
   const github = async () => {
     ecran(`<h2>connect GitHub</h2><p>Looking at this computer...</p>`, 3)
-    const d = await detecte()
+    const n = ecran.n; let d
+    try { d = await detecte() } catch (e) {
+      if (ecran.n !== n) return
+      ecran(`<h2>connect GitHub</h2><p>Couldn't look at this computer.</p>
+        <div class="err" id="p-err"></div><button class="bouton plein" id="p-go">Try again</button><span class="lien" id="p-plus-tard">Later</span>`, 3)
+      $('#p-go').onclick = github; $('#p-plus-tard').onclick = plusTard; return erreur(rate(e))
+    }
+    if (ecran.n !== n) return
     if (d.github) return githubOk(d.github)
     ecran(`<div class="logo-gh">${ico('vibe', 1.5)}</div><h2>connect GitHub</h2><p>Your projects on your profile, and vibe code from anywhere. One click, then you approve on github.com.</p>
       <div class="err" id="p-err"></div><button class="bouton plein" id="p-go">Connect GitHub</button><span class="lien" id="p-plus-tard">Later</span>`, 3)
-    $('#p-go').onclick = lancerGithub; $('#p-plus-tard').onclick = () => agents()
+    $('#p-go').onclick = lancerGithub; $('#p-plus-tard').onclick = plusTard
   }
   const lancerGithub = async () => {
-    occupe('Opening github.com...'); const r = await H.setup.githubStart(); libre()
+    const n = ecran.n; let r
+    occupe('Opening github.com...')
+    try { r = await H.setup.githubStart() } catch (e) { r = { error: rate(e) } }
+    if (ecran.n !== n) return                     // you left this screen meanwhile
+    libre(); r = r || {}
     if (r.done) return githubOk(r.login)
     if (r.error === 'gh_missing') {
       ecran(`<h2>one tool first</h2><p>root-harness talks to GitHub through its official tool, <b>gh</b>. Install it in a terminal, then come back:</p>
         <div class="commande">brew install gh</div><div class="err" id="p-err"></div><button class="bouton plein" id="p-go">Done, connect GitHub</button><span class="lien" id="p-plus-tard">Later</span>`, 3)
-      $('#p-go').onclick = lancerGithub; $('#p-plus-tard').onclick = () => agents(); return
+      $('#p-go').onclick = lancerGithub; $('#p-plus-tard').onclick = plusTard; return
     }
     if (r.error) return erreur(r.error)
     ecran(`<h2>approve on github.com</h2><p>GitHub opened in your browser. Type this code there:</p>
@@ -269,8 +307,8 @@ async function porte() {
       <button class="bouton" id="p-copier">${ico('copie')} copy the code</button>
       <div class="attend"><i></i>waiting for GitHub</div><div class="err" id="p-err"></div>
       <a class="lien" href="${esc(r.url)}" target="_blank" rel="noopener">Open github.com again</a><span class="lien" id="p-plus-tard">Later</span>`, 3)
-    $('#p-copier').onclick = async () => { await H.copy(r.code); toast('Code copied') }
-    $('#p-plus-tard').onclick = () => agents()
+    $('#p-copier').onclick = () => copier(r.code, 'Code copied')
+    $('#p-plus-tard').onclick = plusTard
     const tour = async () => {
       if (!$('#p-copier')) return                 // another screen now: stop asking
       const s = await H.setup.githubStatus().catch(() => ({}))
@@ -290,7 +328,15 @@ async function porte() {
   // 5. your agents: Claude through your own account, one key pasted for the others
   const FOURNISSEURS = [['ANTHROPIC_API_KEY', 'Anthropic', 'sk-ant-...'], ['DEEPSEEK_API_KEY', 'DeepSeek', 'sk-...'], ['NEBIUS_API_KEY', 'Nebius', 'key for Kimi, GLM, Qwen']]
   const agents = async () => {
-    const d = await detecte(), cl = d.claude || {}
+    const n = ecran.n; let d
+    try { d = await detecte() } catch (e) {
+      if (ecran.n !== n) return
+      ecran(`<h2>your agents</h2><p>Couldn't look at this computer.</p>
+        <div class="err" id="p-err"></div><button class="bouton plein" id="p-go">Try again</button><span class="lien" id="p-plus-tard">Later</span>`, 4)
+      $('#p-go').onclick = agents; $('#p-plus-tard').onclick = () => extras(); return erreur(rate(e))
+    }
+    if (ecran.n !== n) return
+    d.keys = d.keys || {}; const cl = d.claude || {}
     const ligne = (ok, t, m) => `<div class="rangee"><span class="puce ${ok ? 'oui' : ''}">${ok ? '✓' : '·'}</span><div><div>${t}</div><div class="d">${m}</div></div></div>`
     let choix = (FOURNISSEURS.find(([k]) => !d.keys[k]) || FOURNISSEURS[0])[0]
     const ph = (k) => FOURNISSEURS.find((f) => f[0] === k)[2]
@@ -305,7 +351,7 @@ async function porte() {
     $$('.puce-choix', c).forEach((b) => b.onclick = () => choisir(b.dataset.k))
     $('#p-cle').oninput = () => { if (val('p-cle').trim().startsWith('sk-ant-')) choisir('ANTHROPIC_API_KEY') }
     const go = async () => { const v = val('p-cle').trim()
-      if (v) { occupe('Saving your key...'); const ok = await H.setup.key(choix, v); libre(); if (!ok) return erreur('This key does not look right.'); d.keys[choix] = true }
+      if (v) { occupe('Saving your key...'); const ok = await Promise.resolve().then(() => H.setup.key(choix, v)).catch(() => false); libre(); if (!ok) return erreur('This key does not look right.'); d.keys[choix] = true }
       extras() }
     $('#p-go').onclick = go; entree(['p-cle'], go); $('#p-plus-tard').onclick = () => extras()
   }
@@ -324,16 +370,17 @@ async function porte() {
       const on = !x.classList.contains('on'), k = x.dataset.x
       if (k === 'fond') { await H.chooseBackground(); fond(); x.classList.add('on'); return }
       x.classList.toggle('on', on)
-      const r = k === 'tel' ? await H.setup.phone(on) : k === 'ghtel' ? await H.setup.githubPhone(on) : on ? await H.setup.workshop() : {}
+      const r = await Promise.resolve().then(() => k === 'tel' ? H.setup.phone(on) : k === 'ghtel' ? H.setup.githubPhone(on) : on ? H.setup.workshop() : {}).catch((e) => ({ error: rate(e) }))
       if (r && r.error) { x.classList.remove('on'); erreur(r.error) }
       else if (k === 'vibe' && on) $('#p-err').textContent = 'Workshop ready. Two keys to add once, from Settings, Vibe code.'
     })
     $('#p-go').onclick = () => bienvenue()
   }
   const bienvenue = async () => {
-    const st2 = await H.account.state(), at = st2.at || ''
+    const st2 = await H.account.state().catch(() => ({})), at = st2.at || ''
+    const autre = st2.pseudo && st2.pseudo !== at      // the account keeps the pseudo it was made with
     ecran(`<div class="grande-tete">${tete()}</div><h2>all set${at ? ', @' + esc(at) : ''}</h2><p>Everything is ready. Give your ${at ? '@' : 'ID'} to your friends, or let them scan this.</p>
-      ${at ? `<div class="mon-at">@${esc(at)}</div>` : ''}<div class="mon-id">${esc(st2.id || '')}</div><div class="qr">${qr(st2.id || '')}</div>
+      ${at ? `<div class="mon-at">@${esc(at)}</div>` : ''}${autre ? `<div class="pseudo-connexion">To sign in on another device, your pseudo is ${esc(st2.pseudo)}.</div>` : ''}<div class="mon-id">${esc(st2.id || '')}</div><div class="qr">${qr(st2.id || '')}</div>
       <button class="bouton plein" id="p-go">Open root-harness</button>`, ETAPES)
     $('#p-go').onclick = fini
   }
@@ -351,7 +398,7 @@ async function porte() {
       <input class="champ" id="p-pseudo" placeholder="pseudo" autocomplete="username" autocapitalize="off">
       <input class="champ" id="p-mdp" type="password" placeholder="password" autocomplete="current-password">
       <div class="err" id="p-err"></div><div class="barre" id="p-barre"><i></i></div><button class="bouton plein" id="p-go">Sign in</button>
-      ${H.kind === 'computer' ? '<span class="lien" id="p-mots">Use my 24 words instead</span>' : ''}${st.exists ? '' : '<span class="lien" id="p-nouveau">Create a new account</span>'}`
+      ${H.kind === 'computer' ? '<span class="lien" id="p-mots">Use my 24 words instead</span>' : ''}${st.exists ? '' : H.kind === 'phone' ? '<p class="d" style="margin-top:18px">Create your account on your computer first, then link this phone.</p>' : '<span class="lien" id="p-nouveau">Create a new account</span>'}`
     const go = async () => { occupe('Finding your account...'); const r = await H.account.restore(val('p-pseudo'), val('p-mdp'), (p) => { const i = $('#p-barre i'); if (i) i.style.width = Math.round(p * 100) + '%' })
       libre(); if (r.error) return erreur(r.error); fini() }
     $('#p-go').onclick = go; entree(['p-pseudo', 'p-mdp'], go); $('#p-nouveau') && ($('#p-nouveau').onclick = creer); $('#p-mots') && ($('#p-mots').onclick = parMots); $('#p-pseudo').focus()
@@ -454,12 +501,13 @@ function etat(t, k) {
 function attente(on) { $('#c-ecrit')?.remove(); if (on) ajouter('<div class="ecrit" id="c-ecrit"><i></i><i></i><i></i></div>') }
 
 function bulleMoi(text, thumbs, fil = '#c-fil') {
-  const v = (thumbs || []).length ? `<div class="vignettes">${thumbs.map((t) => `<img src="${t}">`).join('')}</div>` : ''
+  const sures = (thumbs || []).filter((t) => typeof t === 'string' && /^(data:image\/|blob:|https:\/\/)/.test(t))
+  const v = sures.length ? `<div class="vignettes">${sures.map((t) => `<img src="${esc(t)}">`).join('')}</div>` : ''
   ajouter(`<div class="msg moi">${v}${esc(text)}</div>`, fil)
 }
 function bulleAgent(text, fil = '#c-fil') {
   const n = ajouter(`<div class="msg agent">${tete()}<div class="corps">${riche(text)}<button class="copier-msg" title="Copy">${ico('copie')}</button></div></div>`, fil)
-  $('.copier-msg', n).onclick = async () => { try { await H.copy(text); toast('Copied') } catch { toast("Couldn't copy.") } }
+  $('.copier-msg', n).onclick = () => copier(text)
   return n
 }
 
@@ -573,9 +621,9 @@ async function feuilleCerveau() {
   const f = feuille('<h3>your agent</h3><div class="sous-titre">Loading...</div>')
   let L, M, E
   try { [L, M, E] = await Promise.all([H.agent.brains(), H.agent.models(), H.agent.efforts()]) } catch (e) {
-    f.innerHTML = `<div class="poignee"></div><button class="fermer" title="Close" onclick="document.getElementById('voile').click()">✕</button><h3>your agent</h3><div class="sous-titre">${H.kind === 'phone' ? 'Your computer is off or not answering. On the go, use <b>Vibe code</b>: Claude works on GitHub.' : esc(e.message || e)}</div>`; return }
+    f.innerHTML = `<div class="poignee"></div><button class="fermer" title="Close">✕</button><h3>your agent</h3><div class="sous-titre">${H.kind === 'phone' ? 'Your computer is off or not answering. On the go, use <b>Vibe code</b>: Claude works on GitHub.' : esc(e.message || e)}</div>`; return }
   const modes = CERVEAU.modes || []
-  f.innerHTML = `<div class="poignee"></div><button class="fermer" title="Close" onclick="document.getElementById('voile').click()">✕</button><h3>your agent</h3><div class="sous-titre">Same tools, same permission cards, whoever thinks.</div>
+  f.innerHTML = `<div class="poignee"></div><button class="fermer" title="Close">✕</button><h3>your agent</h3><div class="sous-titre">Same tools, same permission cards, whoever thinks.</div>
     <div class="section">agent<span class="ligne"></span></div><div class="liste">${L.brains.map((b, i) => `<div class="item${b.id === L.active ? ' on' : ''}" data-b="${esc(b.id)}" style="--i:${i}"><div class="tx"><div class="t">${esc(b.name)}</div><div class="m">${esc(b.ready ? b.note : b.why)}</div></div>${b.ready ? '' : '<span class="badge">not ready</span>'}</div>`).join('')}</div>
     ${M.models.length ? `<div class="section">model<span class="ligne"></span></div><div class="liste">${M.models.map((m, i) => `<div class="item${m.id === M.current ? ' on' : ''}" data-m="${esc(m.id)}" style="--i:${i}"><div class="tx"><div class="t">${esc(m.label)}</div>${m.desc ? `<div class="m">${esc(m.desc)}</div>` : ''}</div></div>`).join('')}</div>` : ''}
     ${E.efforts.length ? `<div class="section">effort<span class="ligne"></span></div><div class="boutons">${E.efforts.map((x) => `<button class="bouton${x === E.current ? ' vert' : ''}" data-e="${esc(x)}">${esc(x)}</button>`).join('')}</div>` : ''}
@@ -592,7 +640,7 @@ async function feuillePartage(source) {
   const ov = await H.friends.overview().catch(() => null)
   if (!ov) { f.innerHTML = '<div class="poignee"></div><h3>share</h3><div class="sous-titre">Unlock your account first.</div>'; return }
   const chans = ov.channels.filter((c) => !c.request)
-  f.innerHTML = `<div class="poignee"></div><button class="fermer" title="Close" onclick="document.getElementById('voile').click()">✕</button><h3>share this conversation</h3><div class="sous-titre">It goes sealed: only the people in the channel can read it. Tool outputs stay with you.</div>
+  f.innerHTML = `<div class="poignee"></div><button class="fermer" title="Close">✕</button><h3>share this conversation</h3><div class="sous-titre">It goes sealed: only the people in the channel can read it. Tool outputs stay with you.</div>
     <div class="liste">${chans.map((c, i) => `<div class="item" data-c="${esc(c.id)}" style="--i:${i}"><div class="tx"><div class="t">${esc(c.name)}</div><div class="m">${esc(c.members.map((m) => m.name).join(', '))}</div></div></div>`).join('') || '<div class="vide">No friend or group yet: add one in Friends & groups.</div>'}</div>`
   $$('[data-c]', f).forEach((el) => el.onclick = async () => {
     const conv = source || await H.agent.history()
@@ -678,11 +726,11 @@ async function vueAmis() {
     const f = feuille(`<h3>your ID</h3><div class="sous-titre">Give your @, or let someone scan this with their phone.</div>
       <div class="qr" style="max-width:260px">${qr(id.id || id.npub || '')}</div><div class="mon-id">${esc(montre)}</div><div class="d" style="color:var(--encre-3);font:12px var(--mono);text-align:center;margin-top:4px">${esc(id.id || '')}</div>
       <div class="boutons" style="justify-content:center"><button class="bouton" id="a-copier">${ico('copie')} copy</button></div>`)
-    $('#a-copier', f).onclick = async () => { await H.copy(montre); toast('Copied') } }
+    $('#a-copier', f).onclick = () => copier(montre) }
   const ov = await H.friends.overview().catch(() => ({ channels: [], contacts: [] }))
   const inst = H.instinct ? await H.instinct.available().catch(() => ({ available: false })) : { available: false }
   const dem = ov.channels.filter((c) => c.request), ok = ov.channels.filter((c) => !c.request).sort((a, b) => (b.last || 0) - (a.last || 0))
-  const ligne = (c, i) => `<div class="item" data-c="${esc(c.id)}" style="--i:${i}">${tete()}<div class="tx"><div class="t">${esc(c.name)}${c.members.length > 1 ? `<span class="badge" style="margin-left:8px">${c.members.length + 1}</span>` : ''}</div><div class="m">${esc(c.preview || 'no message yet')}</div></div>${c.unread ? `<span class="nb">${c.unread}</span>` : ''}</div>`
+  const ligne = (c, i) => `<div class="item" data-c="${esc(c.id)}" style="--i:${i}">${tete()}<div class="tx"><div class="t">${esc(c.name)}${(c.members || []).length > 1 ? `<span class="badge" style="margin-left:8px">${Number(c.members.length) + 1}</span>` : ''}</div><div class="m">${esc(c.preview || 'no message yet')}</div></div>${Number(c.unread) ? `<span class="nb">${Number(c.unread)}</span>` : ''}</div>`
   $('#a-liste').innerHTML = (inst.available ? `<div class="section">assistant<span class="ligne"></span></div><div class="liste"><div class="item" id="a-instinct"><span class="inst-ava">✦</span><div class="tx"><div class="t">Instinct</div><div class="m">your iMessage assistant</div></div></div></div>` : '')
     + (dem.length ? `<div class="section">requests<span class="ligne"></span></div><div class="liste">${dem.map(ligne).join('')}</div>` : '')
     + `<div class="section">conversations<span class="ligne"></span></div><div class="liste">${ok.map(ligne).join('') || '<div class="vide">No message yet. Start one with a friend, or with several people at once.</div>'}</div>`
@@ -740,8 +788,8 @@ async function vueCanal() {
 }
 function bulleCanal(m) {
   if (m.share) {
-    const s = m.share, n = ajouter(`<div class="partage-carte"><div class="t">${m.mine ? 'You shared' : esc(m.name) + ' shared'}: ${esc(s.title)}</div>
-      <div class="m">${esc(s.agent || 'an agent')} · ${s.events.length} messages</div><div class="boutons"><button class="bouton">Read</button>${m.mine ? '' : '<button class="bouton vert">Continue with my agent</button>'}</div></div>`, '#k-fil')
+    const s = partageSur(m.share), n = ajouter(`<div class="partage-carte"><div class="t">${m.mine ? 'You shared' : esc(m.name) + ' shared'}: ${esc(s.title)}</div>
+      <div class="m">${esc(s.agent || 'an agent')} · ${Number(s.events.length) || 0} messages</div><div class="boutons"><button class="bouton">Read</button>${m.mine ? '' : '<button class="bouton vert">Continue with my agent</button>'}</div></div>`, '#k-fil')
     $$('.bouton', n)[0].onclick = () => { const f = feuille(`<h3>${esc(s.title)}</h3><div class="sous-titre">${esc(s.agent || '')}</div><div class="fil" id="lire"></div>`)
       s.events.forEach((e) => e.type === 'user' ? bulleMoi(e.text, null, '#lire') : bulleAgent(e.text, '#lire')) }
     const c = $$('.bouton', n)[1]; if (c) c.onclick = async () => { const r = await H.agent.continueFrom(s); if (r && r.error) return toast(r.error)
@@ -791,14 +839,14 @@ async function vueVibe() {
     $('#g-reglages') && ($('#g-reglages').onclick = () => aller('reglages')); return }
   const L = await H.vibe.projects()
   $('#g-corps').innerHTML = `<div class="boutons"><button class="bouton plein" id="g-nouveau">${'+'} new idea</button></div>
-    <div class="section">your vibes<span class="ligne"></span></div><div class="liste">${L.map((p, i) => `<div class="item" data-n="${p.number}" style="--i:${i}"><div class="tx"><div class="t">${esc(p.title)}</div><div class="m">${esc(p.repo)} · ${quand(p.updated)}</div></div><span class="badge">${esc(p.state)}</span></div>`).join('') || '<div class="vide">Nothing yet. Start with an idea.</div>'}</div>`
+    <div class="section">your vibes<span class="ligne"></span></div><div class="liste">${L.map((p, i) => `<div class="item" data-n="${Number(p.number) || 0}" style="--i:${i}"><div class="tx"><div class="t">${esc(p.title)}</div><div class="m">${esc(p.repo)} · ${quand(p.updated)}</div></div><span class="badge">${esc(p.state)}</span></div>`).join('') || '<div class="vide">Nothing yet. Start with an idea.</div>'}</div>`
   $('#g-nouveau').onclick = feuilleIdee
   $$('#g-corps .item').forEach((el) => el.onclick = () => { PROJET = L.find((p) => p.number === +el.dataset.n); vueProjet() })
 }
 async function feuilleIdee() {
   const f = feuille('<h3>a new idea</h3><div class="sous-titre">Loading your repositories...</div>')
   const repos = await H.vibe.repos().catch(() => [])
-  f.innerHTML = `<div class="poignee"></div><button class="fermer" title="Close" onclick="document.getElementById('voile').click()">✕</button><h3>a new idea</h3><div class="sous-titre">Where should Claude work?</div>
+  f.innerHTML = `<div class="poignee"></div><button class="fermer" title="Close">✕</button><h3>a new idea</h3><div class="sous-titre">Where should Claude work?</div>
     <input class="champ" id="i-cherche" placeholder="search a repository, or type a name for a new one">
     <div class="liste" id="i-liste" style="max-height:38vh;overflow:auto;margin-top:8px"></div>`
   const rendre = () => { const q = $('#i-cherche', f).value.trim().toLowerCase(), L = repos.filter((r) => r.toLowerCase().includes(q)).slice(0, 40)
@@ -824,8 +872,8 @@ async function vueProjet() {
     if (!PROJET || !PROJET.number) return
     const r = await H.vibe.thread(PROJET.number).catch(() => null); if (!r) return
     for (const m of r.messages) { if (vus.get(m.id) === m.updated) continue
-      const html = m.bot ? `<div class="msg agent" data-m="${m.id}">${tete()}<div class="corps">${riche(m.text)}</div></div>` : `<div class="msg moi" data-m="${m.id}">${esc(m.text)}</div>`
-      const old = $(`[data-m="${m.id}"]`, $('#p-fil')); if (old) { const w = document.createElement('div'); w.innerHTML = html; old.replaceWith(w.firstElementChild) } else ajouter(html, '#p-fil')
+      const html = m.bot ? `<div class="msg agent" data-m="${esc(m.id)}">${tete()}<div class="corps">${riche(m.text)}</div></div>` : `<div class="msg moi" data-m="${esc(m.id)}">${esc(m.text)}</div>`
+      const old = $(`[data-m="${CSS.escape(String(m.id))}"]`, $('#p-fil')); if (old) { const w = document.createElement('div'); w.innerHTML = html; old.replaceWith(w.firstElementChild) } else ajouter(html, '#p-fil')
       vus.set(m.id, m.updated) }
     etatP(r.working ? 'Claude is working on GitHub...' : 'done: review the pull request', r.working ? 'travail' : 'ok')
   }
@@ -894,7 +942,11 @@ function feuilleMot() {
   let cat = 'agents'; $$('[data-c]', f).forEach((b) => b.onclick = () => { cat = b.dataset.c; $$('[data-c]', f).forEach((x) => x.classList.toggle('vert', x === b)) })
   $('#m-ok', f).onclick = async () => { const r = await H.glossary.add($('#m-t', f).value, $('#m-d', f).value, cat); if (!r || r.error) return ($('#m-err', f).textContent = (r && r.error) || 'Not added.'); fermerFeuille(); vueEncyclo() }
 }
-function pastilleEncyclo(on) { const b = $('.sous-onglet[data-v="encyclo"]'); if (!b) return; let p = $('.pastille', b); if (on && !p) { p = document.createElement('span'); p.className = 'pastille'; b.appendChild(p) } else if (!on && p) p.remove() }
+function pastilleEncyclo(on) {         // on its sub-tab, and on the Network tab while the sub-bar is hidden
+  for (const b of $$('.sous-onglet[data-v="encyclo"], #rail .onglet[data-v="reseau"]')) {
+    let p = $('.pastille', b); if (on && !p) { p = document.createElement('span'); p.className = 'pastille'; b.appendChild(p) } else if (!on && p) p.remove()
+  }
+}
 
 // =====================================================================================
 // settings
@@ -937,6 +989,7 @@ async function vueReglages() {
 // =====================================================================================
 async function demarrer() {
   fond(); aller(VUE)
+  if (!demarrer.fait) { demarrer.fait = true; surveillerNotifs(H) }     // unlocked: the network can answer now
   setTimeout(rafraichirCerveau, 5000); setTimeout(rafraichirCerveau, 15000)     // the agent finishes starting
   H.friends.overview().then((ov) => pastille(ov.channels.some((c) => c.unread))).catch(() => {})
 }
@@ -945,7 +998,6 @@ export async function lancer(host) {
   H = host
   coquille()
   appliquer()
-  surveillerNotifs(H)
   H.on((e) => {
     if (e.type === 'channel_message') {
       if (CANAL && e.channel === CANAL.id) { bulleCanal(e.message); H.friends.messages(CANAL.id) }

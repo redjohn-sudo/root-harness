@@ -58,7 +58,24 @@ fi
 # 3. Clone, or update an existing copy.
 if [ -d "$DEST/.git" ]; then
   say "Updating existing copy in $DEST"
-  git -C "$DEST" pull --ff-only
+  git -C "$DEST" remote set-url origin "$REPO"
+  git -C "$DEST" fetch --quiet --depth 1 origin main || die "Could not reach $REPO. Check your internet and run this again."
+  if ! git -C "$DEST" merge --quiet --ff-only FETCH_HEAD 2>/dev/null; then
+    # an older copy (the history was rewritten on 30/10), or local edits in the way:
+    # keep the edits aside, then take the published version as it is
+    if [ -n "$(git -C "$DEST" status --porcelain --untracked-files=no)" ]; then
+      BACKUP="$DEST.backup-$(date +%Y%m%d-%H%M%S)"
+      mkdir -p "$BACKUP"
+      git -C "$DEST" diff HEAD > "$BACKUP/local-changes.patch"
+      git -C "$DEST" diff HEAD --name-only | while IFS= read -r f; do
+        if [ -e "$DEST/$f" ]; then mkdir -p "$BACKUP/$(dirname "$f")"; cp -R "$DEST/$f" "$BACKUP/$f"; fi
+      done
+      warn "Your local edits to root-harness's files are saved in $BACKUP"
+    fi
+    git -C "$DEST" reset --quiet --hard FETCH_HEAD
+    say "Your copy now matches the published root-harness. Your account and memory"
+    say "(~/.root-harness) live outside this folder: they are not touched."
+  fi
 else
   [ -e "$DEST" ] && die "$DEST already exists and is not a root-harness checkout. Set ROOT_HARNESS_DIR to another path and retry."
   say "Cloning into $DEST"

@@ -18,7 +18,7 @@ import * as nip44 from 'nostr-tools/nip44'
 import * as nip49 from 'nostr-tools/nip49'
 import * as nip19 from 'nostr-tools/nip19'
 import { SimplePool } from 'nostr-tools/pool'
-import { lancer } from './app.js'
+import { lancer, partageSur } from './app.js'
 import { code, parse, handle } from './ident.js'
 import { reseau } from './social-net.js'
 import BASE from '../rootharness/glossary_base.json'
@@ -141,7 +141,7 @@ function recevoir(ev) {
     AMIS.channels[cid] = { name: val('subject') || '', members: autres, unread: 0, last: 0, request: sender !== me && !autres.every((m) => AMIS.contacts[m]) }
   }
   let m = { rid: val('rh-id') || ev.id, from: sender, text: rumor.content, at: rumor.created_at }
-  if (has('rh-share')) try { const s = JSON.parse(rumor.content); m = { ...m, text: 'shared: ' + s.title, share: s } } catch {}
+  if (has('rh-share')) try { const s = partageSur(JSON.parse(rumor.content)); m = { ...m, text: 'shared: ' + s.title, share: s } } catch {}
   if (ajouterMessage(cid, m)) { if (sender !== me) AMIS.channels[cid].unread++; garderAmis(); ecoute({ type: 'channel_message', channel: cid, message: vue(m) }) }
 }
 async function envoyerCanal(cid, content, extra = []) {
@@ -239,7 +239,11 @@ const host = {
     return URL.createObjectURL(new Blob([Uint8Array.from(atob(b.data), (c) => c.charCodeAt(0))], { type: 'image/jpeg' }))
   },
   chooseBackground: async () => {}, plainBackground: async () => { localStorage.removeItem(CACHE + ':background') },
-  async copy(t) { try { await navigator.clipboard.writeText(t) } catch { const a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); document.execCommand('copy'); a.remove() } },
+  async copy(t) {                      // true only when the text really is on the clipboard
+    try { await navigator.clipboard.writeText(t); return true } catch {}
+    const a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select()
+    try { return document.execCommand('copy') === true } catch { return false } finally { a.remove() }
+  },
 
   account: {
     async state() { const a = compte(); return a ? { exists: true, unlocked: !!sk, pseudo: a.pseudo, npub: a.npub, id: me ? handle(a.pseudo, me) : '', at: ((cache.get('rh-net-profile') || {}).at) || '' } : { exists: false } },

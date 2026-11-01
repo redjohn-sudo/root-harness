@@ -43,10 +43,20 @@ def read_settings() -> dict:
 on_change = lambda: None     # the window points this at the sync
 
 
+def write_private(path: Path, text: str) -> None:
+    """Readable by you only from the first byte (0600), then swapped in whole."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(f".{threading.get_ident()}.tmp")
+    tmp.unlink(missing_ok=True)             # O_CREAT keeps the mode of a file already there
+    fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    with os.fdopen(fd, "w", encoding="utf-8") as f:
+        f.write(text)
+    os.replace(tmp, path)
+
+
 def write_settings(**changes) -> dict:
     s = read_settings() | changes
-    SETTINGS.parent.mkdir(parents=True, exist_ok=True)
-    SETTINGS.write_text(json.dumps(s, indent=2), encoding="utf-8")
+    write_private(SETTINGS, json.dumps(s, indent=2))
     on_change()
     return s
 
@@ -413,25 +423,47 @@ class Api:
             return {"done": True, "login": login}
         if not shutil.which("gh"):
             return {"error": "gh_missing"}
-        p = getattr(self, "_gh_proc", None)
-        if p is not None and p.poll() is None:
-            return {"code": self._gh_code, "url": GH_DEVICE}
-        env = {**os.environ, "GH_BROWSER": "true", "BROWSER": "true"}   # the app opens the page itself
-        p = subprocess.Popen(["gh", "auth", "login", "--hostname", "github.com", "--git-protocol", "https", "--web", "--skip-ssh-key"],
-                             stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=env)
-        code = ""
-        for line in p.stdout:                    # gh prints its code within a second or two, or exits
-            m = re.search(r"\b([A-Z0-9]{4}-[A-Z0-9]{4})\b", line)
-            if m:
-                code = m.group(1)
-                break
-        if not code:
-            p.kill()
-            return {"error": "GitHub did not answer. Check your internet and try again."}
-        self._gh_proc, self._gh_code = p, code
-        threading.Thread(target=p.communicate, daemon=True).start()   # drain gh while it waits for you
+        with _GH_LOCK:                           # a second click waits for the first gh, never starts another
+            p = getattr(self, "_gh_proc", None)
+            if p is not None and p.poll() is None:
+                return {"code": self._gh_code, "url": GH_DEVICE}
+            env = {**os.environ, "GH_BROWSER": "true", "BROWSER": "true",   # the app opens the page itself
+                   "NO_COLOR": "1", "CLICOLOR_FORCE": "0"}
+            p = subprocess.Popen(["gh", "auth", "login", "--hostname", "github.com", "--git-protocol", "https", "--web", "--skip-ssh-key"],
+                                 stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=env)
+            self._gh_proc, self._gh_code = p, ""
+            tail, got, answered = [], [], threading.Event()
+
+            def read():                          # drains gh until it exits, while it waits for you
+                for line in p.stdout:
+                    line = ANSI.sub("", line)
+                    tail[:] = (tail + [line.strip()])[-4:]
+                    m = GH_CODE.search(line)
+                    if m and not got:
+                        got.append(m.group(1))
+                        answered.set()
+                answered.set()
+            threading.Thread(target=read, daemon=True).start()
+            answered.wait(GH_WAIT)               # gh prints its code within a second or two, or exits
+            if not got:
+                p.kill()
+                p.wait()
+                self._gh_proc = None
+                said = " ".join(x for x in tail if x)[-300:]
+                return {"error": "GitHub did not answer. Check your internet and try again."
+                                 + (f" (gh: {said})" if said else "")}
+            self._gh_code = got[0]
         webbrowser.open(GH_DEVICE)
-        return {"code": code, "url": GH_DEVICE}
+        return {"code": got[0], "url": GH_DEVICE}
+
+    def setup_github_cancel(self):
+        """"Later" at sign-up: stop the gh that waits for the code."""
+        p = getattr(self, "_gh_proc", None)
+        self._gh_proc = None
+        if p is not None and p.poll() is None:
+            p.kill()
+            p.wait()
+        return True
 
     def setup_github_status(self):
         """Polled by sign-up while you approve the code on github.com."""
@@ -440,7 +472,10 @@ class Api:
             return {"done": False}
         login = _gh_login()
         if login:
-            subprocess.run(["gh", "auth", "setup-git"], capture_output=True, timeout=15)
+            try:
+                subprocess.run(["gh", "auth", "setup-git"], capture_output=True, timeout=15)
+            except (OSError, subprocess.SubprocessError):
+                pass                             # git can be set up later: you are signed in all the same
             return {"done": True, "login": login}
         return {"done": False, "failed": p is not None}
 
@@ -576,6 +611,10 @@ class Api:
         class Quiet(SimpleHTTPRequestHandler):
             def log_message(self, *a):
                 pass
+
+            def end_headers(self):               # the phone asks again each time: never a stale app
+                self.send_header("Cache-Control", "no-cache")
+                super().end_headers()
         try:
             self._web = ThreadingHTTPServer(("0.0.0.0", 8765), functools.partial(Quiet, directory=str(dist)))
         except OSError:
@@ -629,24 +668,33 @@ class Api:
 
     # -- the network (network.py): your public page, the feed, badges, communities ----------
 
+    # locked, the network answers empty instead of raising (pywebview logs a traceback for each raise)
+    LOCKED = {"error": "Locked: type your password first."}
+    _making = threading.RLock()     # one Network, one Channels, even when two calls come at once
+
     def _net(self):
-        if self.keys is None:
-            raise RuntimeError("Locked: type your password first.")
-        if self.network is None:
-            from . import network as net_mod
-            self.network = net_mod.Network(self.keys, account.state().get("pseudo", ""), self._emit)
-            if self.sync:
-                net_mod.on_change = self.sync.dirty
-        return self.network
+        with self._making:
+            if self.keys is None:
+                raise RuntimeError("Locked: type your password first.")
+            if self.network is None:
+                from . import network as net_mod
+                self.network = net_mod.Network(self.keys, account.state().get("pseudo", ""), self._emit)
+                if self.sync:
+                    net_mod.on_change = self.sync.dirty
+            return self.network
 
     def _friends(self) -> list[str]:
         from . import channels as ch_mod
         return list(ch_mod._load()["contacts"].keys())
 
     def net_profile(self, hexkey: str = ""):
+        if self.keys is None:
+            return None
         return self._net().profile_view(hexkey or None, local=not hexkey)
 
     def net_profile_update(self, fields: dict):
+        if self.keys is None:
+            return dict(self.LOCKED)
         return self._net().profile_update(fields or {})
 
     def net_work_suggest(self):
@@ -658,21 +706,33 @@ class Api:
         return net_mod.activity()
 
     def net_post(self, text: str, media: list | None = None, community: str = "", agent: str = "", reply_to: dict | None = None):
+        if self.keys is None:
+            return dict(self.LOCKED)
         return self._net().post(text, media, community, agent, reply_to)
 
     def net_repost(self, post: dict):
+        if self.keys is None:
+            return dict(self.LOCKED)
         return self._net().repost(post)
 
     def net_unrepost(self, post_id: str):
+        if self.keys is None:
+            return dict(self.LOCKED)
         return self._net().unrepost(post_id)
 
     def net_react(self, post_id: str, author: str, on: bool = True):
+        if self.keys is None:
+            return dict(self.LOCKED)
         return self._net().react(post_id, author, bool(on))
 
     def net_delete(self, post_id: str):
+        if self.keys is None:
+            return dict(self.LOCKED)
         return self._net().delete_post(post_id)
 
     def net_feed(self, scope: str = "for-you", community: str = "", days: int = 7, limit: int = 60):
+        if self.keys is None:
+            return None
         net = self._net()
         people = self._friends()
         if scope in ("friends", "for-you"):
@@ -683,27 +743,43 @@ class Api:
         return net.feed(scope, community, people, int(days), int(limit))
 
     def net_block(self, hexkey: str, on: bool = True):
+        if self.keys is None:
+            return dict(self.LOCKED)
         return self._net().block(hexkey, bool(on))
 
     def net_blocked(self):
+        if self.keys is None:
+            return []
         return self._net().blocked()
 
     def net_report(self, post_id: str, author: str, reason: str = "other"):
+        if self.keys is None:
+            return dict(self.LOCKED)
         return self._net().report(post_id, author, reason)
 
     def net_claim_at(self, name: str):
+        if self.keys is None:
+            return dict(self.LOCKED)
         return self._net().claim_at(name)
 
     def net_follow(self, hexkey: str, on: bool = True):
+        if self.keys is None:
+            return dict(self.LOCKED)
         return self._net().follow(hexkey, bool(on))
 
     def net_people(self, hexkeys: list):
+        if self.keys is None:
+            return []
         return self._net().people([str(h) for h in (hexkeys or [])])
 
     def net_notifications(self):
+        if self.keys is None:
+            return {"items": [], "unread": 0, "seen_at": 0}
         return self._net().notifications()
 
     def net_notifications_seen(self):
+        if self.keys is None:
+            return None
         return self._net().notifications_seen()
 
     WHAT = {"like": "liked your post", "repost": "reposted your post", "reply": "answered you", "mention": "mentioned you",
@@ -711,6 +787,8 @@ class Api:
 
     def net_notifications_new(self):
         """The dot on the tab; and your phones hear about it once (public things only, never your conversations)."""
+        if self.keys is None:
+            return {"unread": 0}
         r = self._net().notifications_new()
         if r["fresh"]:
             from . import push
@@ -721,16 +799,24 @@ class Api:
         return {"unread": r["unread"]}
 
     def net_thread(self, post_id: str):
+        if self.keys is None:
+            return {"post": None, "replies": []}
         return self._net().thread(post_id)
 
     def net_wall(self, hexkey: str = ""):
+        if self.keys is None:
+            return None
         return self._net().wall(hexkey or None)
 
     def net_lookup(self, text: str):
+        if self.keys is None:
+            return None
         return self._net().lookup(text)
 
     def net_upload(self, data_url: str, name: str = "file"):
         """The interface picks a file and sends it as a data URL; it goes to the media host."""
+        if self.keys is None:
+            return dict(self.LOCKED)
         head, _, b64 = str(data_url).partition(",")
         mime = head[5:].split(";")[0] if head.startswith("data:") else ""
         try:
@@ -742,28 +828,44 @@ class Api:
         return self._net().upload_bytes(data, mime or "application/octet-stream", str(name)[:80])
 
     def net_badges(self, hexkey: str = ""):
+        if self.keys is None:
+            return []
         net = self._net()
         return net.badges_mine() if not hexkey else net._do(net._badges_of(hexkey), 40)
 
     def net_badges_pin(self, coords: list):
+        if self.keys is None:
+            return dict(self.LOCKED)
         return self._net().badges_pin([str(c) for c in (coords or [])])
 
     def net_badge_define(self, ident: str, name: str, description: str, image: str = ""):
+        if self.keys is None:
+            return dict(self.LOCKED)
         return self._net().badge_define(ident, name, description, image)
 
     def net_badge_award(self, a: str, recipients: list):
+        if self.keys is None:
+            return dict(self.LOCKED)
         return self._net().badge_award(a, [str(r) for r in (recipients or [])])
 
     def net_badges_check(self):
+        if self.keys is None:
+            return []
         return self._net().badges_check()
 
     def net_communities(self):
+        if self.keys is None:
+            return []
         return self._net().communities()
 
     def net_community_create(self, name: str, description: str = ""):
+        if self.keys is None:
+            return dict(self.LOCKED)
         return self._net().community_create(name, description)
 
     def net_community_join(self, slug: str, on: bool = True):
+        if self.keys is None:
+            return dict(self.LOCKED)
         return self._net().community_join(slug, bool(on))
 
     # -- notifications on your phones (push.py) ------------------------------------
@@ -793,7 +895,7 @@ class Api:
                 "phone_seen": self.remote.phone_seen if self.remote else 0}
 
     def remote_set(self, on: bool):
-        (SETTINGS.parent / self.REMOTE_FILE).write_text(json.dumps({"on": bool(on)}))
+        write_private(SETTINGS.parent / self.REMOTE_FILE, json.dumps({"on": bool(on)}))
         if on:
             self._start_remote()
             self._publish_card()
@@ -944,13 +1046,16 @@ The conversation:
         """Lock now: forget the unlocked key until the password is typed again."""
         self._stop_sync()
         self._stop_remote()
-        if self.channels:
-            self.channels.close()
-            self.channels = None
-        if self.network:
-            self.network.close()
-            self.network = None
-        self.keys = None
+        self.pairing_cancel()               # a pairing holds the unlocked key too
+        self._refuse_pending()              # the page reloads: its cards go, the agent must not wait for them
+        with self._making:
+            if self.channels:
+                self.channels.close()
+                self.channels = None
+            if self.network:
+                self.network.close()
+                self.network = None
+            self.keys = None
         return self.account_state()
 
     def account_reset(self, confirm: str):
@@ -964,12 +1069,13 @@ The conversation:
     # -- encrypted channels between users (see channels.py) ---------------------
 
     def _ch(self):
-        if self.keys is None:
-            raise RuntimeError("Locked: type your password first.")
-        if self.channels is None:
-            from .channels import Channels
-            self.channels = Channels(self._emit, self.keys, account.state().get("pseudo", ""))
-        return self.channels
+        with self._making:
+            if self.keys is None:
+                raise RuntimeError("Locked: type your password first.")
+            if self.channels is None:
+                from .channels import Channels
+                self.channels = Channels(self._emit, self.keys, account.state().get("pseudo", ""))
+            return self.channels
 
     def channels_start(self):
         """Your identity and relay status (creates your key on first use)."""
@@ -1026,8 +1132,7 @@ The conversation:
             return {}
 
     def _mcp_write(self, servers: dict) -> None:
-        SETTINGS.parent.mkdir(parents=True, exist_ok=True)
-        (SETTINGS.parent / self.MCP_FILE).write_text(json.dumps({"servers": servers}, indent=2))
+        write_private(SETTINGS.parent / self.MCP_FILE, json.dumps({"servers": servers}, indent=2))   # Bearer tokens
 
     def _mcp_boot(self) -> None:
         """Connect the saved servers at launch (in the background)."""
@@ -1366,7 +1471,19 @@ The conversation:
         if self.remote:
             self.remote.forward(event)
         if self._window:
-            self._window.evaluate_js(f"onEvent({json.dumps(event)})")
+            try:
+                self._window.evaluate_js(f"onEvent({json.dumps(event)})")
+            except Exception:
+                pass      # the page is reloading or gone: the caller (a turn, the channels) goes on
+
+    def _refuse_pending(self):
+        """Every permission or question still waiting gets a no."""
+        for slot in list(self._pending.values()):
+            if "allow" in slot:
+                slot["allow"] = False
+            if "answers" in slot:
+                slot["answers"] = None
+            slot["event"].set()
 
     def _ask(self, title: str, args: dict) -> bool:
         pid = str(self._next); self._next += 1
@@ -1399,8 +1516,12 @@ The conversation:
             self._emit({"type": "error", "text": f"{type(e).__name__}: {e}"})
             self._emit({"type": "done", "text": ""})
         finally:
-            self._save()
-            self._busy.release()
+            try:
+                self._save()
+            except Exception as e:
+                self._emit({"type": "error", "text": f"Not saved: {type(e).__name__}: {e}"})
+            finally:
+                self._busy.release()      # always: a failed save must not keep the next message out
         self._learn_words(prompt)
 
     def _save(self):
@@ -1418,6 +1539,10 @@ The conversation:
 
 
 GH_DEVICE = "https://github.com/login/device"
+GH_CODE = re.compile(r"(?<![A-Z0-9])([A-Z0-9]{4}-[A-Z0-9]{4})(?![A-Z0-9])")
+GH_WAIT = 20                    # seconds for gh to print its code
+ANSI = re.compile(r"\x1b\[[0-9;?]*[ -/]*[@-~]")
+_GH_LOCK = threading.Lock()
 
 
 def _gh_login() -> str | None:

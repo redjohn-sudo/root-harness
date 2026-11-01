@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import json
 import os
+import threading
 import time
 import uuid
 from pathlib import Path
@@ -21,6 +22,7 @@ from pathlib import Path
 HOME = Path(os.environ.get("ROOT_HARNESS_HOME") or Path.home() / ".root-harness")
 INDEX = HOME / "index.json"
 FOLDER = HOME / "conversations"
+_lock = threading.RLock()     # the window, the sync and the phone all write here
 
 
 def _load() -> dict:
@@ -40,10 +42,15 @@ on_change = lambda: None     # the window points this at the sync
 
 def _save(data: dict) -> None:
     HOME.mkdir(parents=True, exist_ok=True)
-    tmp = INDEX.with_suffix(".tmp")
-    tmp.write_text(json.dumps(data, indent=1, ensure_ascii=False), encoding="utf-8")
-    tmp.replace(INDEX)
+    _atomic(INDEX, json.dumps(data, indent=1, ensure_ascii=False))
     on_change()
+
+
+def _atomic(path: Path, text: str) -> None:
+    """Write next to it, then swap: a crash never leaves half a file."""
+    tmp = path.with_suffix(f".{threading.get_ident()}.tmp")
+    tmp.write_text(text, encoding="utf-8")
+    os.replace(tmp, path)
 
 
 def now() -> int:
@@ -53,12 +60,13 @@ def now() -> int:
 # -- conversations ------------------------------------------------------------
 
 def create(brain: str, title: str) -> str:
-    data = _load()
-    cid = uuid.uuid4().hex[:12]
-    data["conversations"][cid] = {"id": cid, "brain": brain, "title": title[:80] or "New conversation",
-                                  "created": now(), "updated": now(), "folder": None}
-    _save(data)
-    return cid
+    with _lock:
+        data = _load()
+        cid = uuid.uuid4().hex[:12]
+        data["conversations"][cid] = {"id": cid, "brain": brain, "title": title[:80] or "New conversation",
+                                      "created": now(), "updated": now(), "folder": None}
+        _save(data)
+        return cid
 
 
 def get(cid: str) -> dict | None:
@@ -66,23 +74,25 @@ def get(cid: str) -> dict | None:
 
 
 def update(cid: str, **fields) -> None:
-    data = _load()
-    if cid in data["conversations"]:
-        data["conversations"][cid].update(fields, updated=now())
-        _save(data)
+    with _lock:
+        data = _load()
+        if cid in data["conversations"]:
+            data["conversations"][cid].update(fields, updated=now())
+            _save(data)
 
 
 def adopt_terminal(session_id: str, title: str, updated: int) -> str:
     """A terminal session gets an entry once you move or rename it."""
-    data = _load()
-    for c in data["conversations"].values():
-        if c.get("terminal") == session_id:
-            return c["id"]
-    cid = uuid.uuid4().hex[:12]
-    data["conversations"][cid] = {"id": cid, "brain": "claude", "title": title[:80], "created": updated,
-                                  "updated": updated, "folder": None, "terminal": session_id}
-    _save(data)
-    return cid
+    with _lock:
+        data = _load()
+        for c in data["conversations"].values():
+            if c.get("terminal") == session_id:
+                return c["id"]
+        cid = uuid.uuid4().hex[:12]
+        data["conversations"][cid] = {"id": cid, "brain": "claude", "title": title[:80], "created": updated,
+                                      "updated": updated, "folder": None, "terminal": session_id}
+        _save(data)
+        return cid
 
 
 def all_listed() -> dict:
@@ -90,34 +100,38 @@ def all_listed() -> dict:
 
 
 def move(cid: str, folder: str | None) -> None:
-    data = _load()
-    if cid in data["conversations"] and (folder is None or any(f["id"] == folder for f in data["folders"])):
-        data["conversations"][cid]["folder"] = folder
-        _save(data)
+    with _lock:
+        data = _load()
+        if cid in data["conversations"] and (folder is None or any(f["id"] == folder for f in data["folders"])):
+            data["conversations"][cid]["folder"] = folder
+            _save(data)
 
 
 def rename(cid: str, title: str) -> None:
-    data = _load()
-    if cid in data["conversations"] and title.strip():
-        data["conversations"][cid]["title"] = title.strip()[:80]
-        _save(data)
+    with _lock:
+        data = _load()
+        if cid in data["conversations"] and title.strip():
+            data["conversations"][cid]["title"] = title.strip()[:80]
+            _save(data)
 
 
 def remove(cid: str) -> None:
     """Remove from root-harness. A terminal session stays in Claude Code, only hidden here."""
-    data = _load()
-    c = data["conversations"].pop(cid, None)
-    data["deleted"].append(cid)
-    if c and c.get("terminal"):
-        data["hidden"].append(c["terminal"])
-    _save(data)
-    (FOLDER / f"{cid}.json").unlink(missing_ok=True)
+    with _lock:
+        data = _load()
+        c = data["conversations"].pop(cid, None)
+        data["deleted"].append(cid)
+        if c and c.get("terminal"):
+            data["hidden"].append(c["terminal"])
+        _save(data)
+        (FOLDER / f"{cid}.json").unlink(missing_ok=True)
 
 
 def hide_terminal(session_id: str) -> None:
-    data = _load()
-    data["hidden"].append(session_id)
-    _save(data)
+    with _lock:
+        data = _load()
+        data["hidden"].append(session_id)
+        _save(data)
 
 
 # -- what the window showed, and the history to continue -----------------------
@@ -131,54 +145,59 @@ def read_log(cid: str) -> dict:
 
 def write_log(cid: str, log: dict) -> None:
     FOLDER.mkdir(parents=True, exist_ok=True)
-    (FOLDER / f"{cid}.json").write_text(json.dumps(log, ensure_ascii=False), encoding="utf-8")
+    with _lock:
+        _atomic(FOLDER / f"{cid}.json", json.dumps(log, ensure_ascii=False))
     on_change()
 
 
 # -- folders ------------------------------------------------------------------
 
 def folder_create(name: str) -> dict | None:
-    if not name.strip():
-        return None
-    data = _load()
-    f = {"id": uuid.uuid4().hex[:8], "name": name.strip()[:40]}
-    data["folders"].append(f)
-    _save(data)
-    return f
+    with _lock:
+        if not name.strip():
+            return None
+        data = _load()
+        f = {"id": uuid.uuid4().hex[:8], "name": name.strip()[:40]}
+        data["folders"].append(f)
+        _save(data)
+        return f
 
 
 def folder_rename(fid: str, name: str) -> None:
-    data = _load()
-    for f in data["folders"]:
-        if f["id"] == fid and name.strip():
-            f["name"] = name.strip()[:40]
-    _save(data)
+    with _lock:
+        data = _load()
+        for f in data["folders"]:
+            if f["id"] == fid and name.strip():
+                f["name"] = name.strip()[:40]
+        _save(data)
 
 
 def folder_delete(fid: str) -> None:
     """The folder goes; its conversations go back under their agent."""
-    data = _load()
-    data["folders"] = [f for f in data["folders"] if f["id"] != fid]
-    data["deleted"].append(fid)
-    for c in data["conversations"].values():
-        if c.get("folder") == fid:
-            c["folder"] = None
-    _save(data)
+    with _lock:
+        data = _load()
+        data["folders"] = [f for f in data["folders"] if f["id"] != fid]
+        data["deleted"].append(fid)
+        for c in data["conversations"].values():
+            if c.get("folder") == fid:
+                c["folder"] = None
+        _save(data)
 
 
 def merge_index(remote: dict) -> None:
     """Another machine's list joins this one: newest version of each
     conversation wins, and what was deleted anywhere stays deleted."""
-    data = _load()
-    gone = set(data["deleted"]) | set(remote.get("deleted", []))
-    convs = dict(data["conversations"])
-    for cid, c in (remote.get("conversations") or {}).items():
-        if cid not in convs or c.get("updated", 0) > convs[cid].get("updated", 0):
-            convs[cid] = c
-    folders = {f["id"]: f for f in remote.get("folders", [])}
-    folders.update({f["id"]: f for f in data["folders"]})
-    data["conversations"] = {k: v for k, v in convs.items() if k not in gone}
-    data["folders"] = [f for f in folders.values() if f["id"] not in gone]
-    data["hidden"] = sorted(set(data["hidden"]) | set(remote.get("hidden", [])))
-    data["deleted"] = sorted(gone)
-    _save(data)
+    with _lock:
+        data = _load()
+        gone = set(data["deleted"]) | set(remote.get("deleted", []))
+        convs = dict(data["conversations"])
+        for cid, c in (remote.get("conversations") or {}).items():
+            if cid not in convs or c.get("updated", 0) > convs[cid].get("updated", 0):
+                convs[cid] = c
+        folders = {f["id"]: f for f in remote.get("folders", [])}
+        folders.update({f["id"]: f for f in data["folders"]})
+        data["conversations"] = {k: v for k, v in convs.items() if k not in gone}
+        data["folders"] = [f for f in folders.values() if f["id"] not in gone]
+        data["hidden"] = sorted(set(data["hidden"]) | set(remote.get("hidden", [])))
+        data["deleted"] = sorted(gone)
+        _save(data)

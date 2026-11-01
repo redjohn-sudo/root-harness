@@ -72,12 +72,13 @@ export function reseau({ pool, relays, sk, me, pseudo, store, activite, expire =
   }
 
   // -- profiles --------------------------------------------------------------------------
+  const https = (u) => typeof u === 'string' && (u.startsWith('https://') || /^data:image\/(png|jpeg|gif|webp);base64,[A-Za-z0-9+/=]+$/.test(u)) ? u : ''   // a profile's pictures: https or a base64 photo
   function vue(hex, meta, ex) {
     const ps = String(ex.pseudo || meta.name || '').slice(0, 32)
     const v = { hex, npub: nip19.npubEncode(hex), pseudo: ps, id: ps ? handle(ps, hex) : '',
       name: String(ex.name || '').slice(0, 60), show: MONTRER.includes(ex.show) ? ex.show : 'pseudo',
       display: String(meta.display_name || meta.name || ps).slice(0, 80), about: String(ex.about || meta.about || '').slice(0, 300),
-      picture: String(ex.picture || meta.picture || '').slice(0, 120000), banner: String(ex.banner || meta.banner || '').slice(0, 160000),
+      picture: https(ex.picture || meta.picture).slice(0, 120000), banner: https(ex.banner || meta.banner).slice(0, 160000),
       school: String(ex.school || '').slice(0, 60), role: String(ex.role || '').slice(0, 80), state: ETATS.includes(ex.state) ? ex.state : '',
       level: Math.min(3, Math.max(0, parseInt(ex.level, 10) || 0)), work: (ex.work || []).filter((w) => w && w.title).slice(0, 12).map(travailPropre),
       communities: (ex.communities || []).map(slug).filter(Boolean).slice(0, 30), at: atNorm(ex.at), mine: hex === me,

@@ -5333,6 +5333,46 @@
    "ja": "コピーできませんでした。",
    "pt": "Não foi possível copiar.",
    "zh": "无法复制。"
+  },
+  "Not hidden yet: turn off \"Findable by my ID\" in Settings.": {
+   "de": "Noch nicht verborgen: schalte „Über meine ID auffindbar“ in den Einstellungen aus.",
+   "es": "Aún no está oculto: desactiva «Encontrable por mi ID» en Ajustes.",
+   "fr": "Pas encore masqué: désactive « Trouvable par mon identifiant » dans les Réglages.",
+   "ja": "まだ非表示になっていません。設定で「IDで見つけられる」をオフにしてください。",
+   "pt": "Ainda não está oculto: desative \"Encontrável pelo meu ID\" em Configurações.",
+   "zh": "尚未隐藏:请在设置中关闭\"可通过 ID 找到我\"。"
+  },
+  "Not confirmed by the network: try again.": {
+   "de": "Vom Netzwerk nicht bestätigt: versuch es nochmal.",
+   "es": "La red no lo ha confirmado: inténtalo otra vez.",
+   "fr": "Pas confirmé par le réseau: réessaie.",
+   "ja": "ネットワークで確認できませんでした。もう一度お試しください。",
+   "pt": "Não confirmado pela rede: tente de novo.",
+   "zh": "网络未确认:请再试一次。"
+  },
+  "Your 24 words could not be shown. Your account is made: try again.": {
+   "de": "Deine 24 Wörter konnten nicht angezeigt werden. Dein Konto ist erstellt: versuch es nochmal.",
+   "es": "No se pudieron mostrar tus 24 palabras. Tu cuenta ya está creada: inténtalo otra vez.",
+   "fr": "Tes 24 mots n'ont pas pu s'afficher. Ton compte est créé: réessaie.",
+   "ja": "24個の単語を表示できませんでした。アカウントは作成済みです。もう一度お試しください。",
+   "pt": "Não foi possível mostrar suas 24 palavras. Sua conta já foi criada: tente de novo.",
+   "zh": "无法显示你的 24 个单词。你的账号已创建:请再试一次。"
+  },
+  "Couldn't look at this computer.": {
+   "de": "Dieser Computer konnte nicht geprüft werden.",
+   "es": "No se pudo revisar este ordenador.",
+   "fr": "Impossible d'examiner cet ordinateur.",
+   "ja": "このコンピューターを確認できませんでした。",
+   "pt": "Não foi possível verificar este computador.",
+   "zh": "无法检查这台电脑。"
+  },
+  "Create your account on your computer first, then link this phone.": {
+   "de": "Erstelle dein Konto zuerst auf deinem Computer und verbinde dann dieses Handy.",
+   "es": "Crea primero tu cuenta en tu ordenador y luego vincula este teléfono.",
+   "fr": "Crée d'abord ton compte sur ton ordinateur, puis relie ce téléphone.",
+   "ja": "まずコンピューターでアカウントを作成してから、このスマートフォンをリンクしてください。",
+   "pt": "Crie primeiro sua conta no computador e depois vincule este celular.",
+   "zh": "请先在电脑上创建账号,再关联这部手机。"
   }
  },
  "patterns": [
@@ -6064,6 +6104,15 @@
    "ja": "@$1 を取得しています...",
    "pt": "Reservando @$1...",
    "zh": "正在占用 @$1..."
+  },
+  {
+   "en": "^To sign in on another device, your pseudo is (.+)\\.$",
+   "de": "Um dich auf einem anderen Gerät anzumelden, ist dein Pseudonym $1.",
+   "es": "Para iniciar sesión en otro dispositivo, tu seudónimo es $1.",
+   "fr": "Pour te connecter sur un autre appareil, ton pseudo est $1.",
+   "ja": "別のデバイスでサインインするときのニックネームは $1 です。",
+   "pt": "Para entrar em outro dispositivo, seu apelido é $1.",
+   "zh": "在其他设备上登录时,你的昵称是 $1。"
   }
  ]
 }

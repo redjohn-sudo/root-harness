@@ -49,6 +49,8 @@ PROFILE = DIR / "profile.json"        # your extras: school, role, state, work l
 MINE = DIR / "mine.json"              # ids of your own reactions and reposts, to take them back
 NOTIFS = DIR / "notifications.json"   # when you last looked, followers already known, what was already pushed
 BLOCKED = DIR / "blocked.json"        # who you blocked (also published as your mute list, NIP-51)
+FOLLOW_GONE = 3                       # answers in a row without a known follower before they count as gone
+_notifs_lock = threading.Lock()       # notifications.json is read and written from several threads
 RELAYS = ["wss://nos.lol", "wss://relay.primal.net", "wss://relay.snort.social"]
 TAG = "root-harness"                  # on every post made here: the "for you" feed is this tag
 EXTRAS = "rh-profile"                 # kind 30078 identifier of your profile extras
@@ -87,20 +89,20 @@ def _read(path: Path, default):
 
 def _write(path: Path, data) -> None:
     DIR.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_suffix(".tmp")
+    tmp = path.with_suffix(f".{threading.get_ident()}.tmp")     # one per thread: two writers never share it
     tmp.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
-    tmp.replace(path)
+    os.replace(tmp, path)
     on_change()
 
 
 def at_norm(name: str) -> str:
     """@Root_42 -> root_42 ; '' when it cannot be an @ (3 to 20 letters, digits or _)."""
-    n = (name or "").strip().lstrip("@").lower()
+    n = str(name or "").strip().lstrip("@").lower()
     return n if re.fullmatch(r"[a-z0-9_]{3,20}", n) else ""
 
 
 def slug(text: str) -> str:
-    return re.sub(r"[^a-z0-9-]+", "-", (text or "").lower()).strip("-")[:40]
+    return re.sub(r"[^a-z0-9-]+", "-", str(text or "").lower()).strip("-")[:40]
 
 
 def _work_item(w: dict) -> dict:
@@ -110,6 +112,16 @@ def _work_item(w: dict) -> dict:
             "title": str(w.get("title", ""))[:60], "text": str(w.get("text", ""))[:200], "when": str(w.get("when", ""))[:24],
             "live": bool(w.get("live")), "url": url[:200] if re.match(r"https?://", url) else "",
             "image": str(w.get("image") or "")[:300] if str(w.get("image") or "").startswith("https://") else ""}
+
+
+def _image(x) -> str:
+    """A picture from someone's profile: a web link, or a pasted image as data; anything else is dropped."""
+    x = x if isinstance(x, str) else ""
+    return x if x.startswith("https://") or re.fullmatch(r"data:image/(png|jpeg|gif|webp);base64,[A-Za-z0-9+/=]+", x) else ""
+
+
+def _list(x) -> list:
+    return x if isinstance(x, list) else []
 
 
 def _tags(ev) -> list[list[str]]:
@@ -335,6 +347,16 @@ class Network:
         except Exception:
             return False
 
+    def connected(self) -> int:
+        """How many relays are connected now (0: whatever we ask, nobody answers)."""
+        async def count():
+            relays = await _aw(self.client.relays())
+            return sum([await _aw(r.status()) == _n().RelayStatus.CONNECTED for r in relays.values()])
+        try:
+            return self._do(count(), 10)
+        except Exception:
+            return 0
+
     def close(self):
         try:
             self._do(_aw(self.client.disconnect()), 5)
@@ -416,6 +438,8 @@ class Network:
                 data = json.loads(ev.content() or "{}")
             except ValueError:
                 continue
+            if not isinstance(data, dict):       # anyone can publish anything: only an object is a profile
+                continue
             if ev.kind().as_u16() == K_PROFILE:
                 meta = data
             else:
@@ -429,13 +453,13 @@ class Network:
              "name": str(extras.get("name") or "")[:60], "show": extras.get("show") if extras.get("show") in ("pseudo", "name", "both") else "pseudo",
              "display": str(meta.get("display_name") or meta.get("name") or pseudo)[:80],
              "about": str(extras.get("about") or meta.get("about") or "")[:300],
-             "picture": str(extras.get("picture") or meta.get("picture") or "")[:120000],
-             "banner": str(extras.get("banner") or meta.get("banner") or "")[:160000],
+             "picture": _image(extras.get("picture") or meta.get("picture"))[:120000],
+             "banner": _image(extras.get("banner") or meta.get("banner"))[:160000],
              "school": str(extras.get("school") or "")[:60], "role": str(extras.get("role") or "")[:80],
              "state": extras.get("state") if extras.get("state") in STATES else "",
              "level": int(extras.get("level") or 0) if str(extras.get("level", "0")).isdigit() else 0,
-             "work": [_work_item(w) for w in (extras.get("work") or []) if isinstance(w, dict) and w.get("title")][:12],
-             "communities": [slug(c) for c in (extras.get("communities") or []) if slug(c)][:30],
+             "work": [_work_item(w) for w in _list(extras.get("work")) if isinstance(w, dict) and w.get("title")][:12],
+             "communities": [slug(c) for c in _list(extras.get("communities")) if isinstance(c, str) and slug(c)][:30],
              "at": at_norm(extras.get("at", "")),
              "bot": bool(meta.get("bot") or extras.get("bot")), "verified": hexkey in VERIFIED,
              "picture_frame": cadre(extras.get("picture_frame")), "banner_frame": cadre(extras.get("banner_frame")),
@@ -461,6 +485,8 @@ class Network:
                 try:
                     data = json.loads(ev.content() or "{}")
                 except ValueError:
+                    continue
+                if not isinstance(data, dict):
                     continue
                 (metas if ev.kind().as_u16() == K_PROFILE else extras)[ev.author().to_hex()] = data
             for h in missing:
@@ -759,6 +785,8 @@ class Network:
         evs = await self._fetch([self._f().kinds([n.Kind(K_POST), n.Kind(K_REPOST), n.Kind(K_REACTION), n.Kind(K_AWARD)]).pubkey(me).since(since).limit(limit * 2),
                                  self._f().kind(n.Kind(K_FOLLOWS)).pubkey(me).limit(500)])
         state = _read(NOTIFS, {"seen_at": 0, "followers": {}, "pushed_at": 0})
+        known, missing = dict(state.get("followers") or {}), dict(state.get("missing") or {})
+        first = not (state.get("followers_ready") or known)    # the very first look: old follows are not news
         items, targets, now = [], set(), int(time.time())
         blocked = blocked_set()
         for ev in evs:
@@ -769,7 +797,9 @@ class Network:
             if kind == K_FOLLOWS:
                 if not any(t[:2] == ["p", self.me] for t in tags):
                     continue
-                at = state["followers"].setdefault(who, now if state["followers"] else at)   # a follow counts once, when first seen
+                if any(i["id"] == "f" + who for i in items):
+                    continue
+                at = known.setdefault(who, at if first else now)   # a follow counts once, when first seen
                 items.append({"id": "f" + who, "type": "follow", "at": at, "who": who})
                 continue
             target = next((t[1] for t in tags if len(t) > 1 and t[0] == "e"), "")
@@ -784,10 +814,22 @@ class Network:
                 items.append({"id": ev.id().to_hex(), "type": "badge", "at": at, "who": who, "badge": a})
             if target:
                 targets.add(target)
-        # people who unfollowed are forgotten, so a new follow later shows again
+        # relays often answer in part: a known follower is forgotten (so a new follow later shows
+        # again) only after missing from several answers in a row, never from one
         current = {i["who"] for i in items if i["type"] == "follow"}
-        state["followers"] = {h: t for h, t in state["followers"].items() if h in current}
-        _write(NOTIFS, state)
+        if current:
+            for h in list(known):
+                missing[h] = 0 if h in current else missing.get(h, 0) + 1
+                if missing[h] >= FOLLOW_GONE:
+                    known.pop(h)
+                    missing.pop(h)
+        for h, t in known.items():         # still known, only missing from this answer: still shown, never new again
+            if h not in current and h not in blocked:
+                items.append({"id": "f" + h, "type": "follow", "at": t, "who": h})
+        with _notifs_lock:                 # only the followers: when you last looked may have changed meanwhile
+            state = _read(NOTIFS, {"seen_at": 0, "followers": {}, "pushed_at": 0})
+            state.update(followers=known, missing={h: c for h, c in missing.items() if c}, followers_ready=True)
+            _write(NOTIFS, state)
         texts = {}
         if targets:
             for ev in await self._fetch([self._f().ids([self._eid(t) for t in list(targets)[:300]])]):
@@ -810,19 +852,21 @@ class Network:
         return {"items": items, "unread": sum(1 for i in items if i["new"]), "seen_at": state["seen_at"]}
 
     def notifications_seen(self) -> int:
-        state = _read(NOTIFS, {"seen_at": 0, "followers": {}, "pushed_at": 0})
-        state["seen_at"] = int(time.time())
-        _write(NOTIFS, state)
+        with _notifs_lock:
+            state = _read(NOTIFS, {"seen_at": 0, "followers": {}, "pushed_at": 0})
+            state["seen_at"] = int(time.time())
+            _write(NOTIFS, state)
         return state["seen_at"]
 
     def notifications_new(self) -> dict:
         """For the dot on the tab, and what to tell the phones once (computer only)."""
         got = self.notifications(days=7, limit=60)
-        state = _read(NOTIFS, {"seen_at": 0, "followers": {}, "pushed_at": 0})
-        fresh = [i for i in got["items"] if i["at"] > max(state.get("pushed_at", 0), state["seen_at"])]
-        if fresh:
-            state["pushed_at"] = max(i["at"] for i in fresh)
-            _write(NOTIFS, state)
+        with _notifs_lock:
+            state = _read(NOTIFS, {"seen_at": 0, "followers": {}, "pushed_at": 0})
+            fresh = [i for i in got["items"] if i["at"] > max(state.get("pushed_at", 0), state["seen_at"])]
+            if fresh:
+                state["pushed_at"] = max(i["at"] for i in fresh)
+                _write(NOTIFS, state)
         return {"unread": got["unread"], "fresh": fresh[:5]}
 
     # -- your @: the first one to claim a name has it -------------------------------------
@@ -856,6 +900,8 @@ class Network:
         a = at_norm(name)
         if not a:
             return {"error": "3 to 20 letters, digits or _."}
+        if not self.connected():           # no relay to ask: "nobody has it" would mean nothing
+            return {"error": "No relay answered. Check your internet and try again."}
         owner = self.at_owner(a)
         if owner and owner != self.me:
             return {"error": f"@{a} is taken."}
@@ -865,10 +911,12 @@ class Network:
             n = _n()
             ev = n.EventBuilder(n.Kind(K_APPDATA), json.dumps({"at": a})).tags([n.Tag.parse(["d", AT + a])]).finalize(self.keys)
             sent = await self._send(ev)
-            if old and old != a:
+            if old and old != a and sent["relays"]:     # your old @ is let go only once the new one is kept
                 await self._send(n.EventBuilder(n.Kind(K_APPDATA), "").tags([n.Tag.parse(["d", AT + old])]).finalize(self.keys))
             return sent
         sent = self._do(go())
+        if not sent.get("relays"):         # kept by no relay: nobody else would ever see it is yours
+            return {"error": f"No relay kept your claim on @{a}. Try again."}
         p = profile_local()
         p["at"] = a
         _write(PROFILE, p)

@@ -486,7 +486,8 @@ label.bouton,label.rond-btn{cursor:pointer}
   #app{flex-direction:column-reverse}
   #rail{width:100%;flex-direction:row;justify-content:space-around;padding:6px 10px calc(6px + var(--bas));gap:0;
     background:rgba(12,14,22,.78);border-top:1px solid var(--trait);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)}
-  #rail .marque,#rail .bas{display:none}
+  #rail .marque{display:none}
+  #rail .bas{margin-top:0}
   .onglet.on::before{left:12px;right:12px;top:auto;bottom:-6px;width:auto;height:3px}
   .titre{font-size:32px}
   .defile{padding:calc(20px + var(--haut)) 16px 130px}
@@ -527,16 +528,19 @@ label.bouton,label.rond-btn{cursor:pointer}
 /* -- Network sub-bar: one entry in the rail, its sections fold in here -- */
 #sousbar{position:absolute;top:0;left:0;right:0;z-index:12;display:none;align-items:center;gap:4px;
   height:calc(52px + var(--haut));padding:var(--haut) 20px 0;
+  overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;
   background:linear-gradient(180deg,var(--verre-fort),rgba(14,16,26,.3));
   backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--trait)}
-.sous-onglet{position:relative;color:var(--encre-3);font-size:14px;padding:7px 13px;border-radius:11px;
+#sousbar::-webkit-scrollbar{display:none}
+.sous-onglet{position:relative;flex:none;white-space:nowrap;color:var(--encre-3);font-size:14px;padding:7px 13px;border-radius:11px;
   text-transform:lowercase;letter-spacing:-.01em;transition:color .2s,background .2s}
 .sous-onglet:hover{color:var(--encre);background:rgba(255,255,255,.05)}
 .sous-onglet.on{color:var(--encre);background:rgba(255,255,255,.09)}
 .sous-onglet .pastille{position:absolute;top:3px;right:5px;width:7px;height:7px;border-radius:50%;
   background:var(--led);box-shadow:0 0 10px var(--led)}
 main.sous .vue.on{padding-top:52px}
-@media (max-width:720px){ main.sous .vue.on{padding-top:46px} #sousbar{height:calc(46px + var(--haut))} }
+@media (max-width:720px){ main.sous .vue.on{padding-top:46px} #sousbar{height:calc(46px + var(--haut));padding:var(--haut) 8px 0;gap:0}
+  .sous-onglet{padding:7px 10px} }
 
 /* -- copy: the agents' answers are selectable, the chrome is not -- */
 #rail,.sous-onglet,button,.tete-chat{-webkit-user-select:none;user-select:none}
@@ -555,9 +559,9 @@ main.sous .vue.on{padding-top:52px}
 .champ-at input{flex:1;min-width:0;background:none;border:0;outline:0;padding:0;font:inherit;color:inherit}
 .indice{font-size:12px;color:var(--encre-3);text-align:left;margin:6px 4px 0;min-height:16px;transition:color .25s}
 .indice.bon{color:var(--vert-clair)}
-.coche{display:block;width:64px;height:64px;margin:6px auto 14px}
-.coche circle{fill:none;stroke:var(--vert-clair);stroke-width:2.5;stroke-dasharray:145;stroke-dashoffset:145;animation:trace .7s var(--ease) .15s forwards}
-.coche path{fill:none;stroke:var(--vert-clair);stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:36;stroke-dashoffset:36;animation:trace .45s var(--ease) .7s forwards}
+.coche-ok{display:block;width:64px;height:64px;margin:6px auto 14px}
+.coche-ok circle{fill:none;stroke:var(--vert-clair);stroke-width:2.5;stroke-dasharray:145;stroke-dashoffset:145;animation:trace .7s var(--ease) .15s forwards}
+.coche-ok path{fill:none;stroke:var(--vert-clair);stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:36;stroke-dashoffset:36;animation:trace .45s var(--ease) .7s forwards}
 @keyframes trace{to{stroke-dashoffset:0}}
 .logo-gh{width:56px;height:56px;margin:0 auto 12px;border-radius:16px;display:grid;place-items:center;background:rgba(255,255,255,.07);border:1px solid var(--trait)}
 .logo-gh svg{width:26px;height:26px}
@@ -573,9 +577,10 @@ main.sous .vue.on{padding-top:52px}
 .puce-choix.on{color:var(--encre);border-color:rgba(111,212,182,.5);background:rgba(63,157,132,.22)}
 .mots span{animation:pop .4s var(--ease) both;animation-delay:calc(.3s + var(--i) * 22ms)}
 .mon-at{font-size:22px;font-weight:500;color:var(--vert-clair);margin:2px 0 2px}
+.pseudo-connexion{margin:8px auto 4px;padding:9px 12px;border-radius:12px;font-size:13.5px;color:var(--encre-2);background:rgba(255,255,255,.06);border:1px solid var(--trait)}
 @media (prefers-reduced-motion:reduce){
   #p-contenu.glisse>*,.carte-porte.fantome>*,.code-gh span,.mots span{animation:none}
-  .coche circle,.coche path{animation:none;stroke-dashoffset:0}
+  .coche-ok circle,.coche-ok path{animation:none;stroke-dashoffset:0}
 }
 
 /* -- the account screen, warm: a real room at golden hour behind warm glass;
@@ -606,8 +611,8 @@ main.sous .vue.on{padding-top:52px}
 #porte .puce.oui{background:color-mix(in srgb,var(--accent) 24%,transparent);color:var(--accent)}
 #porte .puce-choix.on{border-color:color-mix(in srgb,var(--accent) 60%,transparent);background:color-mix(in srgb,var(--accent) 18%,transparent)}
 #porte .attend i{background:var(--accent);box-shadow:0 0 10px var(--accent)}
-#porte .coche circle,#porte .coche path,.carte-porte.fantome .coche circle,.carte-porte.fantome .coche path{stroke:var(--accent)}
-.carte-porte.fantome .coche circle,.carte-porte.fantome .coche path{stroke-dashoffset:0;animation:none}
+#porte .coche-ok circle,#porte .coche-ok path,.carte-porte.fantome .coche-ok circle,.carte-porte.fantome .coche-ok path{stroke:var(--accent)}
+.carte-porte.fantome .coche-ok circle,.carte-porte.fantome .coche-ok path{stroke-dashoffset:0;animation:none}
 .carte-porte.fantome .champ-at span,.carte-porte.fantome .indice.bon{color:var(--accent)}
 #porte .mots span{background:rgba(255,240,220,.07);border-color:rgba(255,226,190,.14)}
 #porte .grande-tete{filter:drop-shadow(0 12px 28px rgba(20,10,4,.5))}

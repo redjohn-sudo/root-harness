@@ -28,6 +28,7 @@ import hashlib
 import inspect
 import json
 import os
+import re
 import threading
 import time
 import uuid
@@ -39,6 +40,7 @@ HOME = Path(os.environ.get("ROOT_HARNESS_HOME") or Path.home() / ".root-harness"
 STATE = HOME / "channels.json"
 LOGS = HOME / "channels"
 RELAYS = ["wss://nos.lol", "wss://relay.primal.net", "wss://relay.snort.social"]
+HEX = re.compile(r"[0-9a-f]{64}")
 LOOKBACK = 3 * 86400        # gift wraps are back-dated up to 2 days (NIP-59)
 
 
@@ -60,6 +62,24 @@ def _hex_of(npub_or_hex: str) -> str | None:
 
 def _npub(hexkey: str) -> str:
     return _n().PublicKey.parse(hexkey).to_bech32()
+
+
+def clean_share(share) -> dict | None:
+    """A shared conversation, kept to what the window shows: titles and plain
+    messages. Whatever else a sender put in it is dropped; None if it is not one."""
+    if isinstance(share, str):
+        try:
+            share = json.loads(share)
+        except (ValueError, TypeError):
+            return None
+    if not isinstance(share, dict):
+        return None
+    events = share.get("events")
+    events = [{"type": e["type"], "text": e["text"][:6000]} for e in (events if isinstance(events, list) else [])
+              if isinstance(e, dict) and e.get("type") in ("user", "text") and isinstance(e.get("text"), str)][-200:]
+    title, agent = share.get("title"), share.get("agent")
+    return {"rh": "share", "title": title[:120] if isinstance(title, str) else "",
+            "agent": agent[:60] if isinstance(agent, str) else "", "events": events}
 
 
 def channel_id(members: set[str]) -> str:
@@ -143,7 +163,10 @@ class Channels:
         f = n.Filter().kind(n.Kind(1059)).pubkey(self.keys.public_key()).since(since)
         # catch up on what arrived while root-harness was closed, then listen
         for ev in await self._fetch(f):
-            await self._receive(ev)
+            try:
+                await self._receive(ev)
+            except Exception:
+                pass            # one bad message must not stop the others
         await _aw(self.client.subscribe(n.ReqTarget.auto([f])))
         asyncio.ensure_future(self._listen())
         self.on_event({"type": "channels_ready"})
@@ -161,10 +184,12 @@ class Channels:
             if note.is_new_event():
                 ev = getattr(note, "event", None)
                 if ev is not None and ev.kind().as_u16() == 1059:
-                    await self._receive(ev)
+                    try:
+                        await self._receive(ev)
+                    except Exception:
+                        pass        # the listening goes on; the message is fetched again at next launch
 
     async def _receive(self, ev) -> None:
-        n = _n()
         wid = ev.id().to_hex()
         with self.lock:
             s = _load()
@@ -172,6 +197,18 @@ class Channels:
                 return
             s["seen"].append(wid)
             _save(s)
+        try:
+            await self._handle(ev, wid)
+        except Exception:
+            with self.lock:         # not handled: not seen either, so the next catch-up tries again
+                s = _load()
+                if wid in s["seen"]:
+                    s["seen"].remove(wid)
+                    _save(s)
+            raise
+
+    async def _handle(self, ev, wid: str) -> None:
+        n = _n()
         try:
             gift = await _aw(n.UnwrappedGift.from_gift_wrap(self.keys, ev))
         except Exception:
@@ -198,9 +235,10 @@ class Channels:
                 # handled off this loop: answering needs the loop to send
                 threading.Thread(target=self.on_remote, args=(order, sender, self.me), daemon=True).start()
             return
-        members = {t.content() for t in tags if t.kind() == "p" and t.content()} | {sender, self.me}
-        rid = next((t.content() for t in tags if t.kind() == "rh-id"), None) or wid
-        subject = next((t.content() for t in tags if t.kind() == "subject"), None)
+        # everything below comes from the sender: kept to the types and sizes the window expects
+        members = {t.content() for t in tags if t.kind() == "p" and HEX.fullmatch(t.content() or "")} | {sender, self.me}
+        rid = str(next((t.content() for t in tags if t.kind() == "rh-id"), None) or wid)[:64]
+        subject = str(next((t.content() for t in tags if t.kind() == "subject"), None) or "")[:60] or None
         their = next((t.content() for t in tags if t.kind() == "rh-name"), None)
         cid = channel_id(members)
         with self.lock:
@@ -218,11 +256,10 @@ class Channels:
             at = rumor.created_at().as_secs()
             msg = {"rid": rid, "from": sender, "text": rumor.content(), "at": at}
             if any(t.kind() == "rh-share" for t in tags):
-                try:
-                    share = json.loads(rumor.content())
-                    msg = {**msg, "text": "shared: " + str(share.get("title", "")), "share": share}
-                except (ValueError, TypeError):
-                    pass
+                share = clean_share(rumor.content())
+                if share is None:
+                    return              # says it is a shared conversation, is not one: dropped
+                msg = {**msg, "text": "shared: " + share["title"], "share": share}
             new = _append(cid, msg)       # our own copy comes back too: shown once
             if new:
                 ch["last"] = max(ch["last"], at)
@@ -407,9 +444,9 @@ class Channels:
 
     def send_share(self, cid: str, share: dict) -> dict | None:
         """A conversation, sealed for the channel: titles and messages only."""
-        events = [{"type": e.get("type"), "text": str(e.get("text", ""))[:6000]}
-                  for e in (share.get("events") or []) if e.get("type") in ("user", "text")]
-        payload = {"rh": "share", "title": str(share.get("title", ""))[:120], "agent": str(share.get("agent", ""))[:60], "events": events}
+        payload = clean_share({**share, "title": str(share.get("title", "")), "agent": str(share.get("agent", "")),
+                               "events": [{"type": e.get("type"), "text": str(e.get("text", ""))} for e in (share.get("events") or [])
+                                          if isinstance(e, dict)]})
         while len(json.dumps(payload, ensure_ascii=False)) > 40000 and payload["events"]:
             payload["events"].pop(0)                     # a sealed message holds ~64 KB: keep the latest
         return self.send(cid, json.dumps(payload, ensure_ascii=False), share=payload)

@@ -4,7 +4,7 @@
 // kept by the relays. Nothing here is private. When the network cannot be reached
 // (locked, offline), examples show what it looks like and nothing is sent.
 import { tete } from './root.js'
-import { esc, riche, feuille, fermerFeuille, toast, aller } from './app.js'
+import { esc, riche, feuille, fermerFeuille, toast, aller, copier } from './app.js'
 
 const $ = (s, r = document) => r.querySelector(s)
 const $$ = (s, r = document) => [...r.querySelectorAll(s)]
@@ -89,7 +89,12 @@ const badgePng = (forme, c, l) => {
 
 // -- people -------------------------------------------------------------------------------
 const ETATS = { etudie: 'student', travaille: 'working', cherche: 'looking for a job' }
-const niveau = (n, label) => n ? `<span class="niveau n${n}" title="from the days spent working with agents"><i></i><i></i><i></i>${esc(label || ['', 'active', 'very active', 'actively active'][n])}</span>` : ''
+// what comes from the network: pictures over https or as a plain base64 photo, links only over https, numbers only as numbers
+const image = (u) => typeof u === 'string' && (/^https:\/\//i.test(u) || /^data:image\/(png|jpeg|gif|webp);base64,[A-Za-z0-9+/=]+$/.test(u)) ? u : ''
+const lien = (u) => typeof u === 'string' && /^https:\/\//i.test(u) ? u : ''
+const cssUrl = (u) => u.replace(/["'()\\\s<>]/g, (c) => '%' + c.charCodeAt(0).toString(16).padStart(2, '0'))
+const nb = (x) => Number(x) || 0
+const niveau = (n, label) => (n = Math.max(0, Math.min(3, Math.floor(nb(n))))) ? `<span class="niveau n${n}" title="from the days spent working with agents"><i></i><i></i><i></i>${esc(label || ['', 'active', 'very active', 'actively active'][n])}</span>` : ''
 const hue = (hex) => Math.round(parseInt((hex || '7f').slice(0, 2), 16) * 360 / 255)
 const nom = (p) => (p.show === 'name' || p.show === 'both') && p.name ? p.name : p.pseudo || p.display || 'someone'
 // the check of an official root-harness account, and the mark of an automated one
@@ -97,11 +102,12 @@ const marques = (p) => (p.verified ? `<span class="coche" title="Official root-h
   + (p.bot ? '<span class="auto" title="Posts by itself">automated</span>' : '')
 const sousNom = (p) => '@' + (p.at || p.id || (p.npub ? p.npub.slice(0, 14) + '...' : 'unknown')) + (p.show === 'both' && p.name && p.pseudo ? ' · ' + p.pseudo : '')
 const cadrage = (f) => f ? `;background-size:${+f.size}% auto;background-position:${+f.x}% ${+f.y}%` : ''
-const avatar = (p, t = 44) => p.picture ? `<span class="av" style="width:${t}px;height:${t}px;background-image:url('${esc(p.picture)}')${cadrage(p.picture_frame)}"></span>`
+const photo = (p) => image(p.picture) || (p.apercu && /^blob:/.test(p.picture || '') ? p.picture : '')   // apercu: a picture you just picked here
+const avatar = (p, t = 44) => photo(p) ? `<span class="av" style="width:${t}px;height:${t}px;background-image:url('${esc(cssUrl(photo(p)))}')${cadrage(p.picture_frame)}"></span>`
   : p.mine ? `<span class="av racine" style="width:${t}px;height:${t}px">${tete()}</span>`
-  : `<span class="av lettre" style="width:${t}px;height:${t}px;--h:${p.hue ?? hue(p.hex)}">${esc((nom(p)[0] || '?').toUpperCase())}</span>`
+  : `<span class="av lettre" style="width:${t}px;height:${t}px;--h:${nb(p.hue ?? hue(p.hex))}">${esc((nom(p)[0] || '?').toUpperCase())}</span>`
 const COMMUS_BASE = [['agents', 'Agents'], ['security-ctf', 'Security & CTF'], ['42-paris', '42 Paris'], ['hackathons', 'Hackathons'], ['local-llms', 'Local LLMs'], ['design', 'Design'], ['tech-news', 'Tech news'], ['actu-tech', 'Actu tech']]
-const nomCommu = (slug) => (COMMUS_BASE.find((c) => c[0] === slug) || [slug, slug.replace(/-/g, ' ')])[1]
+const nomCommu = (slug) => (COMMUS_BASE.find((c) => c[0] === slug) || [slug, String(slug || '').replace(/-/g, ' ')])[1]
 
 let MOI = null
 async function moi(H) { try { MOI = await H.network.profile() } catch { MOI = null } return MOI }
@@ -148,7 +154,7 @@ function suggererAt(ta, H) {
 }
 
 // -- a post ------------------------------------------------------------------------------------
-const medias = (p) => p.scene ? SCENES[p.scene] : (p.media || []).map((m) => `<div class="media">${(m.mime || '').startsWith('video') ? `<video src="${esc(m.url)}" controls playsinline preload="metadata"></video>` : `<img src="${esc(m.url)}" alt="" loading="lazy">`}</div>`).join('')
+const medias = (p) => p.scene ? SCENES[p.scene] || '' : (Array.isArray(p.media) ? p.media : []).filter((m) => m && lien(m.url)).map((m) => `<div class="media">${String(m.mime || '').startsWith('video') ? `<video src="${esc(m.url)}" controls playsinline preload="metadata"></video>` : `<img src="${esc(m.url)}" alt="" loading="lazy">`}</div>`).join('')
 function carte(p, i) {
   const a = p.author, rb = p.reposted_by, mine = p.mine || {}
   return `<article class="post" data-id="${esc(p.id)}" style="--i:${Math.min(i, 12)}">${avatar(a)}
@@ -157,9 +163,9 @@ function carte(p, i) {
       <div class="ptx">${liensAt(riche(p.text))}</div>${medias(p)}
       ${p.agent ? `<div class="pagent">${ico('etincelle')}written with ${esc(p.agent)}</div>` : ''}
       ${p.exemple ? '<div class="pagent" style="color:var(--ambre)">an example</div>' : ''}
-      <div class="pact"><button data-a="rep" title="answer">${ico('repondre')}<span>${p.counts.replies || ''}</span></button>
-        <button data-a="rt" class="${mine.repost ? 'on rt' : ''}" title="repost">${ico('republier')}<span>${p.counts.reposts || ''}</span></button>
-        <button data-a="coeur" class="${mine.reaction ? 'on coeur' : ''}" title="like">${ico('coeur')}<span>${p.counts.reactions || ''}</span></button>
+      <div class="pact"><button data-a="rep" title="answer">${ico('repondre')}<span>${nb((p.counts || {}).replies) || ''}</span></button>
+        <button data-a="rt" class="${mine.repost ? 'on rt' : ''}" title="repost">${ico('republier')}<span>${nb((p.counts || {}).reposts) || ''}</span></button>
+        <button data-a="coeur" class="${mine.reaction ? 'on coeur' : ''}" title="like">${ico('coeur')}<span>${nb((p.counts || {}).reactions) || ''}</span></button>
         <button data-a="part" title="share">${ico('partage')}</button><button data-a="plus" title="more">${ico('points')}</button></div></div></article>`
 }
 function brancher(el, posts, H, apres) {
@@ -234,7 +240,7 @@ async function partager(p, H) {
     const r = await partage(el.dataset.c, { title: 'post by ' + nom(p.author), agent: p.agent || '', events: [{ type: 'text', text: p.text + (p.media || []).map((m) => '\n' + m.url).join('') }] }).catch(() => null)
     fermerFeuille(); toast(r ? 'Shared.' : 'Not shared.')
   })
-  $('#s-id', f).onclick = () => { H.copy(p.id); toast('Post id copied.') }
+  $('#s-id', f).onclick = () => copier(p.id, 'Post id copied.')
 }
 
 // =====================================================================================
@@ -363,22 +369,22 @@ export async function vueProfil(H, hex) {
   else if (!pareil(vu, mur) && !document.querySelector('#feuille.on')) calme(v, () => rendrePage(v, mur, H), cle)
 }
 const TYPES = { progress: 'in progress', project: 'project', hackathon: 'hackathon' }
-const travail = (work) => (work || []).map((t, i) => `<div class="verre tr" style="--i:${i}">${/^https:\/\//.test(t.image || '') ? `<div class="tr-img" style="background-image:url('${esc(t.image)}')"></div>` : ''}<div class="tr-q${t.kind === 'progress' || t.live ? ' vivant' : ''}">${t.kind === 'progress' || t.live ? '<i></i>' : ''}${esc(TYPES[t.kind] || t.kind)}</div>
-  <div class="tr-t">${/^https?:\/\//.test(t.url || '') ? `<a href="${esc(t.url)}" target="_blank" rel="noopener">${esc(t.title)}</a>` : esc(t.title)}</div>${t.text ? `<div class="tr-d">${esc(t.text)}</div>` : ''}${t.when ? `<div class="tr-w">${esc(t.when)}</div>` : ''}</div>`).join('')
+const travail = (work) => (Array.isArray(work) ? work : []).map((t, i) => `<div class="verre tr" style="--i:${i}">${lien(t.image) ? `<div class="tr-img" style="background-image:url('${esc(cssUrl(t.image))}')"></div>` : ''}<div class="tr-q${t.kind === 'progress' || t.live ? ' vivant' : ''}">${t.kind === 'progress' || t.live ? '<i></i>' : ''}${esc(TYPES[t.kind] || t.kind)}</div>
+  <div class="tr-t">${lien(t.url) ? `<a href="${esc(t.url)}" target="_blank" rel="noopener">${esc(t.title)}</a>` : esc(t.title)}</div>${t.text ? `<div class="tr-d">${esc(t.text)}</div>` : ''}${t.when ? `<div class="tr-w">${esc(t.when)}</div>` : ''}</div>`).join('')
 function rendrePage(v, mur, H) {
   const p = mur.profile, mine = !!p.mine, badges = mur.badges || [], epingles = badges.filter((b) => b.pinned), montres = epingles.length ? epingles : badges.slice(0, 6)
   v.innerHTML = `<div class="defile" style="padding-top:0"><div class="colonne">
-    <div class="couverture"${p.banner ? ` style="background-image:url('${esc(p.banner)}')${cadrage(p.banner_frame)}"` : ''}></div>
+    <div class="couverture"${image(p.banner) ? ` style="background-image:url('${esc(cssUrl(image(p.banner)))}')${cadrage(p.banner_frame)}"` : ''}></div>
     <div class="p-haut">${avatar(p, 104)}<div class="boutons" style="margin:0 0 6px auto">${mine ? `<button class="rond-btn" id="p-reglages" title="Settings">${ico('reglages')}</button><button class="bouton" id="p-qr">Share my ID</button><button class="bouton plein" id="p-edit">Edit profile</button>`
       : `<button class="bouton" id="p-retour">${ico('retour')} my page</button><button class="rond-btn" id="p-plus" title="more">${ico('points')}</button><button class="bouton" id="p-ami">Add as a friend</button><button class="bouton${mur.i_follow ? '' : ' plein'}" id="p-suivre">${mur.i_follow ? 'Following' : 'Follow'}</button>`}</div></div>
     <div class="p-nom">${esc(nom(p))}${marques(p)}${!mine && mur.follows_me ? '<span class="suit-toi">follows you</span>' : ''}</div><div class="p-id">${esc(sousNom(p))}</div>
     <div class="p-puces">${p.state === 'cherche' ? '<span class="etat cherche">● looking for a job</span>' : p.state ? `<span class="etat">${esc(ETATS[p.state])}</span>` : ''}
       ${p.school || p.role ? `<span class="etat">${esc([p.school, p.role].filter(Boolean).join(' · '))}</span>` : ''}${niveau(p.level, p.level_label)}</div>
     ${p.about ? `<div class="p-bio">${esc(p.about)}</div>` : ''}
-    <div class="p-chiffres"><button class="p-lien" id="p-abonnes"><b>${(mur.followers || []).length}</b> follower${(mur.followers || []).length === 1 ? '' : 's'}</button><button class="p-lien" id="p-abonnements"><b>${(mur.following || []).length}</b> following</button><span><b>${mur.posts.length}</b> post${mur.posts.length === 1 ? '' : 's'}</span></div>
+    <div class="p-chiffres"><button class="p-lien" id="p-abonnes"><b>${nb((mur.followers || []).length)}</b> follower${nb((mur.followers || []).length) === 1 ? '' : 's'}</button><button class="p-lien" id="p-abonnements"><b>${nb((mur.following || []).length)}</b> following</button><span><b>${nb((mur.posts || []).length)}</b> post${nb((mur.posts || []).length) === 1 ? '' : 's'}</span></div>
     <div class="p-badges" id="p-badges">${montres.map((b, i) => { const r = look(b); return `<span style="--i:${i}">${badge(r, true, 38)}<b class="pb-n">${esc(r.nom)}</b></span>` }).join('')}${mine || badges.length ? `<button class="bouton" id="p-tous">${mine ? 'all badges' : 'badges'}</button>` : ''}</div>
     <div class="section">${mine ? 'my work' : 'work'}${p.state === 'cherche' ? ' · available for work' : ''}<span class="ligne"></span></div>
-    <div class="p-travail">${travail(p.work)}</div>${!p.work.length ? `<div class="vide">${mine ? 'Add what you build, your hackathons, what is in progress: Edit profile.' : 'Nothing shown yet.'}</div>` : ''}
+    <div class="p-travail">${travail(p.work)}</div>${!(Array.isArray(p.work) && p.work.length) ? `<div class="vide">${mine ? 'Add what you build, your hackathons, what is in progress: Edit profile.' : 'Nothing shown yet.'}</div>` : ''}
     <div class="p-onglets">${[['posts', 'Posts'], ['replies', 'Replies'], ['reposts', 'Reposts'], ['media', 'Photos & videos']].map(([k, t]) => `<button data-o="${k}" class="${k === ONGLET_P ? 'on' : ''}">${t}</button>`).join('')}</div>
     <div id="p-liste"></div></div></div>`
   rendreListe(mur, H)
@@ -392,7 +398,7 @@ function rendrePage(v, mur, H) {
   if (mine) {
     $('#p-edit').onclick = () => editer(H, p)
     $('#p-reglages').onclick = () => aller('reglages')
-    $('#p-qr').onclick = () => { if (p.id) { H.copy(p.id); toast('Your ID is copied: ' + p.id) } }
+    $('#p-qr').onclick = () => { if (p.id) copier(p.id, 'Your ID is copied: ' + p.id) }
   } else {
     $('#p-retour').onclick = () => vueProfil(H, '')
     $('#p-plus').onclick = () => menuPersonne(p, H)
@@ -443,10 +449,11 @@ const ICONE_N = { like: 'coeur', repost: 'republier', reply: 'repondre', mention
 export async function vueNotifs(H) {
   const v = $('#v-notifs')
   v.innerHTML = `<div class="defile"><div class="colonne"><div class="titre">notifications</div><div class="sous-titre">What people did with your posts.</div><div id="n-liste"><div class="vide">Loading...</div></div></div></div>`
-  const vu = deja('notifs')
+  const vu = Array.isArray((deja('notifs') || {}).items) ? deja('notifs') : null
   if (vu) calme(v, () => dessinerNotifs(vu, H))
   let r
-  try { r = await H.network.notifications() } catch (e) { if (!vu) $('#n-liste').innerHTML = `<div class="vide">${esc(e.message || 'Unavailable.')}</div>`; return }
+  try { r = await H.network.notifications(); if (!r || !Array.isArray(r.items)) throw new Error((r && r.error) || 'Unavailable.') }
+  catch (e) { if (!vu && $('#n-liste')) $('#n-liste').innerHTML = `<div class="vide">${esc(e.message || 'Unavailable.')}</div>`; return }
   retenir('notifs', { ...r, items: r.items.map((i) => ({ ...i, new: false })) })   // next time, what you saw here is not new any more
   if (!$('#n-liste')) return
   pastilleNotifs(0)
@@ -483,16 +490,16 @@ export function surveillerNotifs(H) {
   // at launch, quietly: your page, the feed and your notifications, so the first tap shows them at once
   setTimeout(async () => {
     if (!H.network) return
-    const prendre = async (cle, f) => { try { const r = await f(); if (r) retenir(cle, r) } catch {} }
-    await prendre('mur:moi', () => H.network.wall(''))
-    await prendre('fil:for-you:', () => H.network.feed('for-you', {}))
-    await prendre('notifs', () => H.network.notifications().then((r) => ({ ...r, items: r.items })))
+    const prendre = async (cle, f, ok) => { try { const r = await f(); if (r && ok(r)) retenir(cle, r) } catch {} }   // only real answers are kept
+    await prendre('mur:moi', () => H.network.wall(''), (r) => !!r.profile)
+    await prendre('fil:for-you:', () => H.network.feed('for-you', {}), Array.isArray)
+    await prendre('notifs', () => H.network.notifications(), (r) => Array.isArray(r.items))
   }, 1500)
 }
 
 function rendreListe(mur, H) {
   const el = $('#p-liste'), mine = !!mur.profile.mine, L = mur[ONGLET_P] || []
-  if (ONGLET_P === 'media' && L.length) el.innerHTML = `<div class="grille-media">${L.map((x) => `<div class="gm" data-id="${esc(x.id)}" style="background-image:url('${esc(x.media[0].url)}')"></div>`).join('')}</div>`
+  if (ONGLET_P === 'media' && L.length) el.innerHTML = `<div class="grille-media">${L.map((x) => `<div class="gm" data-id="${esc(x.id)}" style="background-image:url('${esc(cssUrl(lien(((x.media || [])[0] || {}).url)))}')"></div>`).join('')}</div>`
   else el.innerHTML = L.map((x, i) => carte(x, i)).join('') || `<div class="vide">${{ posts: mine ? 'No post yet. In the feed, your agent can write the first one.' : 'No post yet.', replies: 'No reply yet.', reposts: 'Nothing reposted yet.', media: 'Posts with a photo or a video show here.' }[ONGLET_P]}</div>`
   brancher(el, L, H, null)        // hearts and reposts toggle in place: no re-render, the scroll stays
   $$('.gm', el).forEach((g) => g.onclick = () => { const x = L.find((y) => y.id === g.dataset.id); if (x) ouvrirFil(x, H) })
@@ -573,7 +580,7 @@ function editer(H, p) {
   // a picture is framed first: still ones are cut to the frame, GIFs keep their animation and their framing travels with them
   $('#e-photo', f).onchange = async (e) => { const fi = e.target.files[0]; e.target.value = ''; if (!fi) return
     const r = await recadrer(fi, 'rond'); if (!r) return; fPhoto = r.file; cPhoto = r.frame
-    $('.ed-photo .av', f).outerHTML = avatar({ picture: r.apercu, picture_frame: r.frame }, 64); toast('Photo ready: it is uploaded when you save.') }
+    $('.ed-photo .av', f).outerHTML = avatar({ picture: r.apercu, picture_frame: r.frame, apercu: true }, 64); toast('Photo ready: it is uploaded when you save.') }
   $('#e-couv', f).onchange = async (e) => { const fi = e.target.files[0]; e.target.value = ''; if (!fi) return
     const r = await recadrer(fi, 'large'); if (!r) return; fCouv = r.file; cCouv = r.frame; toast('Cover ready: it is uploaded when you save.') }
   $('#e-sansphoto', f) && ($('#e-sansphoto', f).onclick = () => { photo = ''; fPhoto = null; cPhoto = null; toast('Back to Root\'s head.') })
@@ -637,7 +644,7 @@ export async function vueCommus(H) {
     $$('[data-joindre]', v).forEach((b) => b.onclick = (e) => { e.stopPropagation(); rejoindre(H, b.dataset.joindre, b) })
   }
   if (vu) calme(v, () => dessiner(vu)); else dessiner([])
-  try { const r = await H.network.communities(); retenir('commus', r); if (!pareil(vu, r) && !COMMU_OUVERTE) calme(v, () => dessiner(r)) } catch {}
+  try { const r = await H.network.communities(); if (!Array.isArray(r)) return; retenir('commus', r); if (!pareil(vu, r) && !COMMU_OUVERTE) calme(v, () => dessiner(r)) } catch {}
 }
 async function rejoindre(H, slug, b) {
   const m = MOI || await moi(H); if (!m) return
@@ -662,7 +669,8 @@ async function uneCommunaute(H, slug) {
   const dessiner = (posts) => { const el = $('#c-liste'); if (!el) return
     el.innerHTML = posts.map((p, i) => carte(p, i)).join('') || '<div class="vide">Nobody has posted here yet. Be the first.</div>'; brancher(el, posts, H, null) }
   if (vu) calme(v, () => dessiner(vu), cle); else $('#c-liste').innerHTML = '<div class="vide">Loading...</div>'
-  try { const posts = await H.network.feed('community', { community: slug }); retenir(cle, posts); if (COMMU_OUVERTE !== slug) return
+  try { const posts = await H.network.feed('community', { community: slug }); if (!Array.isArray(posts)) throw new Error('No answer from the network.')
+    retenir(cle, posts); if (COMMU_OUVERTE !== slug) return
     if (!vu) dessiner(posts); else if (!pareil(vu, posts)) calme(v, () => dessiner(posts)) }
   catch (e) { if (!vu && $('#c-liste')) $('#c-liste').innerHTML = `<div class="vide">${esc(e.message || 'Unavailable.')}</div>` }
 }
@@ -775,7 +783,7 @@ export async function vueRecherche(H) {
   const montrer = async (exact) => {
     const q = $('#s-q').value.trim(); RECH = q
     const qq = q.replace(/^@/, '').toLowerCase()
-    const [gens, commus] = await Promise.all([gensConnus(H), H.network.communities().catch(() => deja('commus') || [])])
+    const [gens, commus] = await Promise.all([gensConnus(H), H.network.communities().then((r) => Array.isArray(r) ? r : deja('commus') || []).catch(() => deja('commus') || [])])
     let P = gens.filter((g) => correspond(g, qq)).slice(0, 12)
     if (exact && q) { try { const g = await H.network.lookup(q.includes('#') || q.startsWith('npub') || q.startsWith('@') ? q : '@' + q); if (g && !P.some((x) => x.hex === g.hex)) P = [g, ...P] } catch {} }
     const tout = new Map(); COMMUS_BASE.forEach(([slug, name]) => tout.set(slug, { slug, name })); (commus || []).forEach((c) => tout.set(c.slug, { ...tout.get(c.slug), ...c }))

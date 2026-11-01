@@ -4,6 +4,10 @@
   Referrer-Policy: no-referrer
   Permissions-Policy: camera=(self), microphone=(), geolocation=()
   Strict-Transport-Security: max-age=31536000
+/
+  Cache-Control: no-cache
+/style.css
+  Cache-Control: no-cache
 /app.js
   Cache-Control: no-cache
 /index.html
