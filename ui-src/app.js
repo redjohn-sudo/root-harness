@@ -27,6 +27,7 @@ const I = {
   vibe: '<path d="M8 8l-4 4 4 4M16 8l4 4-4 4M13.5 5.5l-3 13"/>',
   livre: '<path d="M4 5.5A2 2 0 016 3.5h13v15H6a2 2 0 00-2 2z"/><path d="M4 20.5a2 2 0 012-2h13M8.5 8h6M8.5 11h4"/>',
   reglages: '<circle cx="12" cy="12" r="3"/><path d="M19.4 13.5l1.6 1.2-2 3.4-1.9-.8a7.6 7.6 0 01-2 1.2L14.8 21h-4l-.3-2.5a7.6 7.6 0 01-2-1.2l-1.9.8-2-3.4 1.6-1.2a7.7 7.7 0 010-2.4L4.6 9.9l2-3.4 1.9.8a7.6 7.6 0 012-1.2L10.8 3h4l.3 2.5a7.6 7.6 0 012 1.2l1.9-.8 2 3.4-1.6 1.2a7.7 7.7 0 010 2.4z"/>',
+  reseau: '<circle cx="6" cy="12" r="2.4"/><circle cx="17.5" cy="6.5" r="2.4"/><circle cx="17.5" cy="17.5" r="2.4"/><path d="M8.1 11l7.3-3.4M8.1 13l7.3 3.4"/>',
   plus: '<path d="M12 5v14M5 12h14"/>', partage: '<path d="M12 15V4M8 8l4-4 4 4M5 13v5a2 2 0 002 2h10a2 2 0 002-2v-5"/>',
   image: '<rect x="3.5" y="5" width="17" height="14" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="M5 17l4.5-4.5 3 3 2.5-2.5 4 4"/>',
   fleche: '<path d="M12 19V5M5 12l7-7 7 7"/>', retour: '<path d="M15 5l-7 7 7 7"/>', copie: '<rect x="8" y="8" width="11" height="11" rx="2"/><path d="M5 15V6a1 1 0 011-1h9"/>',
@@ -34,8 +35,9 @@ const I = {
 const ico = (n, w = 1.7) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">${I[n]}</svg>`
 
 // -- the shell ----------------------------------------------------------------------
-const ONGLETS = [['chat', 'Your agents'], ['fil', 'The feed'], ['recherche', 'Search'], ['commus', 'Communities'], ['notifs', 'Notifications'], ['amis', 'Messages'], ['profil', 'My profile'], ['vibe', 'Vibe code'], ['encyclo', 'Encyclopedia']]
-const ICONE = { chat: 'chat', fil: 'fil', recherche: 'loupe', commus: 'diese', profil: 'profil', notifs: 'cloche', discussions: 'dossiers', amis: 'messages', vibe: 'vibe', encyclo: 'livre', reglages: 'reglages' }
+const ONGLETS = [['chat', 'Your agents'], ['reseau', 'Network'], ['amis', 'Messages'], ['vibe', 'Vibe code'], ['notifs', 'Notifications']]
+const SOUS = [['fil', 'feed'], ['recherche', 'search'], ['commus', 'communities'], ['profil', 'profile'], ['encyclo', 'encyclopedia']]
+const ICONE = { chat: 'chat', reseau: 'reseau', amis: 'messages', vibe: 'vibe', notifs: 'cloche', reglages: 'reglages' }
 
 function coquille() {
   document.body.innerHTML = `<div id="fond"></div>
@@ -45,13 +47,15 @@ function coquille() {
       <button class="onglet bas" data-v="reglages" title="Settings">${ico('reglages')}</button>
     </nav>
     <main>
+      <div id="sousbar">${SOUS.map(([k, t]) => `<button class="sous-onglet" data-v="${k}">${t}</button>`).join('')}</div>
       <section class="vue" id="v-chat"></section><section class="vue" id="v-fil"></section><section class="vue" id="v-profil"></section><section class="vue" id="v-notifs"></section><section class="vue" id="v-commus"></section><section class="vue" id="v-recherche"></section><section class="vue" id="v-discussions"></section>
       <section class="vue" id="v-amis"></section><section class="vue" id="v-vibe"></section><section class="vue" id="v-encyclo"></section><section class="vue" id="v-reglages"></section>
     </main>
   </div>
   <div id="voile"></div><div class="feuille" id="feuille"></div><div class="toast" id="toast"></div>
-  <div id="porte"><div class="carte-porte verre" id="carte-porte"></div></div>`
+  <div id="porte"><div class="fonds"></div><div class="carte-porte verre" id="carte-porte"></div></div>`
   $$('.onglet').forEach((b) => b.onclick = () => aller(b.dataset.v))
+  $$('#sousbar .sous-onglet').forEach((b) => b.onclick = () => aller(b.dataset.v))
   $('#voile').onclick = fermerFeuille
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('#feuille').classList.contains('on')) fermerFeuille() })
   addEventListener('mousemove', (e) => { const r = document.documentElement.style
@@ -60,9 +64,15 @@ function coquille() {
 }
 
 let VUE = 'chat'
+const GROUPE = (v) => ['fil', 'recherche', 'commus', 'profil', 'encyclo'].includes(v) ? 'reseau' : v
 export function aller(v) {
+  if (v === 'reseau') v = 'fil'          // the network entry lands on the feed
   VUE = v
-  $$('.onglet').forEach((b) => b.classList.toggle('on', b.dataset.v === v))
+  const g = GROUPE(v), dansReseau = g === 'reseau'
+  $$('#rail .onglet').forEach((b) => b.classList.toggle('on', b.dataset.v === g))
+  $$('#sousbar .sous-onglet').forEach((b) => b.classList.toggle('on', b.dataset.v === v))
+  $('main').classList.toggle('sous', dansReseau)
+  $('#sousbar').style.display = dansReseau ? 'flex' : 'none'
   $$('.vue').forEach((s) => s.classList.toggle('on', s.id === 'v-' + v))
   ;({ chat: vueChat, fil: () => vueFil(H), profil: () => vueProfil(H), notifs: () => vueNotifs(H), commus: () => vueCommus(H), recherche: () => vueRecherche(H), discussions: vueDiscussions, amis: vueAmis, vibe: vueVibe, encyclo: vueEncyclo, reglages: vueReglages })[v]()
 }
@@ -113,74 +123,203 @@ async function porte() {
   const fini = async () => { o.classList.remove('on'); await demarrer() }
 
   // sign-up: one question per screen, everything set once, then nothing to configure
-  const ETAPES = 5
-  const points = (i) => `<div class="etapes">${Array.from({ length: ETAPES }, (_, k) => `<i class="${k < i ? 'fait' : k === i ? 'on' : ''}"></i>`).join('')}</div>`
-  const ecran = (html) => { c.classList.remove('glisse'); void c.offsetWidth; c.innerHTML = html; c.classList.add('glisse') }
-  const I = { pseudo: '', mdp: '' }
-  const creer = () => {
-    ecran(`${points(0)}<div class="grande-tete">${tete()}</div><h2>what should we call you?</h2><p>Any pseudo. It's how your friends see you, sealed in your messages.</p>
-      <input class="champ" id="p-pseudo" placeholder="pseudo" autocomplete="username" autocapitalize="off" maxlength="32" value="${esc(I.pseudo)}">
-      <div class="rangee" style="border:0;padding-top:12px"><div style="flex:1"><div>Friends can find me by my ID</div><div class="d">You get an ID like <b>${esc((I.pseudo || 'you').toLowerCase().replace(/\s+/g, '.'))}#k7f2qa9m</b>, unique to you. Its card is public.</div></div><span class="inter${I.trouvable === false ? '' : ' on'}" id="p-trouve"></span></div>
-      <div class="err" id="p-err"></div><button class="bouton plein" id="p-go">Continue</button><span class="lien" id="p-deja">I already have an account</span>`)
-    $('#p-trouve').onclick = () => { I.trouvable = $('#p-trouve').classList.toggle('on') }
-    $('#p-pseudo').oninput = () => { const b = $('.rangee b', c); if (b) b.textContent = (val('p-pseudo').trim() || 'you').normalize('NFKD').replace(/[^\x00-\x7f]/g, '').toLowerCase().split(/\s+/).filter(Boolean).join('.').replace(/[^a-z0-9._-]+/g, '').slice(0, 24) + '#k7f2qa9m' }
-    const go = () => { const v = val('p-pseudo').trim(); if (!v) return erreur('Pick a pseudo.'); I.pseudo = v; motDePasse() }
-    $('#p-go').onclick = go; entree(['p-pseudo'], go); $('#p-deja').onclick = connecter; $('#p-pseudo').focus()
+  const ETAPES = 6
+  const calme = () => matchMedia('(prefers-reduced-motion: reduce)').matches
+  // one room per step (photos in README), cross-faded; the next one loads ahead
+  const PHOTOS = ['porte.jpg', 'porte-1.jpg', 'porte-2.jpg', 'porte-3.jpg', 'porte-4.jpg', 'porte-5.jpg', 'porte.jpg']
+  const photo = (etape) => {
+    const f = $('.fonds', o), src = PHOTOS[etape] || PHOTOS[0]
+    if (f.dataset.src === src) return
+    f.dataset.src = src
+    const n = document.createElement('i'), im = new Image()
+    im.onload = () => { if (f.dataset.src !== src) return
+      n.style.backgroundImage = `url("${src}")`; f.appendChild(n); void n.offsetWidth; n.classList.add('on')
+      setTimeout(() => [...f.children].filter((x) => x !== n).forEach((x) => x.remove()), 1400) }
+    im.src = src
+    if (PHOTOS[etape + 1]) new Image().src = PHOTOS[etape + 1]
   }
+  photo(0)
+  // each screen slides in, the last one leaves as a ghost, the card breathes to its new height
+  const ecran = (html, etape = -1, sens = 1) => {
+    sens = sens === -1 ? -1 : 1
+    o.dataset.etape = etape < 0 ? '' : etape     // each step has its own light
+    photo(etape)
+    if (!$('#p-contenu', c)) c.innerHTML = '<div class="etapes" id="p-etapes"></div><div id="p-contenu"></div>'
+    const zone = $('#p-contenu', c), et = $('#p-etapes', c), r = zone.getBoundingClientRect(), h0 = c.offsetHeight
+    const bouge = !!zone.childElementCount && !calme()
+    et.classList.toggle('cache', etape < 0)
+    if (etape >= 0) {
+      if (et.childElementCount !== ETAPES) et.innerHTML = '<i></i>'.repeat(ETAPES)
+      ;[...et.children].forEach((i, k) => { i.className = k < etape ? 'fait' : k === etape ? 'on' : '' })
+    }
+    if (bouge) {
+      const g = document.createElement('div'); g.className = 'carte-porte fantome'
+      ;[...zone.childNodes].forEach((n) => g.appendChild(n.cloneNode(true)))
+      $$('[id]', g).forEach((x) => x.removeAttribute('id'))
+      Object.assign(g.style, { left: r.left + 'px', top: r.top + 'px', width: r.width + 'px' }); g.style.setProperty('--sens', sens)
+      g.style.setProperty('--accent', getComputedStyle(o).getPropertyValue('--accent'))
+      document.body.appendChild(g); setTimeout(() => g.remove(), 380)
+    }
+    c.style.setProperty('--sens', sens)
+    zone.innerHTML = html; zone.classList.remove('glisse'); void zone.offsetWidth; zone.classList.add('glisse')
+    if (bouge) {
+      const h1 = c.offsetHeight; c.style.height = h0 + 'px'; void c.offsetWidth
+      c.classList.add('respire'); c.style.height = h1 + 'px'
+      clearTimeout(ecran.t); ecran.t = setTimeout(() => { c.style.height = ''; c.classList.remove('respire') }, 560)
+    }
+  }
+  const coche = () => '<svg class="coche" viewBox="0 0 52 52"><circle cx="26" cy="26" r="23"/><path d="M15 27l7.5 7.5L37 19"/></svg>'
+  const I = { at: '', mdp: '' }
+  let D = null                                   // what this computer already has (setup.detect), asked once
+  const detecte = async () => D || (D = await H.setup.detect())
+  const norm = (v) => v.trim().replace(/^@+/, '').toLowerCase()
+  const champAt = (v) => `<label class="champ champ-at"><span>@</span><input id="p-at" placeholder="yourname" autocomplete="username" autocapitalize="off" spellcheck="false" maxlength="21" value="${esc(v)}"></label>`
+
+  // 1. your @
+  const creer = (sens) => {
+    ecran(`<div class="grande-tete">${tete()}</div><h2>pick your @</h2><p>Your name on root-harness. The first to take it keeps it.</p>
+      ${champAt(I.at)}<div class="indice" id="p-indice"></div>
+      <div class="rangee" style="border:0;padding-top:12px"><div style="flex:1"><div>Friends can find me</div><div class="d">Your @ and your card are public, your messages stay sealed.</div></div><span class="inter${I.trouvable === false ? '' : ' on'}" id="p-trouve"></span></div>
+      <div class="err" id="p-err"></div><button class="bouton plein" id="p-go">Continue</button><span class="lien" id="p-deja">I already have an account</span>`, 0, sens)
+    $('#p-trouve').onclick = () => { I.trouvable = $('#p-trouve').classList.toggle('on') }
+    const verifie = () => { const v = norm(val('p-at')), ok = /^[a-z0-9_]{3,20}$/.test(v), ind = $('#p-indice')
+      ind.classList.toggle('bon', ok)
+      ind.textContent = ok ? '@' + v + ' looks good' : /[^a-z0-9_]/.test(v) ? 'only letters, digits or _' : '3 to 20 letters, digits or _'
+      return ok ? v : '' }
+    $('#p-at').oninput = verifie; verifie()
+    const go = () => { const v = verifie(); if (!v) return erreur('Your @ needs 3 to 20 letters, digits or _.'); I.at = v; motDePasse() }
+    $('#p-go').onclick = go; entree(['p-at'], go); $('#p-deja').onclick = connecter; $('#p-at').focus()
+  }
+
+  // 2. the password, then the account is made and the @ taken
   const force = (m) => { let n = 0; if (m.length >= 10) n++; if (m.length >= 14) n++; if (m.length >= 20) n++
     if (/[a-z]/.test(m) && /[A-Z]/.test(m)) n += .5; if (/\d/.test(m)) n += .5; if (/[^\w\s]/.test(m)) n += .5; if (/\s/.test(m)) n += .5
     if (/^(.)\1+$|password|azerty|qwerty|123456/i.test(m)) n = 0; return Math.min(4, n) }
-  const motDePasse = () => {
-    ecran(`${points(1)}<h2>a strong password</h2><p>It locks your account on every device. A short sentence you remember works best.</p>
+  const motDePasse = (sens) => {
+    ecran(`<h2>a strong password</h2><p>It locks your account on every device. A short sentence you remember works best.</p>
       <input class="champ" id="p-mdp" type="password" placeholder="password (10+ characters)" autocomplete="new-password">
       <div class="force"><i id="p-force"></i></div><div class="force-t" id="p-force-t"></div>
       <input class="champ" id="p-mdp2" type="password" placeholder="same password again" autocomplete="new-password">
-      <div class="err" id="p-err"></div><div class="barre" id="p-barre"><i></i></div><button class="bouton plein" id="p-go">Create my account</button><span class="lien" id="p-ret">Back</span>`)
+      <div class="err" id="p-err"></div><div class="barre" id="p-barre"><i></i></div><button class="bouton plein" id="p-go">Create my account</button><span class="lien" id="p-ret">Back</span>`, 1, sens)
     $('#p-mdp').oninput = () => { const f = force(val('p-mdp')), b = $('#p-force'); b.style.width = (f / 4 * 100) + '%'
       b.style.background = ['#f87171', '#f87171', '#f0b35a', '#6fd4b6', '#6fd4b6'][Math.floor(f)]
       $('#p-force-t').textContent = val('p-mdp') ? ['too weak', 'weak', 'okay', 'strong', 'excellent'][Math.floor(f)] : '' }
     const go = async () => { if (force(val('p-mdp')) < 2) return erreur('Make it a bit longer: a short sentence is perfect.')
-      occupe('Creating your account...'); const r = await H.account.create(I.pseudo, val('p-mdp'), val('p-mdp2')); libre()
-      if (r.error) return erreur(r.error); I.mdp = val('p-mdp'); if (I.trouvable === false) await H.account.setFindable(false); kit() }
-    $('#p-go').onclick = go; entree(['p-mdp', 'p-mdp2'], go); $('#p-ret').onclick = creer; $('#p-mdp').focus()
+      occupe('Creating your account...'); const r = await H.account.create(I.at, val('p-mdp'), val('p-mdp2'))
+      if (r.error) { libre(); return erreur(r.error) }
+      I.mdp = val('p-mdp'); if (I.trouvable === false) await H.account.setFindable(false)
+      $('#p-go').textContent = 'Taking @' + I.at + '...'; const a = await prendre(I.at); libre()
+      a.ok ? pris() : autreAt(a.error) }
+    $('#p-go').onclick = go; entree(['p-mdp', 'p-mdp2'], go); $('#p-ret').onclick = () => creer(-1); $('#p-mdp').focus()
   }
-  const kit = async () => {
+  const prendre = async (at) => {
+    try { const x = await H.network.claimAt(at); return x && !x.error ? { ok: true } : { error: (x && x.error) || 'Not taken.' } }
+    catch (e) { return { error: e.message || 'The network did not answer.' } }
+  }
+  const pris = () => {                            // a beat to see it is yours, then the recovery kit
+    ecran(`${coche()}<h2>@${esc(I.at)} is yours</h2><p>Nobody else can show it.</p>`, 1)
+    setTimeout(() => kit(), calme() ? 600 : 1500)
+  }
+  const autreAt = (pourquoi) => {
+    ecran(`<h2>pick another @</h2><p>${esc(pourquoi)}</p>${champAt(I.at)}
+      <div class="err" id="p-err"></div><button class="bouton plein" id="p-go">Take it</button><span class="lien" id="p-plus-tard">Choose later, in my profile</span>`, 1)
+    const go = async () => { const v = norm(val('p-at')); if (!/^[a-z0-9_]{3,20}$/.test(v)) return erreur('3 to 20 letters, digits or _.')
+      occupe('Taking @' + v + '...'); const a = await prendre(v); libre(); if (!a.ok) return erreur(a.error); I.at = v; pris() }
+    $('#p-go').onclick = go; entree(['p-at'], go); $('#p-plus-tard').onclick = () => kit(); $('#p-at').select()
+  }
+
+  // 3. the recovery kit
+  const kit = async (sens) => {
     const r = await H.account.recoveryWords(I.mdp); const mots = r.words || []
-    ecran(`${points(2)}<h2>your recovery kit</h2><p>These 24 words are your account. Write them on paper and keep them safe: they bring everything back if you forget your password. Never share them.</p>
-      <div class="mots">${mots.map((m, i) => `<span><em>${i + 1}</em>${esc(m)}</span>`).join('')}</div>
-      <button class="bouton plein" id="p-go">I wrote them down</button>`)
+    ecran(`<h2>your recovery kit</h2><p>These 24 words are your account. Write them on paper and keep them safe: they bring everything back if you forget your password. Never share them.</p>
+      <div class="mots">${mots.map((m, i) => `<span style="--i:${i}"><em>${i + 1}</em>${esc(m)}</span>`).join('')}</div>
+      <button class="bouton plein" id="p-go">I wrote them down</button>`, 2, sens)
     $('#p-go').onclick = () => verifier(mots)
   }
   const verifier = (mots) => {
     const a = Math.floor(Math.random() * 12), b = 12 + Math.floor(Math.random() * 12)
-    ecran(`${points(2)}<h2>quick check</h2><p>Type two of your words, so we know they're safe with you.</p>
+    ecran(`<h2>quick check</h2><p>Type two of your words, so we know they're safe with you.</p>
       <input class="champ" id="p-a" placeholder="word number ${a + 1}" autocapitalize="off" autocomplete="off">
       <input class="champ" id="p-b" placeholder="word number ${b + 1}" autocapitalize="off" autocomplete="off">
-      <div class="err" id="p-err"></div><button class="bouton plein" id="p-go">Check</button><span class="lien" id="p-ret">Show my words again</span>`)
-    const go = () => { if (val('p-a').trim().toLowerCase() !== mots[a] || val('p-b').trim().toLowerCase() !== mots[b]) return erreur('Not quite: look at your paper again.'); agents() }
-    $('#p-go').onclick = go; entree(['p-a', 'p-b'], go); $('#p-ret').onclick = kit; $('#p-a').focus()
+      <div class="err" id="p-err"></div><button class="bouton plein" id="p-go">Check</button><span class="lien" id="p-ret">Show my words again</span>`, 2)
+    const go = () => { if (val('p-a').trim().toLowerCase() !== mots[a] || val('p-b').trim().toLowerCase() !== mots[b]) return erreur('Not quite: look at your paper again.'); github() }
+    $('#p-go').onclick = go; entree(['p-a', 'p-b'], go); $('#p-ret').onclick = () => kit(-1); $('#p-a').focus()
   }
+
+  // 4. GitHub, through gh's own web sign-in: its one-time code shows here
+  const github = async () => {
+    ecran(`<h2>connect GitHub</h2><p>Looking at this computer...</p>`, 3)
+    const d = await detecte()
+    if (d.github) return githubOk(d.github)
+    ecran(`<div class="logo-gh">${ico('vibe', 1.5)}</div><h2>connect GitHub</h2><p>Your projects on your profile, and vibe code from anywhere. One click, then you approve on github.com.</p>
+      <div class="err" id="p-err"></div><button class="bouton plein" id="p-go">Connect GitHub</button><span class="lien" id="p-plus-tard">Later</span>`, 3)
+    $('#p-go').onclick = lancerGithub; $('#p-plus-tard').onclick = () => agents()
+  }
+  const lancerGithub = async () => {
+    occupe('Opening github.com...'); const r = await H.setup.githubStart(); libre()
+    if (r.done) return githubOk(r.login)
+    if (r.error === 'gh_missing') {
+      ecran(`<h2>one tool first</h2><p>root-harness talks to GitHub through its official tool, <b>gh</b>. Install it in a terminal, then come back:</p>
+        <div class="commande">brew install gh</div><div class="err" id="p-err"></div><button class="bouton plein" id="p-go">Done, connect GitHub</button><span class="lien" id="p-plus-tard">Later</span>`, 3)
+      $('#p-go').onclick = lancerGithub; $('#p-plus-tard').onclick = () => agents(); return
+    }
+    if (r.error) return erreur(r.error)
+    ecran(`<h2>approve on github.com</h2><p>GitHub opened in your browser. Type this code there:</p>
+      <div class="code-gh">${[...r.code].map((x, i) => `<span style="--i:${i}">${esc(x)}</span>`).join('')}</div>
+      <button class="bouton" id="p-copier">${ico('copie')} copy the code</button>
+      <div class="attend"><i></i>waiting for GitHub</div><div class="err" id="p-err"></div>
+      <a class="lien" href="${esc(r.url)}" target="_blank" rel="noopener">Open github.com again</a><span class="lien" id="p-plus-tard">Later</span>`, 3)
+    $('#p-copier').onclick = async () => { await H.copy(r.code); toast('Code copied') }
+    $('#p-plus-tard').onclick = () => agents()
+    const tour = async () => {
+      if (!$('#p-copier')) return                 // another screen now: stop asking
+      const s = await H.setup.githubStatus().catch(() => ({}))
+      if (!$('#p-copier')) return
+      if (s.done) return githubOk(s.login)
+      if (s.failed) { await github(); return erreur('The code expired or was refused: try again.') }
+      setTimeout(tour, 2000)
+    }
+    setTimeout(tour, 2500)
+  }
+  const githubOk = (login) => {
+    D = { ...(D || {}), github: login }
+    ecran(`${coche()}<h2>GitHub connected</h2><p>Signed in as <b>${esc(login)}</b>.</p>`, 3)
+    setTimeout(() => agents(), calme() ? 600 : 1500)
+  }
+
+  // 5. your agents: Claude through your own account, one key pasted for the others
+  const FOURNISSEURS = [['ANTHROPIC_API_KEY', 'Anthropic', 'sk-ant-...'], ['DEEPSEEK_API_KEY', 'DeepSeek', 'sk-...'], ['NEBIUS_API_KEY', 'Nebius', 'key for Kimi, GLM, Qwen']]
   const agents = async () => {
-    ecran(`${points(3)}<h2>your agents</h2><p>Looking at this computer...</p>`)
-    const d = await H.setup.detect()
+    const d = await detecte(), cl = d.claude || {}
     const ligne = (ok, t, m) => `<div class="rangee"><span class="puce ${ok ? 'oui' : ''}">${ok ? '✓' : '·'}</span><div><div>${t}</div><div class="d">${m}</div></div></div>`
-    const cles = [['ANTHROPIC_API_KEY', 'Anthropic API key', 'sk-ant-...'], ['DEEPSEEK_API_KEY', 'DeepSeek', 'sk-...'], ['NEBIUS_API_KEY', 'Nebius (Kimi, GLM, Qwen)', 'key']]
-    ecran(`${points(3)}<h2>your agents</h2><p>What's already here is ready. Add a key only if you use that agent: you can skip.</p>
-      ${ligne(d.claude.signed_in, 'Claude Agent', d.claude.signed_in ? 'ready, with your Claude account' + (d.claude.plan ? ' (' + esc(d.claude.plan) + ')' : '') : d.claude.installed ? 'open a terminal and run <code>claude</code> once to sign in' : 'install Claude Code, then run <code>claude</code> once')}
-      ${ligne(d.ollama > 0, 'Ollama', d.ollama ? d.ollama + ' local models, free and offline' : 'optional: free models on your computer, ollama.com')}
-      ${ligne(!!d.github, 'GitHub', d.github ? 'signed in as ' + esc(d.github) : 'optional, for vibe code: run <code>gh auth login</code>')}
-      ${cles.map(([k, t, ph]) => d.keys[k] ? ligne(true, t, 'key saved') : `<div class="rangee"><span class="puce">·</span><div style="flex:1"><div>${t}</div><input class="champ cle" data-k="${k}" type="password" placeholder="${ph} (optional)" autocomplete="off"></div></div>`).join('')}
-      <div class="err" id="p-err"></div><button class="bouton plein" id="p-go">Continue</button>`)
-    $('#p-go').onclick = async () => { for (const x of $$('.cle', c)) if (x.value.trim() && !(await H.setup.key(x.dataset.k, x.value.trim()))) return erreur('This key does not look right.'); extras(d) }
+    let choix = (FOURNISSEURS.find(([k]) => !d.keys[k]) || FOURNISSEURS[0])[0]
+    const ph = (k) => FOURNISSEURS.find((f) => f[0] === k)[2]
+    ecran(`<h2>your agents</h2><p>Claude works with your own Claude account. For the others, paste a key now: they're ready the moment you open the app.</p>
+      ${ligne(cl.signed_in, 'Claude Agent', cl.signed_in ? 'ready, with your Claude account' + (cl.plan ? ' (' + esc(cl.plan) + ')' : '') : cl.installed ? 'open a terminal and run <code>claude</code> once to sign in' : 'install Claude Code, then run <code>claude</code> once')}
+      ${d.ollama ? ligne(true, 'Ollama', d.ollama + ' local models, free and offline') : ''}
+      ${FOURNISSEURS.filter(([k]) => d.keys[k]).map(([, t]) => ligne(true, t, 'key saved')).join('')}
+      <div class="cle-zone"><div class="choix-cle">${FOURNISSEURS.map(([k, t]) => `<button class="puce-choix${k === choix ? ' on' : ''}" data-k="${k}">${t}</button>`).join('')}</div>
+      <input class="champ" id="p-cle" type="password" placeholder="${ph(choix)}" autocomplete="off" spellcheck="false"></div>
+      <div class="err" id="p-err"></div><button class="bouton plein" id="p-go">Continue</button><span class="lien" id="p-plus-tard">No key for now</span>`, 4)
+    const choisir = (k) => { choix = k; $$('.puce-choix', c).forEach((b) => b.classList.toggle('on', b.dataset.k === k)); $('#p-cle').placeholder = ph(k) }
+    $$('.puce-choix', c).forEach((b) => b.onclick = () => choisir(b.dataset.k))
+    $('#p-cle').oninput = () => { if (val('p-cle').trim().startsWith('sk-ant-')) choisir('ANTHROPIC_API_KEY') }
+    const go = async () => { const v = val('p-cle').trim()
+      if (v) { occupe('Saving your key...'); const ok = await H.setup.key(choix, v); libre(); if (!ok) return erreur('This key does not look right.'); d.keys[choix] = true }
+      extras() }
+    $('#p-go').onclick = go; entree(['p-cle'], go); $('#p-plus-tard').onclick = () => extras()
   }
-  const extras = (d) => {
+
+  // 6. a few extras, then you're in
+  const extras = () => {
+    const d = D || {}
     const L = [['tel', 'Use from my phone', 'Your phone drives this computer\'s agents, sealed.'],
       ...(d.github ? [['vibe', 'Vibe code from anywhere', 'A private workshop on your GitHub: Claude builds your ideas, computer off.'],
         ['ghtel', 'GitHub on my phone', 'Vibe code from the phone with your GitHub sign-in, kept sealed.']] : []),
       ['fond', 'My own background', 'Pick a picture for your root-harness.']]
-    ecran(`${points(4)}<h2>a few extras</h2><p>One tap each, all optional. You can change them later in Settings.</p>
+    ecran(`<h2>a few extras</h2><p>One tap each, all optional. You can change them later in Settings.</p>
       ${L.map(([k, t, m]) => `<div class="rangee"><div style="flex:1"><div>${t}</div><div class="d">${m}</div></div><span class="inter" data-x="${k}"></span></div>`).join('')}
-      <div class="err" id="p-err"></div><button class="bouton plein" id="p-go">Finish</button>`)
+      <div class="err" id="p-err"></div><button class="bouton plein" id="p-go">Finish</button>`, 5)
     $$('[data-x]', c).forEach((x) => x.onclick = async () => {
       const on = !x.classList.contains('on'), k = x.dataset.x
       if (k === 'fond') { await H.chooseBackground(); fond(); x.classList.add('on'); return }
@@ -189,13 +328,13 @@ async function porte() {
       if (r && r.error) { x.classList.remove('on'); erreur(r.error) }
       else if (k === 'vibe' && on) $('#p-err').textContent = 'Workshop ready. Two keys to add once, from Settings, Vibe code.'
     })
-    $('#p-go').onclick = bienvenue
+    $('#p-go').onclick = () => bienvenue()
   }
   const bienvenue = async () => {
-    const st2 = await H.account.state()
-    ecran(`<div class="grande-tete">${tete()}</div><h2>all set, ${esc(I.pseudo)}</h2><p>Your account is yours, on your devices. Here's your ID: give it to your friends and colleagues, or let them scan it.</p>
-      <div class="mon-id">${esc(st2.id || '')}</div><div class="qr">${qr(st2.id || '')}</div>
-      <button class="bouton plein" id="p-go">Open root-harness</button>`)
+    const st2 = await H.account.state(), at = st2.at || ''
+    ecran(`<div class="grande-tete">${tete()}</div><h2>all set${at ? ', @' + esc(at) : ''}</h2><p>Everything is ready. Give your ${at ? '@' : 'ID'} to your friends, or let them scan this.</p>
+      ${at ? `<div class="mon-at">@${esc(at)}</div>` : ''}<div class="mon-id">${esc(st2.id || '')}</div><div class="qr">${qr(st2.id || '')}</div>
+      <button class="bouton plein" id="p-go">Open root-harness</button>`, ETAPES)
     $('#p-go').onclick = fini
   }
   const parMots = () => {
@@ -318,7 +457,11 @@ function bulleMoi(text, thumbs, fil = '#c-fil') {
   const v = (thumbs || []).length ? `<div class="vignettes">${thumbs.map((t) => `<img src="${t}">`).join('')}</div>` : ''
   ajouter(`<div class="msg moi">${v}${esc(text)}</div>`, fil)
 }
-function bulleAgent(text, fil = '#c-fil') { return ajouter(`<div class="msg agent">${tete()}<div class="corps">${riche(text)}</div></div>`, fil) }
+function bulleAgent(text, fil = '#c-fil') {
+  const n = ajouter(`<div class="msg agent">${tete()}<div class="corps">${riche(text)}<button class="copier-msg" title="Copy">${ico('copie')}</button></div></div>`, fil)
+  $('.copier-msg', n).onclick = async () => { try { await H.copy(text); toast('Copied') } catch { toast("Couldn't copy.") } }
+  return n
+}
 
 async function envoyer() {
   const ta = $('#c-entree'), t = ta.value.trim()
@@ -751,7 +894,7 @@ function feuilleMot() {
   let cat = 'agents'; $$('[data-c]', f).forEach((b) => b.onclick = () => { cat = b.dataset.c; $$('[data-c]', f).forEach((x) => x.classList.toggle('vert', x === b)) })
   $('#m-ok', f).onclick = async () => { const r = await H.glossary.add($('#m-t', f).value, $('#m-d', f).value, cat); if (!r || r.error) return ($('#m-err', f).textContent = (r && r.error) || 'Not added.'); fermerFeuille(); vueEncyclo() }
 }
-function pastilleEncyclo(on) { const b = $('.onglet[data-v="encyclo"]'); let p = $('.pastille', b); if (on && !p) { p = document.createElement('span'); p.className = 'pastille'; b.appendChild(p) } else if (!on && p) p.remove() }
+function pastilleEncyclo(on) { const b = $('.sous-onglet[data-v="encyclo"]'); if (!b) return; let p = $('.pastille', b); if (on && !p) { p = document.createElement('span'); p.className = 'pastille'; b.appendChild(p) } else if (!on && p) p.remove() }
 
 // =====================================================================================
 // settings

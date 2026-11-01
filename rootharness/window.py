@@ -20,6 +20,7 @@ import uuid
 import sys
 import subprocess
 import threading
+import webbrowser
 from pathlib import Path
 
 import webview
@@ -395,11 +396,7 @@ class Api:
             out["ollama"] = len(brains.models(brains.by_id("ollama")))
         except Exception:
             pass
-        try:
-            out["github"] = json.loads(subprocess.run(["gh", "api", "user"], capture_output=True, text=True,
-                                                      timeout=15).stdout or "{}").get("login")
-        except (OSError, subprocess.SubprocessError, ValueError):
-            pass
+        out["github"] = _gh_login()
         return out
 
     def setup_key(self, name: str, value: str):
@@ -408,6 +405,44 @@ class Api:
         if ok and self.sync:
             self.sync.dirty()
         return ok
+
+    def setup_github_start(self):
+        """Sign-up's "Connect GitHub": gh's own web sign-in, its one-time code shown in the app."""
+        login = _gh_login()
+        if login:
+            return {"done": True, "login": login}
+        if not shutil.which("gh"):
+            return {"error": "gh_missing"}
+        p = getattr(self, "_gh_proc", None)
+        if p is not None and p.poll() is None:
+            return {"code": self._gh_code, "url": GH_DEVICE}
+        env = {**os.environ, "GH_BROWSER": "true", "BROWSER": "true"}   # the app opens the page itself
+        p = subprocess.Popen(["gh", "auth", "login", "--hostname", "github.com", "--git-protocol", "https", "--web", "--skip-ssh-key"],
+                             stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=env)
+        code = ""
+        for line in p.stdout:                    # gh prints its code within a second or two, or exits
+            m = re.search(r"\b([A-Z0-9]{4}-[A-Z0-9]{4})\b", line)
+            if m:
+                code = m.group(1)
+                break
+        if not code:
+            p.kill()
+            return {"error": "GitHub did not answer. Check your internet and try again."}
+        self._gh_proc, self._gh_code = p, code
+        threading.Thread(target=p.communicate, daemon=True).start()   # drain gh while it waits for you
+        webbrowser.open(GH_DEVICE)
+        return {"code": code, "url": GH_DEVICE}
+
+    def setup_github_status(self):
+        """Polled by sign-up while you approve the code on github.com."""
+        p = getattr(self, "_gh_proc", None)
+        if p is not None and p.poll() is None:
+            return {"done": False}
+        login = _gh_login()
+        if login:
+            subprocess.run(["gh", "auth", "setup-git"], capture_output=True, timeout=15)
+            return {"done": True, "login": login}
+        return {"done": False, "failed": p is not None}
 
     def account_unlock(self, password: str):
         keys = account.unlock(password)
@@ -1382,10 +1417,23 @@ The conversation:
         conversations.update(self.conv, **fields)
 
 
+GH_DEVICE = "https://github.com/login/device"
+
+
+def _gh_login() -> str | None:
+    """Who gh is signed in as on this computer, or None."""
+    try:
+        return json.loads(subprocess.run(["gh", "api", "user"], capture_output=True, text=True,
+                                         timeout=15).stdout or "{}").get("login")
+    except (OSError, subprocess.SubprocessError, ValueError):
+        return None
+
+
 def start():
     api = Api()
     window = webview.create_window(
-        "root-harness", str(UI), js_api=api, width=1100, height=760, min_size=(380, 560), background_color="#11131c")
+        "root-harness", str(UI), js_api=api, width=1100, height=760, min_size=(380, 560), background_color="#11131c",
+        text_select=True)  # pywebview blocks selection by default: the agents' answers must be copyable
     api.bind(window)
     _dock_icon()
     webview.start()

@@ -21,6 +21,7 @@ for (const c of cibles) {
   copyFileSync('style.css', c.out + '/style.css')
   writeFileSync(c.out + '/index.html', page(c.head))
   copyFileSync('assets/root-head.svg', c.out + '/root-head.svg')
+  for (const f of ['porte.jpg', 'porte-1.jpg', 'porte-2.jpg', 'porte-3.jpg', 'porte-4.jpg', 'porte-5.jpg']) copyFileSync('assets/' + f, c.out + '/' + f)
   if (c.entry === 'host-computer.js') copyFileSync('../mobile/dist/icon-512.png', c.out + '/icon.png')
   else copyFileSync('assets/sw.js', c.out + '/sw.js')
 }

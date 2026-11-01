@@ -4981,6 +4981,358 @@
    "ja": "キャンセル",
    "pt": "Cancelar",
    "zh": "取消"
+  },
+  "3 to 20 letters, digits or _": {
+   "de": "3 bis 20 Buchstaben, Ziffern oder _",
+   "es": "De 3 a 20 letras, cifras o _",
+   "fr": "3 à 20 lettres, chiffres ou _",
+   "ja": "3〜20文字の英字、数字、_",
+   "pt": "De 3 a 20 letras, números ou _",
+   "zh": "3 到 20 个字母、数字或 _"
+  },
+  "pick your @": {
+   "de": "wähle dein @",
+   "es": "elige tu @",
+   "fr": "choisis ton @",
+   "ja": "@ を選ぶ",
+   "pt": "escolha seu @",
+   "zh": "选择你的 @"
+  },
+  "Your name on root-harness. The first to take it keeps it.": {
+   "de": "Dein Name auf root-harness. Wer ihn zuerst nimmt, behält ihn.",
+   "es": "Tu nombre en root-harness. Quien lo toma primero se lo queda.",
+   "fr": "Ton nom sur root-harness. Le premier qui le prend le garde.",
+   "ja": "root-harness でのあなたの名前。最初に取った人のものになります。",
+   "pt": "Seu nome no root-harness. Quem pegar primeiro fica com ele.",
+   "zh": "你在 root-harness 上的名字。先到先得。"
+  },
+  "Friends can find me": {
+   "de": "Freunde können mich finden",
+   "es": "Mis amigos pueden encontrarme",
+   "fr": "Mes amis peuvent me trouver",
+   "ja": "友達が私を見つけられる",
+   "pt": "Amigos podem me encontrar",
+   "zh": "朋友可以找到我"
+  },
+  "Your @ and your card are public, your messages stay sealed.": {
+   "de": "Dein @ und deine Karte sind öffentlich, deine Nachrichten bleiben versiegelt.",
+   "es": "Tu @ y tu tarjeta son públicos, tus mensajes siguen sellados.",
+   "fr": "Ton @ et ta carte sont publics, tes messages restent scellés.",
+   "ja": "@ とカードは公開、メッセージは封印されたままです。",
+   "pt": "Seu @ e seu cartão são públicos, suas mensagens continuam seladas.",
+   "zh": "你的 @ 和名片是公开的,消息始终加密。"
+  },
+  "yourname": {
+   "de": "deinname",
+   "es": "tunombre",
+   "fr": "tonnom",
+   "ja": "yourname",
+   "pt": "seunome",
+   "zh": "yourname"
+  },
+  "only letters, digits or _": {
+   "de": "nur Buchstaben, Ziffern oder _",
+   "es": "solo letras, números o _",
+   "fr": "seulement des lettres, chiffres ou _",
+   "ja": "英字・数字・_ のみ",
+   "pt": "apenas letras, números ou _",
+   "zh": "只能使用字母、数字或 _"
+  },
+  "Your @ needs 3 to 20 letters, digits or _.": {
+   "de": "Dein @ braucht 3 bis 20 Buchstaben, Ziffern oder _.",
+   "es": "Tu @ necesita de 3 a 20 letras, números o _.",
+   "fr": "Ton @ doit faire 3 à 20 lettres, chiffres ou _.",
+   "ja": "@ は英字・数字・_ で 3〜20 文字にしてください。",
+   "pt": "Seu @ precisa de 3 a 20 letras, números ou _.",
+   "zh": "你的 @ 需要 3 到 20 个字母、数字或 _。"
+  },
+  "Nobody else can show it.": {
+   "de": "Niemand sonst kann ihn zeigen.",
+   "es": "Nadie más puede mostrarlo.",
+   "fr": "Personne d'autre ne peut l'afficher.",
+   "ja": "ほかの誰も表示できません。",
+   "pt": "Ninguém mais pode exibi-lo.",
+   "zh": "其他人无法使用它。"
+  },
+  "pick another @": {
+   "de": "wähle ein anderes @",
+   "es": "elige otro @",
+   "fr": "choisis un autre @",
+   "ja": "別の @ を選ぶ",
+   "pt": "escolha outro @",
+   "zh": "换一个 @"
+  },
+  "Choose later, in my profile": {
+   "de": "Später wählen, in meinem Profil",
+   "es": "Elegir más tarde, en mi perfil",
+   "fr": "Choisir plus tard, dans mon profil",
+   "ja": "あとでプロフィールで選ぶ",
+   "pt": "Escolher depois, no meu perfil",
+   "zh": "稍后在我的个人资料中选择"
+  },
+  "Not taken.": {
+   "de": "Nicht reserviert.",
+   "es": "No reservado.",
+   "fr": "Pas réservé.",
+   "ja": "取得できませんでした。",
+   "pt": "Não reservado.",
+   "zh": "未能占用。"
+  },
+  "The network did not answer.": {
+   "de": "Das Netzwerk hat nicht geantwortet.",
+   "es": "La red no respondió.",
+   "fr": "Le réseau n'a pas répondu.",
+   "ja": "ネットワークから応答がありません。",
+   "pt": "A rede não respondeu.",
+   "zh": "网络没有响应。"
+  },
+  "connect GitHub": {
+   "de": "GitHub verbinden",
+   "es": "conecta GitHub",
+   "fr": "connecte GitHub",
+   "ja": "GitHub を接続",
+   "pt": "conecte o GitHub",
+   "zh": "连接 GitHub"
+  },
+  "Your projects on your profile, and vibe code from anywhere. One click, then you approve on github.com.": {
+   "de": "Deine Projekte auf deinem Profil und Vibe Code von überall. Ein Klick, dann bestätigst du auf github.com.",
+   "es": "Tus proyectos en tu perfil y vibe code desde cualquier lugar. Un clic y luego apruebas en github.com.",
+   "fr": "Tes projets sur ton profil, et le vibe code de n'importe où. Un clic, puis tu valides sur github.com.",
+   "ja": "プロフィールにプロジェクトを、どこからでも Vibe code を。ワンクリックして github.com で承認します。",
+   "pt": "Seus projetos no seu perfil e vibe code de qualquer lugar. Um clique e depois você aprova no github.com.",
+   "zh": "在个人资料中展示你的项目,随时随地 vibe code。点一下,然后在 github.com 上批准。"
+  },
+  "Connect GitHub": {
+   "de": "GitHub verbinden",
+   "es": "Conectar GitHub",
+   "fr": "Connecter GitHub",
+   "ja": "GitHub を接続",
+   "pt": "Conectar GitHub",
+   "zh": "连接 GitHub"
+  },
+  "Later": {
+   "de": "Später",
+   "es": "Más tarde",
+   "fr": "Plus tard",
+   "ja": "あとで",
+   "pt": "Depois",
+   "zh": "稍后"
+  },
+  "Opening github.com...": {
+   "de": "github.com wird geöffnet...",
+   "es": "Abriendo github.com...",
+   "fr": "Ouverture de github.com...",
+   "ja": "github.com を開いています...",
+   "pt": "Abrindo github.com...",
+   "zh": "正在打开 github.com..."
+  },
+  "one tool first": {
+   "de": "zuerst ein Werkzeug",
+   "es": "primero, una herramienta",
+   "fr": "d'abord un outil",
+   "ja": "まずツールをひとつ",
+   "pt": "primeiro, uma ferramenta",
+   "zh": "先装一个工具"
+  },
+  "root-harness talks to GitHub through its official tool,": {
+   "de": "root-harness spricht mit GitHub über dessen offizielles Werkzeug,",
+   "es": "root-harness habla con GitHub mediante su herramienta oficial,",
+   "fr": "root-harness parle à GitHub par son outil officiel,",
+   "ja": "root-harness は公式ツール",
+   "pt": "root-harness fala com o GitHub pela ferramenta oficial,",
+   "zh": "root-harness 通过官方工具"
+  },
+  ". Install it in a terminal, then come back:": {
+   "de": ". Installiere es in einem Terminal und komm dann zurück:",
+   "es": ". Instálala en una terminal y vuelve:",
+   "fr": ". Installe-le dans un terminal, puis reviens :",
+   "ja": " で GitHub と通信します。ターミナルでインストールしてから戻ってきてください:",
+   "pt": ". Instale no terminal e depois volte:",
+   "zh": " 与 GitHub 通信。请在终端中安装它,然后回来:"
+  },
+  "Done, connect GitHub": {
+   "de": "Erledigt, GitHub verbinden",
+   "es": "Listo, conectar GitHub",
+   "fr": "C'est fait, connecter GitHub",
+   "ja": "完了、GitHub を接続",
+   "pt": "Pronto, conectar GitHub",
+   "zh": "好了,连接 GitHub"
+  },
+  "approve on github.com": {
+   "de": "auf github.com bestätigen",
+   "es": "aprueba en github.com",
+   "fr": "valide sur github.com",
+   "ja": "github.com で承認",
+   "pt": "aprove no github.com",
+   "zh": "在 github.com 上批准"
+  },
+  "GitHub opened in your browser. Type this code there:": {
+   "de": "GitHub hat sich in deinem Browser geöffnet. Gib dort diesen Code ein:",
+   "es": "GitHub se abrió en tu navegador. Escribe este código allí:",
+   "fr": "GitHub s'est ouvert dans ton navigateur. Tape ce code là-bas :",
+   "ja": "ブラウザで GitHub が開きました。このコードを入力してください:",
+   "pt": "O GitHub abriu no seu navegador. Digite este código lá:",
+   "zh": "GitHub 已在浏览器中打开。请在那里输入此代码:"
+  },
+  "copy the code": {
+   "de": "Code kopieren",
+   "es": "copiar el código",
+   "fr": "copier le code",
+   "ja": "コードをコピー",
+   "pt": "copiar o código",
+   "zh": "复制代码"
+  },
+  "waiting for GitHub": {
+   "de": "warte auf GitHub",
+   "es": "esperando a GitHub",
+   "fr": "en attente de GitHub",
+   "ja": "GitHub を待っています",
+   "pt": "aguardando o GitHub",
+   "zh": "正在等待 GitHub"
+  },
+  "Open github.com again": {
+   "de": "github.com erneut öffnen",
+   "es": "Abrir github.com de nuevo",
+   "fr": "Rouvrir github.com",
+   "ja": "github.com をもう一度開く",
+   "pt": "Abrir o github.com de novo",
+   "zh": "再次打开 github.com"
+  },
+  "Code copied": {
+   "de": "Code kopiert",
+   "es": "Código copiado",
+   "fr": "Code copié",
+   "ja": "コードをコピーしました",
+   "pt": "Código copiado",
+   "zh": "代码已复制"
+  },
+  "The code expired or was refused: try again.": {
+   "de": "Der Code ist abgelaufen oder wurde abgelehnt: versuch es noch einmal.",
+   "es": "El código caducó o fue rechazado: inténtalo de nuevo.",
+   "fr": "Le code a expiré ou a été refusé : réessaie.",
+   "ja": "コードの有効期限が切れたか、拒否されました。もう一度お試しください。",
+   "pt": "O código expirou ou foi recusado: tente de novo.",
+   "zh": "代码已过期或被拒绝:请重试。"
+  },
+  "GitHub connected": {
+   "de": "GitHub verbunden",
+   "es": "GitHub conectado",
+   "fr": "GitHub connecté",
+   "ja": "GitHub に接続しました",
+   "pt": "GitHub conectado",
+   "zh": "GitHub 已连接"
+  },
+  "Signed in as": {
+   "de": "Angemeldet als",
+   "es": "Sesión iniciada como",
+   "fr": "Connecté en tant que",
+   "ja": "ログイン中:",
+   "pt": "Conectado como",
+   "zh": "已登录为"
+  },
+  "GitHub did not answer. Check your internet and try again.": {
+   "de": "GitHub hat nicht geantwortet. Prüfe deine Internetverbindung und versuch es noch einmal.",
+   "es": "GitHub no respondió. Revisa tu conexión e inténtalo de nuevo.",
+   "fr": "GitHub n'a pas répondu. Vérifie ta connexion et réessaie.",
+   "ja": "GitHub から応答がありません。接続を確認して、もう一度お試しください。",
+   "pt": "O GitHub não respondeu. Verifique sua internet e tente de novo.",
+   "zh": "GitHub 没有响应。请检查网络后重试。"
+  },
+  "Claude works with your own Claude account. For the others, paste a key now: they're ready the moment you open the app.": {
+   "de": "Claude arbeitet mit deinem eigenen Claude-Konto. Für die anderen füge jetzt einen Schlüssel ein: Sie sind bereit, sobald du die App öffnest.",
+   "es": "Claude funciona con tu propia cuenta de Claude. Para los demás, pega una clave ahora: estarán listos en cuanto abras la app.",
+   "fr": "Claude fonctionne avec ton propre compte Claude. Pour les autres, colle une clé maintenant : ils seront prêts dès que tu ouvres l'app.",
+   "ja": "Claude はあなた自身の Claude アカウントで動きます。ほかのエージェントは今キーを貼り付ければ、アプリを開いた瞬間から使えます。",
+   "pt": "O Claude funciona com sua própria conta Claude. Para os outros, cole uma chave agora: eles ficam prontos assim que você abrir o app.",
+   "zh": "Claude 使用你自己的 Claude 账号。其他智能体现在粘贴密钥,打开应用即可使用。"
+  },
+  "key for Kimi, GLM, Qwen": {
+   "de": "Schlüssel für Kimi, GLM, Qwen",
+   "es": "clave para Kimi, GLM, Qwen",
+   "fr": "clé pour Kimi, GLM, Qwen",
+   "ja": "Kimi・GLM・Qwen 用のキー",
+   "pt": "chave para Kimi, GLM, Qwen",
+   "zh": "Kimi、GLM、Qwen 的密钥"
+  },
+  "No key for now": {
+   "de": "Vorerst kein Schlüssel",
+   "es": "Sin clave por ahora",
+   "fr": "Pas de clé pour l'instant",
+   "ja": "今はキーなし",
+   "pt": "Sem chave por enquanto",
+   "zh": "暂时不用密钥"
+  },
+  "Saving your key...": {
+   "de": "Dein Schlüssel wird gespeichert...",
+   "es": "Guardando tu clave...",
+   "fr": "Enregistrement de ta clé...",
+   "ja": "キーを保存しています...",
+   "pt": "Salvando sua chave...",
+   "zh": "正在保存你的密钥..."
+  },
+  "all set": {
+   "de": "alles bereit",
+   "es": "todo listo",
+   "fr": "tout est prêt",
+   "ja": "準備完了",
+   "pt": "tudo pronto",
+   "zh": "一切就绪"
+  },
+  "Everything is ready. Give your @ to your friends, or let them scan this.": {
+   "de": "Alles ist bereit. Gib deinen Freunden dein @ oder lass sie das hier scannen.",
+   "es": "Todo está listo. Da tu @ a tus amigos o deja que escaneen esto.",
+   "fr": "Tout est prêt. Donne ton @ à tes amis, ou laisse-les scanner ceci.",
+   "ja": "準備が整いました。友達に @ を伝えるか、これをスキャンしてもらいましょう。",
+   "pt": "Tudo pronto. Passe seu @ para seus amigos ou deixe que escaneiem isto.",
+   "zh": "一切就绪。把你的 @ 告诉朋友,或让他们扫描这个。"
+  },
+  "Everything is ready. Give your ID to your friends, or let them scan this.": {
+   "de": "Alles ist bereit. Gib deinen Freunden deine ID oder lass sie das hier scannen.",
+   "es": "Todo está listo. Da tu ID a tus amigos o deja que escaneen esto.",
+   "fr": "Tout est prêt. Donne ton ID à tes amis, ou laisse-les scanner ceci.",
+   "ja": "準備が整いました。友達に ID を伝えるか、これをスキャンしてもらいましょう。",
+   "pt": "Tudo pronto. Passe sua ID para seus amigos ou deixe que escaneiem isto.",
+   "zh": "一切就绪。把你的 ID 告诉朋友,或让他们扫描这个。"
+  },
+  "Network": {
+   "de": "Netzwerk",
+   "es": "Red",
+   "fr": "Réseau",
+   "ja": "ネットワーク",
+   "pt": "Rede",
+   "zh": "网络"
+  },
+  "feed": {
+   "de": "Feed",
+   "es": "feed",
+   "fr": "fil",
+   "ja": "フィード",
+   "pt": "feed",
+   "zh": "动态"
+  },
+  "profile": {
+   "de": "Profil",
+   "es": "perfil",
+   "fr": "profil",
+   "ja": "プロフィール",
+   "pt": "perfil",
+   "zh": "个人资料"
+  },
+  "Copy": {
+   "de": "Kopieren",
+   "es": "Copiar",
+   "fr": "Copier",
+   "ja": "コピー",
+   "pt": "Copiar",
+   "zh": "复制"
+  },
+  "Couldn't copy.": {
+   "de": "Kopieren fehlgeschlagen.",
+   "es": "No se pudo copiar.",
+   "fr": "Impossible de copier.",
+   "ja": "コピーできませんでした。",
+   "pt": "Não foi possível copiar.",
+   "zh": "无法复制。"
   }
  },
  "patterns": [
@@ -5685,6 +6037,33 @@
    "ja": "$1 · 返信",
    "pt": "$1 · resposta",
    "zh": "$1 · 回复"
+  },
+  {
+   "en": "^@(\\S+) is yours$",
+   "de": "@$1 gehört dir",
+   "es": "@$1 es tuyo",
+   "fr": "@$1 est à toi",
+   "ja": "@$1 はあなたのものです",
+   "pt": "@$1 é seu",
+   "zh": "@$1 归你了"
+  },
+  {
+   "en": "^@(\\S+) looks good$",
+   "de": "@$1 sieht gut aus",
+   "es": "@$1 se ve bien",
+   "fr": "@$1, c'est bon",
+   "ja": "@$1 は使えます",
+   "pt": "@$1 parece bom",
+   "zh": "@$1 可以使用"
+  },
+  {
+   "en": "^Taking @(\\S+)\\.\\.\\.$",
+   "de": "@$1 wird reserviert...",
+   "es": "Reservando @$1...",
+   "fr": "Réservation de @$1...",
+   "ja": "@$1 を取得しています...",
+   "pt": "Reservando @$1...",
+   "zh": "正在占用 @$1..."
   }
  ]
 }

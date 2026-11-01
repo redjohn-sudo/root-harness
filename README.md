@@ -108,4 +108,12 @@ it, change it, share it. If you change it and offer it to others (even as an
 online service), you share your changes under the same license: nobody can lock
 it up. The name root-harness and Root's pixel head are the author's own work.
 
+The photos behind the sign-up screen come from Unsplash, under the Unsplash License:
+[Mạnh Ngô](https://unsplash.com/photos/7X-Cw-5WN9Q),
+[Seongjin Park](https://unsplash.com/photos/Y-95B4hj9Bk),
+[Dina Badamshina](https://unsplash.com/photos/zHT9jQZ6iTs),
+[jötâkå](https://unsplash.com/photos/rdm0IzLB1uo),
+[zhenzhong liu](https://unsplash.com/photos/WYxiXeupIY4) and
+[Sinem Tunalı](https://unsplash.com/photos/tJYDh6kX0IM).
+
 Copyright (C) 2026 Vincent Roumane
