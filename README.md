@@ -34,30 +34,74 @@ and your messages live on your devices, and travel sealed.
   and nobody else can show it. Your `pseudo#code` ID still works everywhere.
 - **Seven languages.** Deutsch, English, 中文, Español, Français, 日本語, Português.
 
-## Start
+## Install
 
-One line, from your terminal (or your Claude Code terminal). It picks a recent
-Python, installs root-harness, and opens it. Your Claude is connected through
-your own logged-in Claude Code: no API key to paste. If you do not have Claude
-Code yet, the installer sets it up and shows you the one login step.
+One command for your system. It needs nothing but a terminal, and the installer
+itself never asks for administrator rights.
+
+**macOS** (Terminal) and **Linux** (any terminal):
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/redjohn-sudo/root-harness/main/install.sh | bash
 ```
 
-Or by hand. Needs **Python 3.11 or newer** (on macOS the built-in `python3` is
-3.9: too old, so install a recent one, e.g. `brew install python@3.12`).
+**Windows 10 and 11** (PowerShell, from the Start menu):
+
+```powershell
+irm https://raw.githubusercontent.com/redjohn-sudo/root-harness/main/install.ps1 | iex
+```
+
+What the installer does:
+
+1. Finds a **Python 3.11 or newer** and **git**. On Windows it installs them for
+   your user with `winget` when they are missing. On macOS and Linux it never
+   uses `sudo`: if one is missing, it stops and prints the exact command for
+   your system (Homebrew, `apt`, `dnf`, `pacman` or `zypper`).
+2. Installs [Claude Code](https://claude.com/claude-code) with its official
+   installer when it is not there yet. Your Claude is connected through your own
+   logged-in Claude Code: no API key to paste. Run `claude` once to sign in
+   (a Pro, Max, Team or Console plan).
+3. Downloads root-harness to `~/root-harness` (or updates it: local edits are
+   kept aside in a backup folder), with its own private Python environment in
+   `~/root-harness/.venv`.
+4. On Linux, checks the few system libraries the window needs and prints the
+   one command that adds the missing ones.
+5. Adds root-harness where you open apps: `~/Applications` and Spotlight on
+   macOS, the app menu on Linux (and `~/.local/bin/root-harness`), the Start
+   menu and the desktop on Windows.
+6. Opens it.
+
+Your account, your memory and your settings live in `~/.root-harness`, outside
+the install folder: installing again or updating never touches them.
+
+| You have | Needed |
+|---|---|
+| macOS 11 or newer | Python 3.11+ (macOS ships 3.9: `brew install python@3.12` or [python.org](https://www.python.org/downloads/macos/)), git (`xcode-select --install`) |
+| Linux with a desktop (GNOME, KDE...) | Python 3.11+, git, a few X11/Qt libraries: the installer tells you which |
+| Windows 10 (1809+) or 11 | nothing: Python and Git come through `winget`; the window uses Microsoft Edge WebView2, built into Windows 11 |
+
+Options, set before the command (on Windows: `$env:NAME = '1'` first):
+`ROOT_HARNESS_DIR` (another install folder), `ROOT_HARNESS_NO_LAUNCH=1`
+(install without opening), `ROOT_HARNESS_SKIP_CLAUDE=1` (leave Claude Code
+alone), `ROOT_HARNESS_NO_UPDATE=1` (use the copy already in
+`ROOT_HARNESS_DIR` as it is).
+
+Or by hand, with Python 3.11 or newer:
 
 ```bash
 git clone https://github.com/redjohn-sudo/root-harness
 cd root-harness
-python3.12 -m venv .venv && .venv/bin/pip install -r requirements.txt
-.venv/bin/python app.py
+python3.12 -m venv .venv && .venv/bin/pip install -r requirements.txt   # Windows: .venv\Scripts\pip
+.venv/bin/python app.py                                                # Windows: .venv\Scripts\python app.py
 ```
 
-For Claude: install [Claude Code](https://claude.com/claude-code) and run
-`claude` once to sign in with your plan. Other agents need their key (typed
-once in the app) or a local Ollama.
+Other agents than Claude need their key (typed once in the app) or a local
+Ollama.
+
+**Tests:** `pytest -q` runs the fast tests; `python tests/smoke_gui.py` opens
+the real window for a few seconds and checks it answers (on a Linux machine
+without a screen: `xvfb-run -a python tests/smoke_gui.py`). Every push runs
+both on macOS, Linux and Windows, after installing with the scripts above.
 
 **On your phone:** in the app, Settings, *Use from my phone*: open the address
 it shows in Safari (type `http://` in full), sign in, then *Add to Home Screen*.

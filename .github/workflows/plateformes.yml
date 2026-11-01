@@ -1,0 +1,127 @@
+# Installs root-harness with its own installer on macOS, Linux and Windows, runs the
+# tests, then opens the real window once (tests/smoke_gui.py) and closes it.
+name: plateformes
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: plateformes-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  install-and-test:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    env:
+      # the installer, on the code of this commit: no clone, no Claude Code, no window
+      ROOT_HARNESS_DIR: ${{ github.workspace }}
+      ROOT_HARNESS_NO_UPDATE: "1"
+      ROOT_HARNESS_SKIP_CLAUDE: "1"
+      ROOT_HARNESS_NO_LAUNCH: "1"
+      PYTHONUNBUFFERED: "1"
+      PYTHONIOENCODING: utf-8
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # The libraries the Qt window needs, as install.sh would ask for them, plus a
+      # virtual screen.
+      - name: System libraries (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q --no-install-recommends xvfb xauth \
+            libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 \
+            libxcb-util1 libxcb-randr0 libxcb-shape0 libxcb-xkb1 libxcb-xfixes0 libxcb-sync1 \
+            libxcb-shm0 libxcb-render0 libxcb-glx0 libxcb-dri3-0 libxcb1 \
+            libxkbcommon0 libxkbcommon-x11-0 libxkbfile1 libx11-6 libx11-xcb1 \
+            libxcomposite1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxtst6 \
+            libxshmfence1 libegl1 libgl1 libgbm1 libdrm2 libnss3 libnspr4 libasound2t64 \
+            libdbus-1-3 libfontconfig1 libfreetype6 libgssapi-krb5-2 fonts-dejavu-core
+
+      - name: Install (macOS, Linux)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: bash install.sh
+
+      - name: Install (Windows PowerShell 5.1, the way irm | iex runs it)
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          Get-Content -Raw .\install.ps1 | Invoke-Expression
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if (-not (Test-Path "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\root-harness.lnk")) { throw 'no Start menu shortcut' }
+
+      - name: Installer syntax (PowerShell 7)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $errors = $null
+          [void][System.Management.Automation.Language.Parser]::ParseFile("$PWD\install.ps1", [ref]$null, [ref]$errors)
+          if ($errors) { $errors | ForEach-Object { Write-Host $_ }; exit 1 }
+
+      - name: Launcher (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          test -x ~/.local/bin/root-harness
+          grep -q '^Exec=' ~/.local/share/applications/root-harness.desktop
+          if command -v desktop-file-validate >/dev/null; then desktop-file-validate ~/.local/share/applications/root-harness.desktop; fi
+
+      - name: Launcher (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          test -x ~/Applications/root-harness.app/Contents/MacOS/root-harness
+          plutil -lint ~/Applications/root-harness.app/Contents/Info.plist
+
+      - name: Tests (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          .venv/bin/python -m pip install --quiet --disable-pip-version-check pytest
+          .venv/bin/python -m pytest -q
+
+      - name: Tests (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          .venv\Scripts\python.exe -m pip install --quiet --disable-pip-version-check pytest
+          .venv\Scripts\python.exe -m pytest -q
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Window smoke test (Linux, virtual screen)
+        if: runner.os == 'Linux'
+        env:
+          # Ubuntu 24.04 forbids the user namespaces Chromium's sandbox uses
+          QTWEBENGINE_DISABLE_SANDBOX: "1"
+          QTWEBENGINE_CHROMIUM_FLAGS: --disable-gpu
+          LIBGL_ALWAYS_SOFTWARE: "1"
+        run: xvfb-run -a -s "-screen 0 1280x900x24" .venv/bin/python tests/smoke_gui.py
+
+      - name: Window smoke test (macOS)
+        if: runner.os == 'macOS'
+        run: .venv/bin/python tests/smoke_gui.py
+
+      - name: Window smoke test (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          .venv\Scripts\python.exe tests\smoke_gui.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
