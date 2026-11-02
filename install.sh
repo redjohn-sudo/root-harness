@@ -281,13 +281,14 @@ libfontconfig.so.1|libfontconfig1|fontconfig|fontconfig|libfontconfig1
 libfreetype.so.6|libfreetype6|freetype|freetype2|libfreetype6
 libglib-2.0.so.0|libglib2.0-0|glib2|glib2|libglib-2_0-0
 libgssapi_krb5.so.2|libgssapi-krb5-2|krb5-libs|krb5|krb5
+libminizip.so.1|libminizip1|minizip-ng-compat|minizip|libminizip1
 "
 
 LDCACHE=""
 lib_present() {
   local so="$1" d
   if [ -n "$LDCACHE" ]; then
-    printf "%s\n" "$LDCACHE" | grep -qxF "$so ("
+    grep -qxF "$so (" <<< "$LDCACHE"    # a here-string: with pipefail, printf | grep -q fails when grep stops early
     return
   fi
   for d in /usr/lib64 /usr/lib /lib64 /lib "/usr/lib/$(uname -m)-linux-gnu" "/lib/$(uname -m)-linux-gnu"; do
@@ -312,7 +313,7 @@ if [ "$OS" = "Linux" ] && .venv/bin/python -c 'import importlib.util, sys; sys.e
   EXTRA="$(printf "%s\n" "$PROBE" | grep -oE 'lib[A-Za-z0-9_.+-]+\.so(\.[0-9]+)*: cannot open' | sed 's/: cannot open//' | head -n 3 || true)"
   while IFS='|' read -r so p_apt p_dnf p_pacman p_zypper; do
     [ -n "$so" ] || continue
-    if ! lib_present "$so" || printf "%s\n" "$EXTRA" | grep -qxF "$so"; then
+    if ! lib_present "$so" || grep -qxF "$so" <<< "$EXTRA"; then
       case "$PM" in
         apt) pkg="$(apt_name "$p_apt")" ;; dnf) pkg="$p_dnf" ;; pacman) pkg="$p_pacman" ;; zypper) pkg="$p_zypper" ;; *) pkg="$so" ;;
       esac
@@ -321,7 +322,7 @@ if [ "$OS" = "Linux" ] && .venv/bin/python -c 'import importlib.util, sys; sys.e
   done <<< "$QT_LIBS"
   QT_UNKNOWN=()
   for so in $EXTRA; do      # one the table does not know: name the file itself
-    if ! printf "%s\n" "$QT_LIBS" | grep -qF "$so|"; then QT_UNKNOWN+=("$so"); fi
+    if ! grep -qF "$so|" <<< "$QT_LIBS"; then QT_UNKNOWN+=("$so"); fi
   done
   if [ "${#QT_MISSING[@]}" -gt 0 ] || [ "${#QT_UNKNOWN[@]}" -gt 0 ]; then
     warn ""
