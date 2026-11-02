@@ -11,10 +11,9 @@ examples/add_your_own_tool.py.
 from __future__ import annotations
 
 import os
-import subprocess
 from pathlib import Path
 
-from . import permissions
+from . import permissions, system
 
 # The registry: name -> {desc, schema, kind, run}. The bridge reads this to
 # expose the tools to the model.
@@ -54,13 +53,14 @@ def write_file(path: str, content: str) -> str:
     return f"Wrote {len(content)} characters to {path}."
 
 
-@register("run_command", "Run a shell command and return its output.",
+@register("run_command", f"Run a shell command and return its output. It {system.shell_hint()}.",
           {"command": str})
 def run_command(command: str) -> str:
     if not permissions.ask("Run a command", {"command": command}):
         return "Denied by the user."
-    out = subprocess.run(command, shell=True, capture_output=True, text=True, timeout=60)
-    return (out.stdout + out.stderr)[:20000] or "(no output)"
+    # a shell on purpose (the tool is one), behind the card above; stopped whole after 60 s
+    out, _ = system.run_shell(command, timeout=60)
+    return out[:20000] or "(no output)"
 
 
 def run(name: str, args: dict) -> str:

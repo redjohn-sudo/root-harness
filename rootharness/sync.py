@@ -33,7 +33,6 @@ import hmac
 import inspect
 import json
 import os
-import subprocess
 import threading
 import time
 import zlib
@@ -41,7 +40,7 @@ from datetime import timedelta
 from pathlib import Path
 from typing import Callable
 
-from . import account, conversations, glossary, push, network
+from . import account, conversations, glossary, push, network, system
 
 HOME = Path(os.environ.get("ROOT_HARNESS_HOME") or Path.home() / ".root-harness")
 STATE = HOME / "sync.json"
@@ -74,10 +73,7 @@ def _read(path: Path, default):
 
 
 def _write(path: Path, data) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_suffix(".tmp")
-    tmp.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
-    tmp.replace(path)
+    system.atomic_write(path, json.dumps(data, ensure_ascii=False))
 
 
 async def _client():
@@ -145,18 +141,21 @@ def _trim_messages(msgs: list) -> list:
     return out
 
 
+RAW_PICTURE = 700_000   # bytes: without a converter, a picture this small travels as it is
+
+
 def _background() -> dict | None:
-    """The background picture, made small enough to travel (macOS sips)."""
+    """The background picture, made small enough to travel (sips on macOS,
+    ImageMagick elsewhere; without either, only a picture already small)."""
     ui = Path(__file__).parent / "ui"
     pic = next(iter(ui.glob("background.local.*")), None)
     if not pic:
         return None
     small = HOME / "background.sync.jpg"
     if not small.exists() or small.stat().st_mtime < pic.stat().st_mtime:
-        try:
-            subprocess.run(["sips", "-Z", "1600", "-s", "format", "jpeg", "-s", "formatOptions", "70",
-                            str(pic), "--out", str(small)], capture_output=True, timeout=30, check=True)
-        except (OSError, subprocess.SubprocessError):
+        if not system.convert_image(pic, small, max_side=1600, quality=70):
+            if pic.suffix.lower() in (".jpg", ".jpeg", ".png", ".webp", ".gif") and pic.stat().st_size <= RAW_PICTURE:
+                return {"ext": pic.suffix.lower(), "data": base64.b64encode(pic.read_bytes()).decode()}
             return None
     return {"ext": ".jpg", "data": base64.b64encode(small.read_bytes()).decode()}
 
@@ -246,8 +245,7 @@ def _merge(name: str, remote) -> None:
         names = {l.split("=", 1)[0] for l in have if "=" in l}
         add = [l for l in remote.splitlines() if "=" in l and l.split("=", 1)[0] not in names]
         if add:
-            env.write_text("\n".join(have + add) + "\n", encoding="utf-8")
-            env.chmod(0o600)
+            system.atomic_write(env, "\n".join(have + add) + "\n", private=True)
 
 
 class Sync:

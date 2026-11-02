@@ -14,8 +14,10 @@ from __future__ import annotations
 
 import os
 import sqlite3
-import subprocess
+import sys
 from pathlib import Path
+
+from . import system
 
 def _handle() -> str:
     """The one iMessage handle (phone or email) of your Instinct conversation.
@@ -25,7 +27,7 @@ def _handle() -> str:
     if h:
         return h
     try:
-        return (Path.home() / ".root-harness-instinct").read_text().strip()
+        return (Path.home() / ".root-harness-instinct").read_text(encoding="utf-8").strip()
     except OSError:
         return ""
 
@@ -34,9 +36,21 @@ HANDLE = _handle()
 DB = Path.home() / "Library" / "Messages" / "chat.db"
 
 
-def available() -> bool:
-    """True if a handle is set AND we can open the Messages database (Full Disk Access)."""
+MAC_ONLY = "Instinct talks over iMessage, which only exists on macOS."
+
+
+def why() -> str:
+    """Why it is off, in plain words ("" when it works)."""
+    if sys.platform != "darwin":
+        return MAC_ONLY
     if not HANDLE:
+        return "Set INSTINCT_HANDLE (or ~/.root-harness-instinct) to your Instinct conversation."
+    return "" if available() else "Give root-harness Full Disk Access to read Messages."
+
+
+def available() -> bool:
+    """True on a Mac, if a handle is set AND we can open the Messages database (Full Disk Access)."""
+    if sys.platform != "darwin" or not HANDLE:
         return False
     try:
         sqlite3.connect(f"file:{DB}?mode=ro", uri=True).close()
@@ -66,6 +80,8 @@ def _decode_attributed(b: bytes | None) -> str:
 
 
 def _rows(where: str, params: tuple, limit: int) -> list[dict]:
+    if sys.platform != "darwin":
+        return []
     con = sqlite3.connect(f"file:{DB}?mode=ro", uri=True)
     try:
         rows = con.execute(
@@ -96,6 +112,8 @@ def since(rowid: int, limit: int = 40) -> list[dict]:
 
 def last_id() -> int:
     """The newest message id in the conversation, or 0 if none / no access."""
+    if sys.platform != "darwin":
+        return 0
     try:
         con = sqlite3.connect(f"file:{DB}?mode=ro", uri=True)
     except sqlite3.Error:
@@ -120,11 +138,13 @@ end run'''
 def send(text: str) -> tuple[bool, str]:
     """Send one iMessage to Instinct. Returns (ok, error-or-empty)."""
     text = (text or "").strip()
+    if sys.platform != "darwin":
+        return False, MAC_ONLY
     if not text:
         return False, "Nothing to send."
     try:
-        r = subprocess.run(["osascript", "-e", _SEND, HANDLE, text],
-                           capture_output=True, text=True, timeout=25)
+        r = system.run(["osascript", "-e", _SEND, HANDLE, text],
+                       capture_output=True, text=True, timeout=25)
     except Exception as e:                       # noqa: BLE001
         return False, str(e)
     return (r.returncode == 0), (r.stderr.strip() if r.returncode else "")

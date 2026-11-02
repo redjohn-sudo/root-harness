@@ -26,7 +26,7 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from mcp.client.streamable_http import streamable_http_client
 
-from . import permissions, tools
+from . import permissions, system, tools
 
 # JSON Schema type -> the Python type tools.py uses in a tool's `schema`
 # (bridge_api maps it back to a JSON type for the model).
@@ -62,8 +62,9 @@ async def _streams(oa: dict, stack: AsyncExitStack):
             import httpx2
             http_client = await stack.enter_async_context(httpx2.AsyncClient(headers=oa["headers"]))
         return await stack.enter_async_context(streamable_http_client(oa["url"], http_client=http_client))
-    params = StdioServerParameters(command=oa["command"], args=list(oa.get("args", [])),
-                                   env=oa.get("env") or None)
+    # the full path: npx is npx.cmd on Windows, ~/.local/bin may be missing from a GUI's PATH
+    params = StdioServerParameters(command=system.which(oa["command"]) or oa["command"],
+                                   args=list(oa.get("args", [])), env=oa.get("env") or None)
     return await stack.enter_async_context(stdio_client(params))
 
 

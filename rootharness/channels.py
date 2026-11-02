@@ -36,6 +36,8 @@ from datetime import timedelta
 from pathlib import Path
 from typing import Callable
 
+from . import system
+
 HOME = Path(os.environ.get("ROOT_HARNESS_HOME") or Path.home() / ".root-harness")
 STATE = HOME / "channels.json"
 LOGS = HOME / "channels"
@@ -108,9 +110,7 @@ on_change = lambda: None     # the window points this at the sync
 def _save(s: dict) -> None:
     HOME.mkdir(parents=True, exist_ok=True)
     s["seen"] = s["seen"][-3000:]
-    tmp = STATE.with_suffix(".tmp")
-    tmp.write_text(json.dumps(s, indent=1, ensure_ascii=False), encoding="utf-8")
-    tmp.replace(STATE)
+    system.atomic_write(STATE, json.dumps(s, indent=1, ensure_ascii=False))
     on_change()
 
 
@@ -127,8 +127,8 @@ def _append(cid: str, msg: dict) -> bool:
         return False
     log.append(msg)
     log.sort(key=lambda m: m["at"])
-    LOGS.mkdir(parents=True, exist_ok=True)
-    (LOGS / f"{cid}.json").write_text(json.dumps(log[-2000:], ensure_ascii=False), encoding="utf-8")
+    # whole or not at all: a reader never sees half a log (and drops what it holds)
+    system.atomic_write(LOGS / f"{cid}.json", json.dumps(log[-2000:], ensure_ascii=False))
     return True
 
 

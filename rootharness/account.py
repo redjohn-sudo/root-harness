@@ -29,6 +29,8 @@ import os
 import shutil
 from pathlib import Path
 
+from . import system
+
 HOME = Path(os.environ.get("ROOT_HARNESS_HOME") or Path.home() / ".root-harness")
 ACCOUNT = HOME / "account.json"
 KEYCHAIN = ("root-harness", "nostr-secret-key")
@@ -55,11 +57,40 @@ def _load() -> dict | None:
 
 
 def _save(acc: dict) -> None:
-    HOME.mkdir(parents=True, exist_ok=True)
-    tmp = ACCOUNT.with_suffix(".tmp")
-    tmp.write_text(json.dumps(acc, indent=1, ensure_ascii=False), encoding="utf-8")
-    tmp.chmod(0o600)
-    tmp.replace(ACCOUNT)
+    system.atomic_write(ACCOUNT, json.dumps(acc, indent=1, ensure_ascii=False), private=True)
+
+
+# -- the system keychain: "stay signed in" only where it is a real, sealed one ------
+# macOS Keychain, Windows Credential Manager, the Secret Service on Linux (GNOME
+# Keyring, KWallet). A Linux without one gets keyring's "fail" backend, or a
+# plain file (keyrings.alt): then staying signed in is simply not offered, and
+# the unlocked key is never written anywhere.
+
+_UNSAFE = ("keyring.backends.fail", "keyring.backends.null", "keyrings.alt")
+
+
+def _no_keychain(e: Exception) -> bool:
+    try:
+        from keyring.errors import NoKeyringError
+    except ImportError:
+        return False
+    return isinstance(e, NoKeyringError)
+
+
+def keychain() -> dict:
+    """{"available": bool, "why": what to do when it is not}."""
+    try:
+        backend = _keyring().get_keyring()
+        found = getattr(backend, "backends", None)
+        found = list(found) if found is not None else [backend]
+        safe = [b for b in found if not type(b).__module__.startswith(_UNSAFE)]
+    except Exception:                       # noqa: BLE001
+        safe = []
+    if safe:
+        return {"available": True, "why": ""}
+    why = ("No system keychain answers here (GNOME Keyring or KWallet, through the Secret Service). "
+           if system.linux() else "The system keychain is not available. ")
+    return {"available": False, "why": why + "Stay signed in stays off: you type your password at each launch."}
 
 
 def _clean_pseudo(pseudo: str) -> str:
@@ -134,8 +165,11 @@ def create(pseudo: str, password: str, again: str, sync: bool = True):
     # keep an identity that already exists on this Mac, so your ID does not change
     try:
         old = _keyring().get_password(*KEYCHAIN)
-    except Exception:      # a new key here would quietly change your ID: ask to fix the keychain first
-        return None, "The system keychain did not answer. Unlock it (or allow root-harness) and try again."
+    except Exception as e:
+        if _no_keychain(e):
+            old = None     # no keychain at all on this machine (Linux without Secret Service): nothing kept there
+        else:              # a new key here would quietly change your ID: ask to fix the keychain first
+            return None, "The system keychain did not answer. Unlock it (or allow root-harness) and try again."
     keys = n.Keys.parse(old) if old else n.Keys.generate()
     _save({"pseudo": pseudo, "npub": keys.public_key().to_bech32(),
            "locked_key": keys.secret_key().encrypt(password).to_bech32(), "stay": False, "sync": bool(sync)})
@@ -160,7 +194,10 @@ def auto():
     acc = _load()
     if not acc or not acc.get("stay"):
         return None
-    secret = _keyring().get_password(*KEYCHAIN)
+    try:
+        secret = _keyring().get_password(*KEYCHAIN)
+    except Exception:                       # noqa: BLE001  (no keychain, or it is locked: ask the password)
+        return None
     if not secret:
         return None
     keys = _n().Keys.parse(secret)
@@ -172,7 +209,12 @@ def set_stay(on: bool, keys) -> bool:
     if not acc or keys is None:
         return False
     if on:
-        _keyring().set_password(*KEYCHAIN, keys.secret_key().to_bech32())
+        if not keychain()["available"]:
+            return False                    # never the unlocked key in a plain file
+        try:
+            _keyring().set_password(*KEYCHAIN, keys.secret_key().to_bech32())
+        except Exception:                   # noqa: BLE001  (locked, or access refused)
+            return False
     else:
         _forget_in_keychain()
     acc["stay"] = bool(on)

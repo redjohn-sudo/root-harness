@@ -13,12 +13,11 @@ from __future__ import annotations
 
 import itertools
 import json
-import shutil
 import subprocess
 from pathlib import Path
 from typing import Callable
 
-from . import permissions
+from . import permissions, system
 
 
 class Session:
@@ -56,12 +55,10 @@ class Session:
                 return msg.get("result", {})
 
     def _start(self) -> None:
-        exe = shutil.which("codex")
-        if not exe:
+        if not system.which("codex"):
             raise RuntimeError("The Codex CLI is not installed.")
-        self.proc = subprocess.Popen([exe, "app-server"], stdin=subprocess.PIPE,
-                                     stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
-                                     text=True, bufsize=1)
+        # UTF-8 lines both ways, whatever the system's code page (codex.cmd on Windows)
+        self.proc = system.popen_lines(system.cmd("codex", "app-server"), stderr=subprocess.DEVNULL)
         self._request("initialize", {"clientInfo": {"name": "root-harness", "version": "0.1"}})
         self._send({"method": "initialized"})
         started = self._request("thread/start", {
@@ -101,7 +98,10 @@ class Session:
 
     def close(self) -> None:
         if self.proc and self.proc.poll() is None:
-            self.proc.terminate()
+            if system.windows():
+                system.stop_tree(self.proc)     # codex.cmd: cmd.exe, then node; terminate() would orphan them
+            else:
+                self.proc.terminate()
 
     # -- one turn ----------------------------------------------------------------
 

@@ -19,7 +19,7 @@ import threading
 from pathlib import Path
 from typing import Callable
 
-from . import permissions
+from . import permissions, system
 
 # The permission modes, in the order Shift+Tab cycles them (as in the terminal).
 # No "auto": this in-app agent must never bypass the per-tool confirmation card,
@@ -42,6 +42,43 @@ TITLES = {"Bash": "Run a command", "Write": "Write a file", "Edit": "Edit a file
 def _sdk():
     import claude_agent_sdk as sdk
     return sdk
+
+
+def _bundled() -> Path | None:
+    """The Claude Code the SDK ships with (its first choice on every system)."""
+    try:
+        import claude_agent_sdk
+    except ImportError:
+        return None
+    exe = Path(claude_agent_sdk.__file__).parent / "_bundled" / ("claude.exe" if system.windows() else "claude")
+    return exe if exe.is_file() else None
+
+
+def cli_path() -> str | None:
+    """The Claude Code this app will run, or None. On Windows only a real
+    claude.exe counts: the SDK refuses npm's claude.cmd (cmd.exe would read
+    the arguments), so a claude.cmd alone is not enough."""
+    if not system.windows():
+        return system.which("claude")
+    bundled = _bundled()
+    if bundled:
+        return str(bundled)
+    for name in ("claude", "claude.exe"):
+        hit = system.which(name)
+        if hit and hit.lower().endswith((".exe", ".com")):
+            return hit
+    return None
+
+
+def cli_options() -> dict:
+    """What to tell ClaudeAgentOptions: nothing on macOS and Linux (the SDK
+    finds it as before); on Windows the claude.exe found above, which may live
+    in a folder the SDK does not look in."""
+    path = cli_path() if system.windows() else None
+    return {"cli_path": path} if path else {}
+
+
+WINDOWS_INSTALL = "Install Claude Code for Windows (claude.exe): irm https://claude.ai/install.ps1 | iex"
 
 
 def _short(value, limit: int = 400):
@@ -89,7 +126,8 @@ class Session:
             permission_mode=self.mode if self.mode in MODES else "default",
             can_use_tool=self._can_use_tool,
             resume=self.resume_id, fork_session=self.fork,
-            effort=self.effort if self.effort not in (None, *EFFORTS_EXTRA) else None)
+            effort=self.effort if self.effort not in (None, *EFFORTS_EXTRA) else None,
+            **cli_options())
         client = sdk.ClaudeSDKClient(options=options)
         await client.connect()
         self.client = client

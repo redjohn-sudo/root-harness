@@ -21,10 +21,11 @@ from __future__ import annotations
 import json
 import os
 import re
-import shutil
 import subprocess
 import urllib.request
 from pathlib import Path
+
+from . import system
 
 HOME = Path(os.environ.get("ROOT_HARNESS_HOME") or Path.home() / ".root-harness")
 ENV_FILE = HOME / ".env"
@@ -104,14 +105,12 @@ def save_key(name: str, value: str) -> bool:
     """Store a key in ~/.root-harness/.env (mode 600), replacing an old one."""
     if not re.fullmatch(r"[A-Z][A-Z0-9_]*", name or "") or not value.strip():
         return False
-    HOME.mkdir(parents=True, exist_ok=True)
     lines = []
     if ENV_FILE.exists():
         lines = [l for l in ENV_FILE.read_text(encoding="utf-8").splitlines()
                  if not l.strip().startswith(name + "=")]
     lines.append(f"{name}={value.strip()}")
-    ENV_FILE.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    ENV_FILE.chmod(0o600)
+    system.atomic_write(ENV_FILE, "\n".join(lines) + "\n", private=True)     # 0600 from the first byte
     return True
 
 
@@ -129,17 +128,19 @@ def status(b: dict) -> dict:
     """{"ready": bool, "why": short reason when not ready}. No paid call."""
     global _codex_ok
     if b["kind"] == "claude":
-        if shutil.which("claude"):
+        from .bridge_claude import cli_path, WINDOWS_INSTALL
+        if cli_path():
             return {"ready": True}
+        if system.windows() and system.which("claude"):     # npm's claude.cmd only: the SDK cannot run it
+            return {"ready": False, "why": WINDOWS_INSTALL}
         return {"ready": False, "why": "Install Claude Code and sign in once"}
     if b["kind"] == "codex":
-        exe = shutil.which("codex")
-        if not exe:
+        if not system.which("codex"):
             return {"ready": False, "why": "Install the Codex CLI and sign in once"}
         if _codex_ok is None:
             try:
-                _codex_ok = subprocess.run([exe, "login", "status"], capture_output=True,
-                                           timeout=15).returncode == 0
+                _codex_ok = system.run(system.cmd("codex", "login", "status"), capture_output=True,
+                                       stdin=subprocess.DEVNULL, timeout=15).returncode == 0
             except (OSError, subprocess.SubprocessError):
                 _codex_ok = False
         return {"ready": True} if _codex_ok else {"ready": False, "why": "Run `codex login` once"}

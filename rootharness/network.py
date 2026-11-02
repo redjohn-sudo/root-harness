@@ -41,7 +41,7 @@ from datetime import timedelta
 from pathlib import Path
 from typing import Callable
 
-from . import directory
+from . import directory, system
 
 HOME = Path(os.environ.get("ROOT_HARNESS_HOME") or Path.home() / ".root-harness")
 DIR = HOME / "network"
@@ -88,10 +88,7 @@ def _read(path: Path, default):
 
 
 def _write(path: Path, data) -> None:
-    DIR.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_suffix(f".{threading.get_ident()}.tmp")     # one per thread: two writers never share it
-    tmp.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
-    os.replace(tmp, path)
+    system.atomic_write(path, json.dumps(data, ensure_ascii=False, indent=1))     # its own temp file per thread
     on_change()
 
 
@@ -201,11 +198,10 @@ def profile_set(fields: dict) -> dict:
 
 def github_work(limit: int = 8) -> list[dict]:
     """Your own public repositories, newest activity first (through gh, signed in for vibe code)."""
-    import subprocess
     try:
-        login = json.loads(subprocess.run(["gh", "api", "user"], capture_output=True, text=True, timeout=20).stdout)["login"]
-        repos = json.loads(subprocess.run(["gh", "api", f"users/{login}/repos?sort=pushed&per_page=30&type=owner"],
-                                          capture_output=True, text=True, timeout=30).stdout)
+        login = json.loads(system.run(system.cmd("gh", "api", "user"), capture_output=True, text=True, timeout=20).stdout)["login"]
+        repos = json.loads(system.run(system.cmd("gh", "api", f"users/{login}/repos?sort=pushed&per_page=30&type=owner"),
+                                      capture_output=True, text=True, timeout=30).stdout)
     except Exception:
         return []
     out = []
@@ -223,10 +219,10 @@ def github_work(limit: int = 8) -> list[dict]:
 def github_showcase() -> list[dict]:
     """The demos on your GitHub profile page (the <login>/<login> README): a title, a picture or GIF, a caption."""
     import html
-    import subprocess
     try:
-        login = json.loads(subprocess.run(["gh", "api", "user"], capture_output=True, text=True, timeout=20).stdout)["login"]
-        raw = subprocess.run(["gh", "api", f"repos/{login}/{login}/readme", "--jq", ".content"], capture_output=True, text=True, timeout=20).stdout
+        login = json.loads(system.run(system.cmd("gh", "api", "user"), capture_output=True, text=True, timeout=20).stdout)["login"]
+        raw = system.run(system.cmd("gh", "api", f"repos/{login}/{login}/readme", "--jq", ".content"),
+                         capture_output=True, text=True, timeout=20).stdout
         readme = base64.b64decode(raw).decode("utf-8", "replace")
     except Exception:
         return []

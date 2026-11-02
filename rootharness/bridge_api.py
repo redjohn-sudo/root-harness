@@ -13,12 +13,13 @@ import urllib.error
 import urllib.request
 from typing import Callable
 
-from . import brains, tools
+from . import brains, system, tools
 
 MAX_STEPS = 12
 SYSTEM = ("You are an agent running inside root-harness, on the user's computer. "
           "Use the tools when they help. Tools that change the machine ask the user first; "
-          "if the user denies, respect it and suggest another way.")
+          "if the user denies, respect it and suggest another way. "
+          f"This computer runs {system.os_label()}; run_command {system.shell_hint()}.")
 _TYPES = {str: "string", int: "integer", float: "number", bool: "boolean"}
 
 

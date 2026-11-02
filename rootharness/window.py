@@ -1,6 +1,7 @@
 """
-The window. A small native window (pywebview / WebKit) that loads the UI and
-connects it to the agent. No terminal.
+The window. A small native window (pywebview: WebKit on macOS, WebView2 on
+Windows, GTK WebKit or Qt WebEngine on Linux) that loads the UI and connects it
+to the agent. No terminal.
 
 JavaScript calls `window.pywebview.api.*`; Python pushes events back by calling
 `onEvent(...)` in the page. Permission questions are shown as a card, and the
@@ -13,19 +14,17 @@ import base64
 import json
 import os
 import re
-import shlex
 import shutil
 import time
 import uuid
 import sys
 import subprocess
 import threading
-import webbrowser
 from pathlib import Path
 
 import webview
 
-from . import permissions, brains, conversations, account, glossary, bridge_claude, codex_sessions
+from . import permissions, brains, conversations, account, glossary, bridge_claude, codex_sessions, system
 
 UI = Path(__file__).parent / "ui" / "index.html"
 # Your settings live in your home folder, never in the repo.
@@ -45,13 +44,7 @@ on_change = lambda: None     # the window points this at the sync
 
 def write_private(path: Path, text: str) -> None:
     """Readable by you only from the first byte (0600), then swapped in whole."""
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_suffix(f".{threading.get_ident()}.tmp")
-    tmp.unlink(missing_ok=True)             # O_CREAT keeps the mode of a file already there
-    fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-    with os.fdopen(fd, "w", encoding="utf-8") as f:
-        f.write(text)
-    os.replace(tmp, path)
+    system.atomic_write(path, text, private=True)
 
 
 def write_settings(**changes) -> dict:
@@ -204,7 +197,7 @@ class Api:
         if fork and not events:
             events, notes = self._terminal_events(sid)
         preamble = ""
-        if sid and brain["kind"] == "claude" and not any((Path.home() / ".claude" / "projects").glob(f"*/{sid}.jsonl")):
+        if sid and brain["kind"] == "claude" and not any((system.claude_home() / "projects").glob(f"*/{sid}.jsonl")):
             # the Claude session lives on the machine that ran it: carry the history instead
             sid, fork, preamble = None, False, self._as_context(events)
             notes.append("Synced from another machine: Claude continues with this history as context.")
@@ -344,7 +337,8 @@ class Api:
 
     def account_state(self):
         from . import network as net_mod
-        return {**account.state(), "unlocked": self.keys is not None, "at": net_mod.profile_local().get("at", "")}
+        return {**account.state(), "unlocked": self.keys is not None, "at": net_mod.profile_local().get("at", ""),
+                "keychain": account.keychain()}     # "stay signed in" needs one (none on some Linux)
 
     def account_create(self, pseudo: str, password: str, again: str):
         keys, why = account.create(pseudo, password, again)
@@ -396,7 +390,7 @@ class Api:
 
     def setup_detect(self):
         """What is already on this computer, so sign-up asks only the rest."""
-        out = {"claude": {"installed": bool(shutil.which("claude"))}, "github": None, "ollama": 0,
+        out = {"claude": {"installed": bool(bridge_claude.cli_path())}, "github": None, "ollama": 0,
                "keys": {k: brains.key(k) not in ("", "-") for k in
                         ("ANTHROPIC_API_KEY", "DEEPSEEK_API_KEY", "NEBIUS_API_KEY")}}
         if self.brain["kind"] == "claude" and getattr(self.session, "info", None) is not None:
@@ -421,16 +415,16 @@ class Api:
         login = _gh_login()
         if login:
             return {"done": True, "login": login}
-        if not shutil.which("gh"):
+        if not system.which("gh"):
             return {"error": "gh_missing"}
         with _GH_LOCK:                           # a second click waits for the first gh, never starts another
             p = getattr(self, "_gh_proc", None)
             if p is not None and p.poll() is None:
                 return {"code": self._gh_code, "url": GH_DEVICE}
-            env = {**os.environ, "GH_BROWSER": "true", "BROWSER": "true",   # the app opens the page itself
+            env = {**os.environ, "GH_BROWSER": _no_browser(), "BROWSER": _no_browser(),   # the app opens the page itself
                    "NO_COLOR": "1", "CLICOLOR_FORCE": "0"}
-            p = subprocess.Popen(["gh", "auth", "login", "--hostname", "github.com", "--git-protocol", "https", "--web", "--skip-ssh-key"],
-                                 stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=env)
+            p = system.popen(system.cmd("gh", "auth", "login", "--hostname", "github.com", "--git-protocol", "https", "--web", "--skip-ssh-key"),
+                             stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=env)
             self._gh_proc, self._gh_code = p, ""
             tail, got, answered = [], [], threading.Event()
 
@@ -453,7 +447,7 @@ class Api:
                 return {"error": "GitHub did not answer. Check your internet and try again."
                                  + (f" (gh: {said})" if said else "")}
             self._gh_code = got[0]
-        webbrowser.open(GH_DEVICE)
+        system.open_target(GH_DEVICE)
         return {"code": got[0], "url": GH_DEVICE}
 
     def setup_github_cancel(self):
@@ -473,7 +467,7 @@ class Api:
         login = _gh_login()
         if login:
             try:
-                subprocess.run(["gh", "auth", "setup-git"], capture_output=True, timeout=15)
+                system.run(system.cmd("gh", "auth", "setup-git"), capture_output=True, stdin=subprocess.DEVNULL, timeout=15)
             except (OSError, subprocess.SubprocessError):
                 pass                             # git can be set up later: you are signed in all the same
             return {"done": True, "login": login}
@@ -579,7 +573,7 @@ class Api:
 
     def _remote_on(self) -> bool:
         try:
-            return json.loads((SETTINGS.parent / self.REMOTE_FILE).read_text()).get("on", False)
+            return json.loads((SETTINGS.parent / self.REMOTE_FILE).read_text(encoding="utf-8")).get("on", False)
         except (OSError, ValueError):
             return False
 
@@ -608,6 +602,8 @@ class Api:
         if self._web or not (dist / "index.html").exists():
             return
 
+        system.fix_mimetypes()                   # Windows' registry may call .js text/plain
+
         class Quiet(SimpleHTTPRequestHandler):
             def log_message(self, *a):
                 pass
@@ -615,8 +611,12 @@ class Api:
             def end_headers(self):               # the phone asks again each time: never a stale app
                 self.send_header("Cache-Control", "no-cache")
                 super().end_headers()
+
+        class Server(ThreadingHTTPServer):
+            # on Windows SO_REUSEADDR lets a second app take the same port silently: there, ask for it alone
+            allow_reuse_address = not system.windows()
         try:
-            self._web = ThreadingHTTPServer(("0.0.0.0", 8765), functools.partial(Quiet, directory=str(dist)))
+            self._web = Server(("0.0.0.0", 8765), functools.partial(Quiet, directory=str(dist)))   # garde: ok, the phone on the same Wi-Fi loads the app here (off by default)
         except OSError:
             self._web = None
             return
@@ -1105,7 +1105,7 @@ The conversation:
 
     def instinct_available(self):
         from . import instinct
-        return {"available": instinct.available(), "handle": instinct.HANDLE}
+        return {"available": instinct.available(), "handle": instinct.HANDLE, "why": instinct.why()}
 
     def instinct_history(self, limit: int = 40):
         from . import instinct
@@ -1127,7 +1127,7 @@ The conversation:
 
     def _mcp_config(self) -> dict:
         try:
-            return json.loads((SETTINGS.parent / self.MCP_FILE).read_text()).get("servers", {})
+            return json.loads((SETTINGS.parent / self.MCP_FILE).read_text(encoding="utf-8")).get("servers", {})
         except (OSError, ValueError):
             return {}
 
@@ -1157,7 +1157,7 @@ The conversation:
         if not name or not command:
             return {"ok": False, "error": "A name and a command are needed.", "tools": []}
         try:
-            parts = shlex.split(args or "")
+            parts = system.split_args(args or "")     # Windows paths keep their backslashes
         except ValueError as e:
             return {"ok": False, "error": f"Bad arguments: {e}", "tools": []}
         blocked = [t for t in re.split(r"[,\s]+", deny or "") if t]
@@ -1231,7 +1231,8 @@ The conversation:
             brains.save_key("GITHUB_TOKEN", "-")
             return {"on": False}
         try:
-            token = subprocess.run(["gh", "auth", "token"], capture_output=True, text=True, timeout=15).stdout.strip()
+            token = system.run(system.cmd("gh", "auth", "token"), capture_output=True, text=True,
+                               stdin=subprocess.DEVNULL, timeout=15).stdout.strip()
         except (OSError, subprocess.SubprocessError):
             token = ""
         if not token:
@@ -1245,13 +1246,16 @@ The conversation:
         return {"on": brains.key("GITHUB_TOKEN") not in ("", "-")}
 
     def copy_text(self, text: str):
-        """Put text on the clipboard (your public ID, to give to a friend)."""
-        cmd = {"darwin": ["pbcopy"], "win32": ["clip"]}.get(sys.platform, ["xclip", "-selection", "clipboard"])
-        try:
-            subprocess.run(cmd, input=text.encode(), check=True, timeout=5)
-            return True
-        except (OSError, subprocess.SubprocessError):
-            return False
+        """Put text on the clipboard (your public ID, to give to a friend).
+        True or False, as the page expects; clipboard_status says why not."""
+        ok, why = system.copy(str(text))
+        if not ok:
+            print(f"root-harness: could not copy: {why}", file=sys.stderr)
+        return ok
+
+    def clipboard_status(self):
+        """{"available", "why"}: on Linux a copy tool is needed (wl-copy or xclip)."""
+        return system.clipboard_status()
 
     def create_folder(self, name: str):
         return conversations.folder_create(name)
@@ -1448,10 +1452,10 @@ The conversation:
             old.unlink(missing_ok=True)
         ext = src.suffix.lower()
         try:
-            if ext in (".heic", ".heif"):   # iPhone photos: browsers can't show them, convert (macOS)
+            if ext in (".heic", ".heif"):   # iPhone photos: browsers can't show them, convert (sips, ImageMagick)
                 dest = UI.parent / "background.local.jpg"
-                subprocess.run(["sips", "-s", "format", "jpeg", str(src), "--out", str(dest)],
-                               capture_output=True, timeout=30, check=True)
+                if not system.convert_image(src, dest):
+                    return None
             else:
                 dest = UI.parent / f"background.local{ext}"
                 shutil.copy(src, dest)
@@ -1545,23 +1549,46 @@ ANSI = re.compile(r"\x1b\[[0-9;?]*[ -/]*[@-~]")
 _GH_LOCK = threading.Lock()
 
 
+def _no_browser() -> str:
+    """A command that opens nothing, for gh's browser (true is not a Windows program)."""
+    return "cmd /c rem" if system.windows() else "true"
+
+
 def _gh_login() -> str | None:
     """Who gh is signed in as on this computer, or None."""
     try:
-        return json.loads(subprocess.run(["gh", "api", "user"], capture_output=True, text=True,
-                                         timeout=15).stdout or "{}").get("login")
+        return json.loads(system.run(system.cmd("gh", "api", "user"), capture_output=True, text=True,
+                                     stdin=subprocess.DEVNULL, timeout=15).stdout or "{}").get("login")
     except (OSError, subprocess.SubprocessError, ValueError):
         return None
 
 
 def start():
+    system.fix_mimetypes()               # the page's own server reads them too
+    gui = system.pick_gui()              # Linux: GTK if importable, else Qt; elsewhere pywebview's own
+    if system.linux() and gui is None and not os.environ.get("PYWEBVIEW_GUI"):
+        print(system.NO_TOOLKIT, file=sys.stderr)
     api = Api()
     window = webview.create_window(
         "root-harness", str(UI), js_api=api, width=1100, height=760, min_size=(380, 560), background_color="#11131c",
-        text_select=True)  # pywebview blocks selection by default: the agents' answers must be copyable
+        text_select=True,  # pywebview blocks selection by default: the agents' answers must be copyable
+        zoomable=False)    # the page zooms itself (Cmd/Ctrl + = - 0): WebView2 and Qt would zoom twice
     api.bind(window)
     _dock_icon()
-    webview.start()
+    extra = {}
+    icon = system.window_icon(UI.parent / "icon.png", SETTINGS.parent)
+    if icon:
+        extra["icon"] = icon
+    if gui:
+        extra["gui"] = gui
+    webview.start(_check_engine, (window,), **extra)
+
+
+def _check_engine(window):
+    """Windows without the WebView2 runtime falls back to the old IE engine,
+    which cannot run the page: say what to install, in the window itself."""
+    if system.windows() and getattr(webview, "renderer", "") == "mshtml":
+        window.load_html(system.NO_WEBVIEW2)
 
 
 def _dock_icon():

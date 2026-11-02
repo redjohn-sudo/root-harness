@@ -22,6 +22,8 @@ import threading
 import time
 from pathlib import Path
 
+from . import system
+
 HOME = Path(os.environ.get("ROOT_HARNESS_HOME") or Path.home() / ".root-harness")
 FILE = HOME / "push.json"
 CONTACT = "https://root-harness.pages.dev"     # who sends, for the push services (a bare https origin)
@@ -42,9 +44,7 @@ def _load() -> dict:
 
 
 def _save(d: dict) -> None:
-    HOME.mkdir(parents=True, exist_ok=True)
-    FILE.write_text(json.dumps(d, indent=1), encoding="utf-8")
-    FILE.chmod(0o600)
+    system.atomic_write(FILE, json.dumps(d, indent=1), private=True)     # the VAPID private key: 0600 from the first byte
     on_change()
 
 

@@ -19,6 +19,8 @@ import re
 import time
 from pathlib import Path
 
+from . import system
+
 HOME = Path(os.environ.get("ROOT_HARNESS_HOME") or Path.home() / ".root-harness")
 FILE = HOME / "glossary.json"
 BASE = Path(__file__).parent / "glossary_base.json"
@@ -43,10 +45,7 @@ def _load() -> dict:
 
 
 def _save(d: dict) -> None:
-    HOME.mkdir(parents=True, exist_ok=True)
-    tmp = FILE.with_suffix(".tmp")
-    tmp.write_text(json.dumps(d, ensure_ascii=False, indent=1), encoding="utf-8")
-    tmp.replace(FILE)
+    system.atomic_write(FILE, json.dumps(d, ensure_ascii=False, indent=1))
     on_change()
 
 

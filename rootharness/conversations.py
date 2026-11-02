@@ -19,6 +19,8 @@ import time
 import uuid
 from pathlib import Path
 
+from . import system
+
 HOME = Path(os.environ.get("ROOT_HARNESS_HOME") or Path.home() / ".root-harness")
 INDEX = HOME / "index.json"
 FOLDER = HOME / "conversations"
@@ -48,9 +50,7 @@ def _save(data: dict) -> None:
 
 def _atomic(path: Path, text: str) -> None:
     """Write next to it, then swap: a crash never leaves half a file."""
-    tmp = path.with_suffix(f".{threading.get_ident()}.tmp")
-    tmp.write_text(text, encoding="utf-8")
-    os.replace(tmp, path)
+    system.atomic_write(path, text)
 
 
 def now() -> int:

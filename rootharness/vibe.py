@@ -18,6 +18,8 @@ import json
 import subprocess
 from pathlib import Path
 
+from . import system
+
 RUNNER = "root-harness-runner"
 WORKFLOW = ".github/workflows/root-harness-vibe.yml"
 TEMPLATE = Path(__file__).parent / "github" / "root-harness-runner.yml"
@@ -26,7 +28,8 @@ SECRETS = ("CLAUDE_CODE_OAUTH_TOKEN", "RH_GITHUB_TOKEN")
 
 
 def _gh(*args, input_text: str | None = None, timeout: int = 40) -> str:
-    out = subprocess.run(["gh", *args], capture_output=True, text=True, input=input_text, timeout=timeout)
+    out = system.run(system.cmd("gh", *args), capture_output=True, text=True, input=input_text,
+                     stdin=None if input_text is not None else subprocess.DEVNULL, timeout=timeout)
     if out.returncode != 0:
         raise RuntimeError((out.stderr or out.stdout).strip()[:300])
     return out.stdout

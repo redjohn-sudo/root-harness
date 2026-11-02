@@ -26,10 +26,11 @@ def ask(brain: dict, model: str | None, messages: list[dict], system: str = SYST
 
 async def _claude(model, messages, system) -> str:
     from claude_agent_sdk import query, ClaudeAgentOptions, AssistantMessage, TextBlock
+    from .bridge_claude import cli_options
     talk = "\n\n".join(("Me: " if m["role"] == "user" else "You: ") + m["content"] for m in messages[:-1])
     prompt = (f"Earlier in this side talk:\n{talk}\n\nNow: " if talk else "") + messages[-1]["content"]
     options = ClaudeAgentOptions(tools=[], setting_sources=[], system_prompt=system, max_turns=1,
-                                 model=None if model in (None, "default") else model)
+                                 model=None if model in (None, "default") else model, **cli_options())
     out = []
     async for m in query(prompt=prompt, options=options):
         if isinstance(m, AssistantMessage):
