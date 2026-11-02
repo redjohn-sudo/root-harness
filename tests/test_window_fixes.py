@@ -6,6 +6,7 @@ import asyncio
 import json
 import os
 import stat
+import sys
 import tempfile
 import threading
 import time
@@ -63,28 +64,42 @@ class Busy(unittest.TestCase):
 
 # -- 2. gh sign-in: a deadline, colours off, one gh at a time, "Later" ----------------------
 
-FAKE_GH = """#!/bin/sh
-if [ "$1" = "api" ]; then echo "not logged in" >&2; exit 1; fi
-if [ "$1" = "auth" ] && [ "$2" = "login" ]; then
-  echo "spawn $$" >> "$FAKELOG"
-  case "$MODE" in
-    silent) sleep 30 ;;
-    code) printf '! First copy your one-time code: ABCD-1234\\n'; sleep 30 ;;
-    ansi) printf '! First copy your one-time code: \\033[1mABCD-1234\\033[0m\\n'; sleep 30 ;;
-    fail) echo "error connecting to api.github.com"; exit 1 ;;
-  esac
-fi
+# A stand-in for gh, in Python so it runs the same on every system.
+FAKE_GH = """import os, sys, time
+a = sys.argv[1:]
+if a[:1] == ["api"]:
+    print("not logged in", file=sys.stderr)
+    sys.exit(1)
+if a[:2] == ["auth", "login"]:
+    with open(os.environ["FAKELOG"], "a") as f:
+        f.write("spawn %d\\n" % os.getpid())
+    mode = os.environ.get("MODE")
+    if mode == "fail":
+        print("error connecting to api.github.com", flush=True)
+        sys.exit(1)
+    if mode == "code":
+        print("! First copy your one-time code: ABCD-1234", flush=True)
+    if mode == "ansi":
+        print("! First copy your one-time code: \\033[1mABCD-1234\\033[0m", flush=True)
+    time.sleep(30)
 """
 
 
 class GitHub(unittest.TestCase):
     def setUp(self):
         self.dir = Path(tempfile.mkdtemp(prefix="rh-gh-"))
-        gh = self.dir / "gh"
-        gh.write_text(FAKE_GH)
-        gh.chmod(0o755)
+        script = self.dir / "fake_gh.py"
+        script.write_text(FAKE_GH, encoding="utf-8")
+        if os.name == "nt":                       # Windows runs a .cmd, not a script with a shebang
+            (self.dir / "gh.cmd").write_text(f'@"{sys.executable}" "{script}" %*\r\n', encoding="utf-8")
+            path = [str(self.dir), os.path.join(os.environ.get("SystemRoot", r"C:\Windows"), "System32")]
+        else:
+            gh = self.dir / "gh"
+            gh.write_text(f"#!{sys.executable}\n" + FAKE_GH, encoding="utf-8")
+            gh.chmod(0o755)
+            path = [str(self.dir), "/usr/bin", "/bin"]
         self.log = self.dir / "log"
-        self.env = mock.patch.dict(os.environ, {"PATH": f"{self.dir}:/usr/bin:/bin", "FAKELOG": str(self.log)})
+        self.env = mock.patch.dict(os.environ, {"PATH": os.pathsep.join(path), "FAKELOG": str(self.log)})
         self.env.start()
         self.wait = mock.patch.object(window, "GH_WAIT", 2)
         self.wait.start()
@@ -527,6 +542,7 @@ class Private(unittest.TestCase):
     def mode(self, path):
         return stat.S_IMODE(path.stat().st_mode)
 
+    @unittest.skipIf(os.name == "nt", "Windows protects these files through the profile folder's permissions, not mode bits")
     def test_modes(self):
         window.SETTINGS.parent.mkdir(parents=True, exist_ok=True)
         window.SETTINGS.write_text("{}")
