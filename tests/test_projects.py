@@ -224,7 +224,8 @@ class Saving(unittest.TestCase):
         again = pj.ledger("group-1")
         self.assertEqual(again.project("p1")["tasks"]["t1"]["status"], "accepted")
         self.assertEqual(pj.ledger("another-group").projects, {})
-        self.assertEqual(oct(pj.FILE.stat().st_mode & 0o777), "0o600")
+        if os.name != "nt":                      # Windows protects it through the profile folder, not mode bits
+            self.assertEqual(oct(pj.FILE.stat().st_mode & 0o777), "0o600")
 
 
 if __name__ == "__main__":
