@@ -6,6 +6,8 @@ import { qr } from './ident.js'
 import { LANGUES, langue, appliquer, t } from './langue.js'
 import { plateforme, mod, entree as estEntree, touches, ariaTouches, marquer, installerZoom, zoomActuel } from './plateforme.js'
 import { vueFil, vueProfil, vueNotifs, vueCommus, vueRecherche, choisirGens, surveillerNotifs, evenementReseau, feuilleBloques } from './social.js'
+import { foule, reglerFoule, vueVisible, FOULE_VUES } from './foule.js'
+import { vueProjets, evenementProjet } from './projets.js'
 
 let H = null                                  // the host
 const $ = (s, r = document) => r.querySelector(s)
@@ -34,6 +36,7 @@ const I = {
   dossiers: '<path d="M3.5 7.5a2 2 0 012-2h4l2 2h7a2 2 0 012 2v8a2 2 0 01-2 2h-13a2 2 0 01-2-2z"/>',
   amis: '<circle cx="9" cy="9" r="3.2"/><path d="M3.5 19c.6-3 2.9-4.6 5.5-4.6s4.9 1.6 5.5 4.6"/><circle cx="17" cy="8" r="2.4"/><path d="M15.5 13.6c2.6.1 4.4 1.6 5 4.4"/>',
   vibe: '<path d="M8 8l-4 4 4 4M16 8l4 4-4 4M13.5 5.5l-3 13"/>',
+  projets: '<rect x="3.5" y="4" width="7" height="7" rx="1.6"/><rect x="13.5" y="4" width="7" height="7" rx="1.6"/><rect x="3.5" y="14" width="7" height="6" rx="1.6"/><path d="M17 14v6M14 17h6"/>',
   livre: '<path d="M4 5.5A2 2 0 016 3.5h13v15H6a2 2 0 00-2 2z"/><path d="M4 20.5a2 2 0 012-2h13M8.5 8h6M8.5 11h4"/>',
   reglages: '<circle cx="12" cy="12" r="3"/><path d="M19.4 13.5l1.6 1.2-2 3.4-1.9-.8a7.6 7.6 0 01-2 1.2L14.8 21h-4l-.3-2.5a7.6 7.6 0 01-2-1.2l-1.9.8-2-3.4 1.6-1.2a7.7 7.7 0 010-2.4L4.6 9.9l2-3.4 1.9.8a7.6 7.6 0 012-1.2L10.8 3h4l.3 2.5a7.6 7.6 0 012 1.2l1.9-.8 2 3.4-1.6 1.2a7.7 7.7 0 010 2.4z"/>',
   reseau: '<circle cx="6" cy="12" r="2.4"/><circle cx="17.5" cy="6.5" r="2.4"/><circle cx="17.5" cy="17.5" r="2.4"/><path d="M8.1 11l7.3-3.4M8.1 13l7.3 3.4"/>',
@@ -44,9 +47,9 @@ const I = {
 const ico = (n, w = 1.7) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">${I[n]}</svg>`
 
 // -- the shell ----------------------------------------------------------------------
-const ONGLETS = [['chat', 'Your agents'], ['reseau', 'Network'], ['amis', 'Messages'], ['vibe', 'Vibe code'], ['notifs', 'Notifications']]
+const ONGLETS = [['chat', 'Your agents'], ['reseau', 'Network'], ['amis', 'Messages'], ['projets', 'Projects'], ['vibe', 'Vibe code'], ['notifs', 'Notifications']]
 const SOUS = [['fil', 'feed'], ['recherche', 'search'], ['commus', 'communities'], ['profil', 'profile'], ['encyclo', 'encyclopedia']]
-const ICONE = { chat: 'chat', reseau: 'reseau', amis: 'messages', vibe: 'vibe', notifs: 'cloche', reglages: 'reglages' }
+const ICONE = { chat: 'chat', reseau: 'reseau', amis: 'messages', projets: 'projets', vibe: 'vibe', notifs: 'cloche', reglages: 'reglages' }
 
 function coquille() {
   document.body.innerHTML = `<div id="fond"></div>
@@ -56,15 +59,15 @@ function coquille() {
       <button class="onglet bas" data-v="reglages" title="Settings">${ico('reglages')}</button>
     </nav>
     <main>
-      <div id="sousbar">${SOUS.map(([k, t]) => `<button class="sous-onglet" data-v="${k}">${t}</button>`).join('')}</div>
+      <div id="sousbar"></div>
       <section class="vue" id="v-chat"></section><section class="vue" id="v-fil"></section><section class="vue" id="v-profil"></section><section class="vue" id="v-notifs"></section><section class="vue" id="v-commus"></section><section class="vue" id="v-recherche"></section><section class="vue" id="v-discussions"></section>
-      <section class="vue" id="v-amis"></section><section class="vue" id="v-vibe"></section><section class="vue" id="v-encyclo"></section><section class="vue" id="v-reglages"></section>
+      <section class="vue" id="v-amis"></section><section class="vue" id="v-projets"></section><section class="vue" id="v-vibe"></section><section class="vue" id="v-encyclo"></section><section class="vue" id="v-reglages"></section>
     </main>
   </div>
   <div id="voile"></div><div class="feuille" id="feuille"></div><div class="toast" id="toast"></div>
   <div id="porte"><div class="fonds"></div><div class="carte-porte verre" id="carte-porte"></div></div>`
   $$('.onglet').forEach((b) => b.onclick = () => aller(b.dataset.v))
-  $$('#sousbar .sous-onglet').forEach((b) => b.onclick = () => aller(b.dataset.v, true))
+  dessinerSous()
   $('#voile').onclick = fermerFeuille
   $('#feuille').addEventListener('click', (e) => { if (e.target.closest('.fermer')) fermerFeuille() })   // sheets that rewrite themselves keep their ✕
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('#feuille').classList.contains('on')) fermerFeuille() })
@@ -101,10 +104,20 @@ function raccourci(e) {
   if (e.key.toLowerCase() === 'k' || e.code === 'KeyK') { e.preventDefault(); fermerFeuille(); aller('discussions'); $('#d-cherche')?.focus() }
 }
 
+// The network sub-tabs. The crowd ones (feed, communities) only show when switched on (foule.js).
+function dessinerSous() {
+  const sb = $('#sousbar')
+  if (!sb) return
+  sb.innerHTML = SOUS.filter(([k]) => foule() || !FOULE_VUES.includes(k))
+    .map(([k, t]) => `<button class="sous-onglet" data-v="${k}">${t}</button>`).join('')
+  $$('#sousbar .sous-onglet').forEach((b) => b.onclick = () => aller(b.dataset.v, true))
+}
+
 let VUE = 'chat'
 const GROUPE = (v) => ['fil', 'recherche', 'commus', 'profil', 'encyclo'].includes(v) ? 'reseau' : v
 export function aller(v, moi = false) {      // moi: the profile sub-tab, always your own page
-  if (v === 'reseau') v = 'fil'          // the network entry lands on the feed
+  if (v === 'reseau') v = foule() ? 'fil' : 'profil'   // the network lands on the feed, or on your page while the crowd is paused
+  v = vueVisible(v)
   VUE = v
   const g = GROUPE(v), dansReseau = g === 'reseau'
   $$('#rail .onglet').forEach((b) => b.classList.toggle('on', b.dataset.v === g))
@@ -112,7 +125,7 @@ export function aller(v, moi = false) {      // moi: the profile sub-tab, always
   $('main').classList.toggle('sous', dansReseau)
   $('#sousbar').style.display = dansReseau ? 'flex' : 'none'
   $$('.vue').forEach((s) => s.classList.toggle('on', s.id === 'v-' + v))
-  ;({ chat: vueChat, fil: () => vueFil(H), profil: () => vueProfil(H, moi ? '' : undefined), notifs: () => vueNotifs(H), commus: () => vueCommus(H), recherche: () => vueRecherche(H), discussions: vueDiscussions, amis: vueAmis, vibe: vueVibe, encyclo: vueEncyclo, reglages: vueReglages })[v]()
+  ;({ chat: vueChat, fil: () => vueFil(H), profil: () => vueProfil(H, moi ? '' : undefined), notifs: () => vueNotifs(H), commus: () => vueCommus(H), recherche: () => vueRecherche(H), discussions: vueDiscussions, amis: vueAmis, projets: () => vueProjets(H), vibe: vueVibe, encyclo: vueEncyclo, reglages: vueReglages })[v]()
 }
 
 export { feuille, fermerFeuille, qr }
@@ -718,17 +731,64 @@ async function vueDiscussions() {
     let h = '', i = 0
     if (AGENT_FILTRE || q) h = `<div class="liste">${L.map((c) => ligne(c, i++)).join('')}</div>`
     else {
-      for (const f of D.folders) { const L2 = L.filter((c) => c.folder === f.id); h += `<div class="section">▸ ${esc(f.name)} · ${L2.length}<span class="ligne"></span></div><div class="liste">${L2.map((c) => ligne(c, i++)).join('')}</div>` }
+      // each folder, and each group of loose conversations, is a place to drop a conversation on
+      for (const f of D.folders) { const L2 = L.filter((c) => c.folder === f.id); h += `<div class="d-zone" data-drop="${esc(f.id)}" data-nom="${esc(f.name)}"><div class="section">▸ ${esc(f.name)} · ${L2.length}<span class="ligne"></span></div><div class="liste">${L2.map((c) => ligne(c, i++)).join('') || '<div class="vide d-vide">Drop a conversation here.</div>'}</div></div>` }
       const par = {}; L.filter((c) => !c.folder).forEach((c) => (par[c.brain_name] = par[c.brain_name] || []).push(c))
-      for (const [n, L2] of Object.entries(par)) h += `<div class="section">${pastilleAgent(n, L2[0].model_label)} ${esc(n)} · ${L2.length}<span class="ligne"></span></div><div class="liste">${L2.map((c) => ligne(c, i++)).join('')}</div>`
+      for (const [n, L2] of Object.entries(par)) h += `<div class="d-zone" data-drop="" data-nom=""><div class="section">${pastilleAgent(n, L2[0].model_label)} ${esc(n)} · ${L2.length}<span class="ligne"></span></div><div class="liste">${L2.map((c) => ligne(c, i++)).join('')}</div></div>`
     }
-    $('#d-liste').innerHTML = (L.length ? h : '') || '<div class="vide">No conversation here.</div>'
-    $$('#d-liste .item').forEach((el) => el.onclick = () => ouvrirDiscussion(el.dataset.id, D))
+    const defile = $('#v-discussions .defile'), haut = defile ? defile.scrollTop : 0     // stay where you were
+    $('#d-liste').innerHTML = ((L.length || D.folders.length) ? h : '') || '<div class="vide">No conversation here.</div>'
+    if (defile) defile.scrollTop = haut
+    $$('#d-liste .item[data-id]').forEach((el) => {
+      el.onclick = () => { if (APRES_GLISSE) { APRES_GLISSE = false; return } ouvrirDiscussion(el.dataset.id, D) }
+      el.oncontextmenu = (e) => e.preventDefault()          // the right button drags here, it opens no menu
+      el.onpointerdown = (e) => { if (e.pointerType === 'mouse' && (e.button === 0 || e.button === 2)) GLISSE = { id: el.dataset.id, x: e.clientX, y: e.clientY, titre: $('.t', el).textContent, actif: false } }
+    })
   }
+  installerGlisser()
   $$('#d-agents [data-a]').forEach((b) => b.onclick = () => { AGENT_FILTRE = b.dataset.a; $$('#d-agents [data-a]').forEach((x) => x.classList.toggle('vert', x === b)); rendre() })
   $('#d-cherche').oninput = rendre; rendre()
+  DISC = { D, rendre }        // a drop moves the conversation in place, no reload (installerGlisser)
   $('#d-dossier').onclick = () => { const f = feuille(`<h3>new folder</h3><input class="champ" id="f-nom" placeholder="name"><div class="boutons"><button class="bouton plein" id="f-ok">Create</button></div>`)
     $('#f-ok', f).onclick = async () => { if ($('#f-nom', f).value.trim()) { await H.convs.createFolder($('#f-nom', f).value); fermerFeuille(); vueDiscussions() } } }
+}
+// Hold a conversation with the mouse (left or right button), drag it onto a folder, let go.
+// A plain click still opens it; on a phone the finger scrolls, so dragging is mouse only.
+let GLISSE = null, APRES_GLISSE = false, GLISSE_PRET = false, DISC = null
+function installerGlisser() {
+  if (GLISSE_PRET) return
+  GLISSE_PRET = true
+  const zoneSous = (x, y) => { const el = document.elementFromPoint(x, y); return el && el.closest('#d-liste [data-drop]') }
+  const nettoyer = () => { $('.glisse-fantome')?.remove(); document.body.classList.remove('en-glisse'); $$('#d-liste .d-zone.cible').forEach((z) => z.classList.remove('cible')); GLISSE = null }
+  document.addEventListener('pointermove', (e) => {
+    if (!GLISSE) return
+    if (!GLISSE.actif) {
+      if (Math.hypot(e.clientX - GLISSE.x, e.clientY - GLISSE.y) < 6) return
+      GLISSE.actif = true
+      window.getSelection()?.removeAllRanges()           // grabbing a conversation never selects its text
+      const g = document.createElement('div'); g.className = 'glisse-fantome'; g.textContent = GLISSE.titre; document.body.appendChild(g)
+      document.body.classList.add('en-glisse')
+    }
+    const g = $('.glisse-fantome'); if (g) { g.style.left = e.clientX + 14 + 'px'; g.style.top = e.clientY + 10 + 'px' }
+    const z = zoneSous(e.clientX, e.clientY)
+    $$('#d-liste .d-zone').forEach((x) => x.classList.toggle('cible', x === z))
+  })
+  document.addEventListener('pointerup', async (e) => {
+    if (!GLISSE) return
+    const { id, actif } = GLISSE, z = actif ? zoneSous(e.clientX, e.clientY) : null
+    nettoyer()
+    if (!actif) return
+    APRES_GLISSE = true; setTimeout(() => { APRES_GLISSE = false }, 0)   // the drag ends with a click: not an open
+    if (!z || !DISC) return
+    const c = DISC.D.conversations.find((x) => x.id === id); if (!c) return
+    const avant = c.folder || null, apres = z.dataset.drop || null
+    if (avant === apres) return
+    c.folder = apres; DISC.rendre()                      // moved on screen at once, in place
+    const ok = await H.convs.move(id, apres).catch(() => false)
+    if (ok === false) { c.folder = avant; DISC.rendre(); return toast('Not moved.') }
+    toast(apres ? 'Moved to ' + z.dataset.nom + '.' : 'Out of the folder.')
+  })
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && GLISSE) nettoyer() })
 }
 async function ouvrirDiscussion(id, D) {
   const c = D.conversations.find((x) => x.id === id)
@@ -1000,6 +1060,8 @@ async function vueReglages() {
       <div class="reglage">${tete()}<div class="l"><div>${esc(st.pseudo || '')}</div><div class="d" style="font-family:var(--mono)">${esc(st.at ? '@' + st.at : st.id || '')}</div></div></div>
       ${pc ? inter('r-stay', 'Stay signed in', 'No password at launch', st.stay) + inter('r-sync', 'Sync my devices', 'Sealed, on relays', st.sync) + inter('r-trouve', 'Findable by my ID', 'Friends can add you', st.findable !== false) : ''}
       <div class="boutons"><button class="bouton" id="r-lock">Lock</button>${pc ? '<button class="bouton" id="r-mdp">Password</button><button class="bouton" id="r-kit">Recovery kit</button>' : '<button class="bouton danger" id="r-sortir">Sign out</button>'}<button class="bouton" id="r-bloques">Blocked</button></div></div>
+    <div class="section">public network<span class="ligne"></span></div>
+    <div class="verre carte">${inter('r-foule', 'Public feed and communities', 'Early: the feed, communities, reposts and badges. Your page, messages and shares work either way.', foule())}</div>
     <div class="section">language<span class="ligne"></span></div>
     <div class="verre carte"><select class="champ" id="r-langue">${LANGUES.map(([c, n]) => `<option value="${c}"${c === langue() ? ' selected' : ''}>${n}</option>`).join('')}</select></div>
     <div class="section">background<span class="ligne"></span></div>
@@ -1009,6 +1071,7 @@ async function vueReglages() {
     <div class="d" style="color:var(--encre-4);font-size:12px;text-align:center;margin:34px 0 0">root-harness · AGPL-3.0 · <a href="https://github.com/redjohn-sudo/root-harness" target="_blank" rel="noopener">source</a></div></div></div>`
   $('#r-langue').onchange = (e) => { appliquer(e.target.value); vueReglages() }
   $('#r-bloques').onclick = () => feuilleBloques(H)
+  $('#r-foule').onclick = () => { reglerFoule(!foule()); dessinerSous(); vueReglages() }
   $('#r-stay') && ($('#r-stay').onclick = async () => { await H.account.setStay(!st.stay); vueReglages() })
   $('#r-sync') && ($('#r-sync').onclick = async () => { await H.account.setSync(!st.sync); vueReglages() })
   $('#r-trouve') && ($('#r-trouve').onclick = async () => { await H.account.setFindable(st.findable === false); vueReglages() })
@@ -1055,6 +1118,7 @@ export async function lancer(host) {
     else if (e.type === 'network_posted') { if (VUE === 'fil') vueFil(H) }
     else if (e.type === 'synced') { if (e.changed) { fond(); if (VUE === 'discussions') vueDiscussions() } }
     else if (e.type === 'computer') { if (VUE === 'chat') rafraichirCerveau() }
+    else if (e.type === 'projects_changed' || e.type === 'project_event' || e.type === 'project_task_done' || e.type === 'project_send_failed') evenementProjet(H, e)
     else montrer(e, false)
   })
   if (await porte()) await demarrer()

@@ -69,6 +69,49 @@ def status() -> dict:
     return {"ready": True, "runner": r}
 
 
+def set_github_key(name: str = "RH_GITHUB_TOKEN") -> dict:
+    """Give the workshop your GitHub sign-in, in one click. The key goes from
+    `gh` straight into `gh` (a pipe between the two): root-harness never reads
+    it, and GitHub stores it encrypted."""
+    r = runner()
+    src = system.popen(system.cmd("gh", "auth", "token"), stdin=subprocess.DEVNULL, stdout=subprocess.PIPE)
+    try:
+        out = system.run(system.cmd("gh", "secret", "set", name, "-R", r), stdin=src.stdout,
+                         capture_output=True, text=True, timeout=40)
+    finally:
+        src.stdout.close()
+        src.wait(timeout=15)
+    if src.returncode != 0 or out.returncode != 0:
+        raise RuntimeError((out.stderr or out.stdout or "gh auth token failed").strip()[:300])
+    return status()
+
+
+def claude_key_script(r: str) -> str:
+    """What the terminal window runs for the Claude key: the official sign-in,
+    then gh asks for the key. You paste it to gh yourself."""
+    claude, gh = system.which("claude") or "claude", system.which("gh") or "gh"
+    if system.windows():
+        return (f'Write-Host "root-harness: connecting your Claude plan to {r}"\n'
+                f'Write-Host "1/2  Sign in. At the end Claude shows a long key: copy it."\n'
+                f'& "{claude}" setup-token\n'
+                f'Write-Host ""\nWrite-Host "2/2  Paste the key here, then Enter (it stays hidden)."\n'
+                f'& "{gh}" secret set CLAUDE_CODE_OAUTH_TOKEN -R {r}\n'
+                f'if ($LASTEXITCODE -eq 0) {{ Write-Host "Done. Close this window and go back to root-harness." }}\n')
+    return (f'echo "root-harness: connecting your Claude plan to {r}"\n'
+            f'echo "1/2  Sign in. At the end Claude shows a long key: copy it."\n'
+            f'"{claude}" setup-token\n'
+            f'echo; echo "2/2  Paste the key here, then Enter (it stays hidden)."\n'
+            f'"{gh}" secret set CLAUDE_CODE_OAUTH_TOKEN -R {r} && echo "Done. Close this window and go back to root-harness."\n')
+
+
+def open_claude_key() -> dict:
+    """Open the terminal window where you add the Claude key yourself."""
+    r = runner()
+    if not system.which("claude"):
+        return {"opened": False, "why": "Claude Code is not installed on this computer."}
+    return {"opened": system.open_terminal(claude_key_script(r), "root-harness-claude-key")}
+
+
 def create() -> dict:
     """Make the private workshop repository and put the workflow in it."""
     r = runner()

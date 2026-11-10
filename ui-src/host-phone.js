@@ -126,6 +126,17 @@ function appliquer(op) {
 }
 async function annoncer(op) { await publier(sceller([['rh-op', '1']], JSON.stringify(op), me, 30 * 86400)); appliquer(op) }
 
+// a group project message (rootharness/projects.py) is JSON: shown as one readable line here
+const RESUME_PROJET = { roster: 'shared their agents', task: 'project: a new task', accept: 'accepted a task', refuse: 'refused a task',
+  result: 'sent a task result', synthesis: 'closed the project', dissent: 'disagreed with the project' }
+function resumeProjet(contenu) {
+  try {
+    const p = JSON.parse(contenu); if (!p || p.rh_project !== 1) return null
+    if (p.kind === 'project') return 'project: ' + String(p.title || '').slice(0, 80)
+    if (p.kind === 'plan') { const n = (p.tasks || []).length; return 'project plan: ' + n + ' task' + (n === 1 ? '' : 's') }
+    return RESUME_PROJET[p.kind] || null
+  } catch { return null }
+}
 function recevoir(ev) {
   if (vus.has(ev.id)) return; vus.add(ev.id)
   const o = ouvrir(ev); if (!o) return
@@ -136,6 +147,9 @@ function recevoir(ev) {
   if (has('rh-remote')) { if (sender === me) try { duOrdinateur(JSON.parse(rumor.content)) } catch {} return }
   const membres = new Set([...tags.filter((t) => t[0] === 'p').map((t) => t[1]), sender, me])
   const cid = canalId(membres)
+  // a project message from someone you never added, or not a project message: dropped, no group created
+  const projet = has('rh-project') ? resumeProjet(rumor.content) : null
+  if (has('rh-project') && (!projet || !AMIS.channels[cid] || AMIS.channels[cid].request)) return
   if (val('rh-name') && sender !== me) AMIS.pseudos[sender] = val('rh-name').slice(0, 32)
   if (!AMIS.channels[cid]) {
     const autres = [...membres].filter((m) => m !== me).sort()
@@ -143,6 +157,7 @@ function recevoir(ev) {
   }
   let m = { rid: val('rh-id') || ev.id, from: sender, text: rumor.content, at: rumor.created_at }
   if (has('rh-share')) try { const s = partageSur(JSON.parse(rumor.content)); m = { ...m, text: 'shared: ' + s.title, share: s } } catch {}
+  else if (projet) m = { ...m, text: projet }
   if (ajouterMessage(cid, m)) { if (sender !== me) AMIS.channels[cid].unread++; garderAmis(); ecoute({ type: 'channel_message', channel: cid, message: vue(m) }) }
 }
 async function envoyerCanal(cid, content, extra = []) {

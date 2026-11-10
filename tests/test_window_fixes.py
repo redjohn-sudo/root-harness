@@ -453,6 +453,63 @@ class Share(unittest.TestCase):
         self.assertEqual(len(channels._load()["channels"][cid]["name"]), 60)
 
 
+class ProjectWire(unittest.TestCase):
+    """A group project message: kept only if it is one, of a sane size, from someone you added."""
+    FRIEND = "c" * 64
+
+    def _receive(self, content, contacts=True, extra_tags=()):
+        from rootharness import projects
+        channels.STATE.unlink(missing_ok=True)
+        if contacts:
+            s = channels._load()
+            s["contacts"][self.FRIEND] = {"name": "friend"}
+            channels._save(s)
+        ch = object.__new__(channels.Channels)
+        ch.lock, ch.me, ch.on_remote, emitted = threading.Lock(), ME, None, []
+        ch.on_event = emitted.append
+        ch._name = lambda h, s=None: "friend"
+        rumor = types.SimpleNamespace(kind=lambda: V(14), content=lambda: content, created_at=lambda: V(100),
+                                      tags=lambda: [Tag("rh-project", "1"), Tag("rh-id", "r-" + os.urandom(4).hex()), *extra_tags])
+        gift = types.SimpleNamespace(rumor=lambda: rumor, sender=lambda: V(self.FRIEND))
+
+        async def unwrap(keys, ev):
+            return gift
+        with mock.patch.object(channels, "_n", return_value=types.SimpleNamespace(UnwrappedGift=types.SimpleNamespace(from_gift_wrap=unwrap))):
+            ch.keys = None
+            asyncio.run(ch._receive(Event("w-" + os.urandom(4).hex())))
+        return emitted, projects
+
+    def test_a_project_message_from_a_friend_arrives_typed(self):
+        from rootharness import projects
+        m = projects.message("project", "p1", title="Landing page", lead={"member": self.FRIEND}, members=[self.FRIEND, ME])
+        emitted, _ = self._receive(json.dumps(m))
+        kinds = [e["type"] for e in emitted]
+        self.assertEqual(kinds, ["channel_message", "project_message"])
+        self.assertEqual(emitted[0]["message"]["text"], "project: Landing page")   # readable, not raw JSON
+        self.assertEqual(emitted[1]["project"]["id"], m["id"])
+        self.assertEqual(emitted[1]["sender"], self.FRIEND)
+
+    def test_from_a_stranger_it_is_dropped(self):
+        from rootharness import projects
+        m = projects.message("project", "p1", title="Spam", lead={"member": self.FRIEND}, members=[self.FRIEND])
+        emitted, _ = self._receive(json.dumps(m), contacts=False)
+        self.assertEqual(emitted, [])
+        self.assertEqual(channels._load()["channels"], {})                          # no channel created either
+
+    def test_junk_or_oversized_is_dropped(self):
+        from rootharness import projects
+        for junk in ("not json", json.dumps({"rh_project": 1, "kind": "boom", "id": "x", "project": "p"}),
+                     json.dumps(projects.message("dissent", "p1", text="é" * 20000))):   # 40 KB in bytes
+            emitted, _ = self._receive(junk)
+            self.assertEqual(emitted, [], junk[:40])
+
+    def test_a_project_message_is_never_mistaken_for_a_share(self):
+        from rootharness import projects
+        m = projects.message("roster", "p1", agents=[])
+        emitted, _ = self._receive(json.dumps(m))
+        self.assertNotIn("share", emitted[0]["message"])
+
+
 # -- someone else's profile: pictures are web links or pasted images, nothing else ------------------
 
 class RemoteProfile(unittest.TestCase):

@@ -41,6 +41,19 @@ const host = {
     send: (c, t) => api().channel_send(c, t), share: (c, p) => api().channel_share(c, p),
     addContact: (n, m) => api().channel_add_contact(n, m), createGroup: (n, m) => api().channel_create(n, m),
   },
+  // group projects (rootharness/projects.py): every send below is your click
+  projects: {
+    list: () => api().projects_list(),
+    create: (c, t, g, l, a) => api().project_create(c, t, g || '', l || '', a || ''),
+    shareAgents: (c, p) => api().project_share_agents(c, p),
+    draft: (c, p, h) => api().project_plan_draft(c, p, h || ''),
+    sendPlan: (c, p, ts) => api().project_send_plan(c, p, ts),
+    answer: (c, p, t, ok, r) => api().project_answer(c, p, t, ok, r || ''),
+    run: (c, p, t) => api().project_run_task(c, p, t),
+    sendResult: (c, p, t, x, ok) => api().project_send_result(c, p, t, x, ok !== false),
+    close: (c, p, x) => api().project_close(c, p, x),
+    dissent: (c, p, x) => api().project_dissent(c, p, x),
+  },
   instinct: {
     available: () => api().instinct_available(), history: (n) => api().instinct_history(n || 40),
     since: (id) => api().instinct_since(id || 0), send: (t) => api().instinct_send(t),
@@ -90,6 +103,11 @@ const host = {
     el.querySelector('#r-ghtel').onclick = async () => { const x = await api().vibe_phone_token(!t.on); if (x && x.error) toast(x.error); host.reglagesEnPlus(el, { feuille, fermerFeuille, toast, esc }) }
     const c = el.querySelector('#r-creer'); if (c) c.onclick = async () => { c.textContent = 'Creating...'; const x = await api().vibe_create(); if (x.error) toast(x.error); host.reglagesEnPlus(el, { feuille, fermerFeuille, toast, esc }) }
     const re = el.querySelector('#r-revoir'); if (re) re.onclick = () => host.reglagesEnPlus(el, { feuille, fermerFeuille, toast, esc })
+    const again = () => host.reglagesEnPlus(el, { feuille, fermerFeuille, toast, esc })
+    const kg = el.querySelector('#r-cle-gh'); if (kg) kg.onclick = async () => { kg.textContent = 'Connecting...'; const x = await api().vibe_github_key(); if (x && x.error) toast(x.error); again() }
+    const kc = el.querySelector('#r-cle-claude'); if (kc) kc.onclick = async () => { const x = await api().vibe_claude_key()
+      if (x && x.opened) { kc.textContent = 'Waiting for you...'; const t = setInterval(async () => { if (!document.body.contains(kc)) return clearInterval(t); const s = await api().vibe_status(); if (s.ready || (s.missing && !s.missing.includes('CLAUDE_CODE_OAUTH_TOKEN'))) { clearInterval(t); again() } }, 5000) }
+      else el.querySelector('#r-cle-aide').innerHTML = `<div class="l d">${esc((x && (x.why || x.error)) || 'No terminal window could be opened here.')} In a terminal:</div><pre class="code">${esc(v.commands.CLAUDE_CODE_OAUTH_TOKEN)}</pre>` }
     const go = el.querySelector('#r-go'); if (go) go.onclick = () => aller('vibe')
   },
 }
@@ -112,8 +130,11 @@ async function relierTelephone() {
 function vibeEtat(v, esc) {
   if (v.ready) return `<div class="reglage"><div class="l">Ready<div class="d">Your workshop: ${esc(v.runner)}. Claude can work in any of your repositories.</div></div></div><div class="boutons"><button class="bouton vert" id="r-go">Vibe code</button></div>`
   if (v.step === 'create') return `<div class="reglage"><div class="l">${esc(v.why)}<div class="d">A private repository, ${esc(v.runner)}, where your ideas wait for Claude.</div></div></div><div class="boutons"><button class="bouton vert" id="r-creer">Create my workshop</button></div>`
-  if (v.step === 'secrets') return `<div class="l">${esc(v.why)} In a terminal (root-harness never sees them):</div>
-    ${v.missing.map((m) => `<pre class="code">${esc(v.commands[m])}</pre>`).join('')}<div class="boutons"><button class="bouton" id="r-revoir">Check again</button></div>`
+  if (v.step === 'secrets') { const gh = v.missing.includes('RH_GITHUB_TOKEN'), cl = v.missing.includes('CLAUDE_CODE_OAUTH_TOKEN')
+    return `<div class="l">${esc(v.why)}</div>
+    <div class="reglage"><div class="l">Your GitHub<div class="d">${gh ? 'One click. The key goes from GitHub to GitHub: root-harness never reads it.' : 'Connected.'}</div></div>${gh ? '<button class="bouton vert" id="r-cle-gh">Connect</button>' : '<span class="badge">ok</span>'}</div>
+    <div class="reglage"><div class="l">Your Claude plan<div class="d">${cl ? 'A window opens: sign in, copy the key Claude shows, paste it there.' : 'Connected.'}</div></div>${cl ? '<button class="bouton vert" id="r-cle-claude">Open the sign-in</button>' : '<span class="badge">ok</span>'}</div>
+    <div id="r-cle-aide"></div><div class="boutons"><button class="bouton" id="r-revoir">Check again</button></div>` }
   return `<div class="l">${esc(v.why || v.error || 'Unavailable')}</div><div class="boutons"><button class="bouton" id="r-revoir">Check again</button></div>`
 }
 

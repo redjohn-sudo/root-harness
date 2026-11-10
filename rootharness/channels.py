@@ -36,7 +36,7 @@ from datetime import timedelta
 from pathlib import Path
 from typing import Callable
 
-from . import system
+from . import projects, system
 
 HOME = Path(os.environ.get("ROOT_HARNESS_HOME") or Path.home() / ".root-harness")
 STATE = HOME / "channels.json"
@@ -260,6 +260,11 @@ class Channels:
                 if share is None:
                     return              # says it is a shared conversation, is not one: dropped
                 msg = {**msg, "text": "shared: " + share["title"], "share": share}
+            elif any(t.kind() == "rh-project" for t in tags):
+                project = projects.from_wire(rumor.content())
+                if project is None or ch.get("request"):
+                    return              # not a project message, or from someone you never added: dropped
+                msg = {**msg, "text": projects.summary(project), "project": project}
             new = _append(cid, msg)       # our own copy comes back too: shown once
             if new:
                 ch["last"] = max(ch["last"], at)
@@ -268,6 +273,9 @@ class Channels:
             _save(s)
         if new:
             self.on_event({"type": "channel_message", "channel": cid, "message": self._view(msg)})
+            if "project" in msg:
+                self.on_event({"type": "project_message", "channel": cid, "sender": sender,
+                               "members": sorted(members), "project": msg["project"]})
 
     # -- what the window calls --------------------------------------------------
 
@@ -364,7 +372,7 @@ class Channels:
                 _save(s)
         return True
 
-    def send(self, cid: str, text: str, share: dict | None = None) -> dict | None:
+    def send(self, cid: str, text: str, share: dict | None = None, project: dict | None = None) -> dict | None:
         """Seal the message once per member (and once for you, for your other
         devices), then hand the sealed copies to the relays."""
         if not text.strip() or not self.ready():
@@ -377,6 +385,8 @@ class Channels:
         msg = {"rid": rid, "from": self.me, "text": text, "at": int(time.time())}
         if share:
             msg = {**msg, "text": "shared: " + share["title"], "share": share}
+        elif project:
+            msg = {**msg, "text": projects.summary(project), "project": project}
         with self.lock:
             _append(cid, msg)
             s = _load()
@@ -384,12 +394,12 @@ class Channels:
             s["channels"][cid]["request"] = False
             _save(s)
         try:
-            ok = self._do(self._seal_and_send(ch, text, rid, bool(share)), 60)
+            ok = self._do(self._seal_and_send(ch, text, rid, bool(share), bool(project)), 60)
         except Exception:
             ok = 0
         return {**self._view(msg), "relays_ok": ok}
 
-    async def _seal_and_send(self, ch: dict, text: str, rid: str, share: bool = False) -> int:
+    async def _seal_and_send(self, ch: dict, text: str, rid: str, share: bool = False, project: bool = False) -> int:
         n = _n()
         everyone = ch["members"] + [self.me]
         best = 0
@@ -397,6 +407,8 @@ class Channels:
             tags = [n.Tag.custom("rh-id", [rid])]
             if share:
                 tags.append(n.Tag.custom("rh-share", ["1"]))
+            elif project:
+                tags.append(n.Tag.custom("rh-project", ["1"]))
             if self.pseudo:
                 tags.append(n.Tag.custom("rh-name", [self.pseudo]))
             if ch["name"]:
@@ -450,6 +462,14 @@ class Channels:
         while len(json.dumps(payload, ensure_ascii=False)) > 40000 and payload["events"]:
             payload["events"].pop(0)                     # a sealed message holds ~64 KB: keep the latest
         return self.send(cid, json.dumps(payload, ensure_ascii=False), share=payload)
+
+    def send_project(self, cid: str, message: dict) -> dict | None:
+        """A project message for the group (projects.py). Only ever called from a
+        click: an agent never sends in a channel by itself."""
+        text = projects.to_wire(message)
+        if text is None:
+            return None
+        return self.send(cid, text, project=message)
 
     def send_self(self, payload: dict) -> int:
         """A sealed message to yourself (your phone reads it), gone after a day."""

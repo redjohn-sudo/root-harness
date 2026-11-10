@@ -654,3 +654,25 @@ html.opaque{--verre:rgba(20,22,33,.92);--verre-fort:rgba(17,19,29,.96)}
 .touches kbd{font:12.5px/1.4 var(--police);padding:2px 8px;border-radius:7px;border:1px solid var(--trait-fort);border-bottom-width:2px;background:rgba(255,255,255,.06);color:var(--encre-2);white-space:nowrap}
 /* a picture held over the chat: the composer shows where it lands */
 .composer .boite.depot{border-color:rgba(111,212,182,.7);box-shadow:0 18px 50px rgba(0,0,0,.35),0 0 0 4px rgba(111,212,182,.16)}
+
+/* group projects (projets.js) */
+.pj-but{margin:4px 0 2px}
+.pj-agents{line-height:1.7;white-space:normal}
+.pj-journal{max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding-right:4px}
+.pj-journal .m{white-space:normal;line-height:1.45}
+.item.pj-t .badge.pj-proposed{color:var(--vert-clair);border-color:var(--vert-clair)}
+.item.pj-p .barre{margin-top:8px}
+
+/* drag a conversation onto a folder (vueDiscussions) */
+.d-zone{border-radius:14px;transition:background .15s,outline-color .15s;outline:1px dashed transparent;outline-offset:2px}
+.d-zone.cible{outline-color:var(--vert-clair);background:rgba(111,212,182,.07)}
+.d-vide{font-size:12.5px;padding:8px 4px}
+.glisse-fantome{position:fixed;z-index:9999;pointer-events:none;max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  padding:6px 12px;border-radius:999px;background:rgba(17,19,28,.92);border:1px solid var(--vert-clair);color:var(--encre);font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+body.en-glisse,body.en-glisse *{cursor:grabbing!important;user-select:none!important}
+#d-liste,#d-liste *{-webkit-user-select:none;user-select:none}
+
+/* no text selection in the interface itself: it feels like an app, and drags never select.
+   Kept where you read or copy: messages, code, what you type. */
+body{-webkit-user-select:none;user-select:none}
+.msg,.bulle,.corps,.ptx,.n-cite,.n-post,.p-bio,.mots,.mon-id,.tr-d,code,pre,input,textarea,[contenteditable]{-webkit-user-select:text;user-select:text}

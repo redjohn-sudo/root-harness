@@ -2,37 +2,32 @@
 
 # root-harness
 
-**root-harness, powered by Claude.** One simple place for all your AI agents,
-the same on your computer and on your phone. Talk to them, let them work, vibe code on GitHub from anywhere, and share
-what they did with your friends, sealed end to end.
+**root-harness, powered by Claude.** All your AI agents in one window, the same
+on your computer and on your phone, and a sealed way to hand a conversation to a
+friend so their own agent continues it.
 
 Free and open source (AGPL-3.0). No server of ours: your account, your memory
 and your messages live on your devices, and travel sealed.
 
-## What you can do
+## What it does
 
-- **Work with your agents.** Claude Agent (it runs the Claude Code installed on
-  your computer, signed in with your own account), Codex, DeepSeek, Kimi, GLM,
-  Ollama... Every model, effort and slash
-  command; permission cards before anything risky; images; Esc to stop.
-- **Vibe code from your phone, computer off.** Have an idea outside? Pick any of
-  your GitHub repositories (or a new one), describe it: Claude Agent builds it on
-  GitHub's machines with your plan and opens a pull request you review.
-- **Friends and groups.** Add friends with their ID, make groups, talk,
-  sealed end to end (relays see neither the text nor who talks to whom).
-- **Share your agents' work.** Send a conversation to a friend or a group; they
-  read it, or continue it with their own agent.
-- **One account, every device.** A pseudo and a password. Sign in on another
-  computer or your phone: your conversations, folders, friends, background and
-  keys come with you, sealed.
-- **The network.** A page anyone can see (your projects, hackathons, what is in
-  progress, "looking for a job"), a feed of what people build with their agents,
-  communities, replies, reposts, badges to earn and to pin. Your agent writes
-  the post about the work you just did; you decide, or let it post by itself.
-  Everything on the network is public and lives on the relays: no server of ours.
-- **Your @.** Take a name (`@yourname`): the first to claim it keeps it,
-  and nobody else can show it. Your `pseudo#code` ID still works everywhere.
-- **Seven languages.** Deutsch, English, 中文, Español, Français, 日本語, Português.
+- **Every agent, one place.** Claude Agent (the Claude Code installed on your
+  computer, signed in with your own account), Codex, DeepSeek, Kimi, GLM,
+  Ollama. Every model, effort and slash command; a permission card before
+  anything risky; every step kept in the conversation, to read back or continue.
+- **The same on your phone.** One account, a pseudo and a password. Your
+  conversations, folders, friends and keys follow you, sealed. With your
+  computer on, the phone drives its agents.
+- **Share with a friend, sealed.** Add a friend with their ID, make a group, send
+  a conversation: they read it, or continue it with their own agent. Relays see
+  neither the text nor who talks to whom.
+- **Vibe code with your computer off (beta).** From your phone, pick one of your
+  GitHub repositories and describe an idea: Claude Code builds it on GitHub's
+  machines with your plan and opens a pull request you review.
+
+Also in the box, off by default until there are people to use it with: a public
+page for your `@name`, and a public network (posts, communities, badges) on
+Nostr relays. Turn it on in Settings, *public network*. Seven languages.
 
 ## Install
 
@@ -109,15 +104,15 @@ With your computer on, the phone drives its agents; computer off, the phone
 still has your friends, your memory and vibe code.
 
 **Vibe code:** Settings, *Vibe code*, *Create my workshop* (a private
-`root-harness-runner` repository), then add two keys yourself, once:
+`root-harness-runner` repository), then two buttons, once:
 
-```bash
-claude setup-token
-gh secret set CLAUDE_CODE_OAUTH_TOKEN -R <you>/root-harness-runner
-gh auth token | gh secret set RH_GITHUB_TOKEN -R <you>/root-harness-runner
-```
+- *Connect* your GitHub: one click. The key goes from `gh` straight into `gh`;
+  root-harness never reads it.
+- *Open the sign-in* for your Claude plan: a terminal window opens, you sign in
+  with the official `claude setup-token`, and paste the key it shows to `gh`
+  yourself. root-harness never handles your Claude sign-in.
 
-and turn on *GitHub on my phone* to vibe code from the phone.
+Then turn on *GitHub on my phone* to vibe code from the phone.
 
 ## How it is made
 
@@ -141,6 +136,10 @@ What you post on the network is public, signed with your key and kept by
 relays you do not control: it may stay even after you delete it. An @ goes to
 whoever claimed it first; with no central server, a claim's date is the one its
 author signed, so the `pseudo#code` ID remains the one nobody can copy.
+The GitHub key you give your vibe-code workshop can do what your `gh` sign-in can, in all your
+repositories, and Claude Code runs there with a shell: only point it at code you
+trust, or give the workshop a fine-grained token limited to the repositories you
+choose (`gh secret set RH_GITHUB_TOKEN`).
 Claude Code sessions stay on the computer that ran them. Vibe code is not live
 (a GitHub machine starts in about a minute) and uses your GitHub Actions minutes
 and your Claude plan.

@@ -320,6 +320,41 @@ def open_target(target: str) -> bool:
         return False
 
 
+# -- a terminal window the person types in ---------------------------------------------------
+
+def open_terminal(script: str, name: str = "root-harness") -> bool:
+    """Open a terminal window that runs `script` (sh on macOS and Linux,
+    PowerShell on Windows) and stays open. For the rare step a person must do
+    with their own hands: what they type there never passes through us."""
+    import tempfile
+    folder = Path(tempfile.mkdtemp(prefix="root-harness-"))
+    try:
+        if windows():
+            ps = _powershell()
+            if not ps:
+                return False
+            f = folder / f"{name}.ps1"
+            f.write_text(script, encoding="utf-8-sig")
+            subprocess.Popen([ps, "-NoLogo", "-NoExit", "-ExecutionPolicy", "Bypass", "-File", str(f)],
+                             creationflags=getattr(subprocess, "CREATE_NEW_CONSOLE", 0))
+            return True
+        f = folder / f"{name}.command"
+        f.write_text("#!/bin/sh\n" + script + "\n", encoding="utf-8")
+        f.chmod(0o700)
+        if mac():
+            return run(["/usr/bin/open", str(f)], stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL, timeout=15).returncode == 0
+        for term in (["x-terminal-emulator", "-e"], ["gnome-terminal", "--"], ["konsole", "-e"],
+                     ["xfce4-terminal", "-x"], ["kitty"], ["alacritty", "-e"], ["xterm", "-e"]):
+            exe = which(term[0])
+            if exe:
+                popen([exe, *term[1:], "/bin/sh", "-c", f'"{f}"; echo; echo "You can close this window."; read _'],
+                      stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL, start_new_session=True)
+                return True
+        return False
+    except (OSError, subprocess.SubprocessError):
+        return False
+
+
 # -- swapping a file in whole ---------------------------------------------------------------
 
 def replace(src, dst, tries: int = 20) -> None:

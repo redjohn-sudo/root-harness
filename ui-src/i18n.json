@@ -3774,14 +3774,6 @@
    "pt": "Nada ainda. Publique o que você constrói: quando curtirem, responderem ou te seguirem, aparece aqui.",
    "zh": "还没有通知。发布你的作品:有人点赞、回复或关注你时,会显示在这里。"
   },
-  "No post yet. In the feed, your agent can write the first one.": {
-   "de": "Noch kein Post. Im Feed kann dein Agent den ersten schreiben.",
-   "es": "Aún no hay publicaciones. En el feed, tu agente puede escribir la primera.",
-   "fr": "Pas encore de post. Dans le fil, ton agent peut écrire le premier.",
-   "ja": "まだ投稿がありません。フィードでエージェントに最初の投稿を書いてもらえます。",
-   "pt": "Nenhum post ainda. No feed, seu agente pode escrever o primeiro.",
-   "zh": "还没有帖子。在动态里,智能体可以帮你写第一条。"
-  },
   "No post yet.": {
    "de": "Noch kein Post.",
    "es": "Aún no hay publicaciones.",
@@ -4078,22 +4070,6 @@
    "pt": "Ele escreve a partir do trabalho, você decide.",
    "zh": "它根据工作内容撰写,由你决定。"
   },
-  "Posts it by itself": {
-   "de": "Postet von selbst",
-   "es": "La publica por sí solo",
-   "fr": "Le publie tout seul",
-   "ja": "自動で投稿",
-   "pt": "Publica sozinho",
-   "zh": "自动发布"
-  },
-  "Without asking. Off unless you turn it on.": {
-   "de": "Ohne zu fragen. Aus, bis du es einschaltest.",
-   "es": "Sin preguntar. Desactivado salvo que lo actives.",
-   "fr": "Sans demander. Désactivé tant que tu ne l'actives pas.",
-   "ja": "確認なしで投稿します。オンにしない限りオフです。",
-   "pt": "Sem perguntar. Desativado até você ativar.",
-   "zh": "无需询问。默认关闭,除非你开启。"
-  },
   "Save": {
    "de": "Speichern",
    "es": "Guardar",
@@ -4173,14 +4149,6 @@
    "ja": "Rootの顔に戻しました。",
    "pt": "De volta à cabeça do Root.",
    "zh": "已恢复为 Root 的头像。"
-  },
-  "Your agent will post about long tasks by itself.": {
-   "de": "Dein Agent postet selbst über lange Aufgaben.",
-   "es": "Tu agente publicará por sí solo sobre las tareas largas.",
-   "fr": "Ton agent postera tout seul sur les longues tâches.",
-   "ja": "長い作業について、エージェントが自動で投稿します。",
-   "pt": "Seu agente vai publicar sozinho sobre tarefas longas.",
-   "zh": "智能体会自动为长任务发帖。"
   },
   "Saving...": {
    "de": "Wird gespeichert...",
@@ -5469,6 +5437,46 @@
    "ja": "Enter",
    "pt": "Enter",
    "zh": "Enter"
+  },
+  "public network": {
+   "de": "öffentliches Netzwerk",
+   "es": "red pública",
+   "fr": "réseau public",
+   "ja": "公開ネットワーク",
+   "pt": "rede pública",
+   "zh": "公开网络"
+  },
+  "Public feed and communities": {
+   "de": "Öffentlicher Feed und Communities",
+   "es": "Feed público y comunidades",
+   "fr": "Fil public et communautés",
+   "ja": "公開フィードとコミュニティ",
+   "pt": "Feed público e comunidades",
+   "zh": "公开动态和社区"
+  },
+  "Early: the feed, communities, reposts and badges. Your page, messages and shares work either way.": {
+   "de": "Noch früh: Feed, Communities, Reposts und Abzeichen. Deine Seite, Nachrichten und Freigaben funktionieren so oder so.",
+   "es": "Aún en sus inicios: el feed, las comunidades, las republicaciones y las insignias. Tu página, tus mensajes y lo que compartes funcionan igual.",
+   "fr": "Encore jeune : le fil, les communautés, les republications et les badges. Ta page, tes messages et tes partages marchent dans tous les cas.",
+   "ja": "まだ初期段階です:フィード、コミュニティ、リポスト、バッジ。あなたのページ、メッセージ、共有はどちらでも使えます。",
+   "pt": "Ainda no início: o feed, as comunidades, os reposts e os selos. Sua página, mensagens e compartilhamentos funcionam de qualquer forma.",
+   "zh": "尚在早期:动态、社区、转发和徽章。你的主页、消息和分享在任何情况下都能使用。"
+  },
+  "It writes it from the work, you decide. Nothing is posted without your click.": {
+   "de": "Er schreibt ihn aus der Arbeit, du entscheidest. Ohne deinen Klick wird nichts gepostet.",
+   "es": "La escribe a partir del trabajo; tú decides. No se publica nada sin tu clic.",
+   "fr": "Il l'écrit à partir du travail, tu décides. Rien n'est publié sans ton clic.",
+   "ja": "作業内容から書き、投稿するかはあなたが決めます。あなたがクリックしない限り、何も投稿されません。",
+   "pt": "Ele escreve a partir do trabalho, você decide. Nada é publicado sem o seu clique.",
+   "zh": "它根据工作内容撰写,由你决定。没有你的点击,什么都不会发布。"
+  },
+  "No post yet. After a long task, your agent proposes one; you decide.": {
+   "de": "Noch kein Post. Nach einer langen Aufgabe schlägt dein Agent einen vor, du entscheidest.",
+   "es": "Aún no hay publicaciones. Tras una tarea larga, tu agente propone una; tú decides.",
+   "fr": "Pas encore de post. Après une longue tâche, ton agent en propose un, tu décides.",
+   "ja": "まだ投稿がありません。長い作業のあと、エージェントが投稿を提案し、あなたが決めます。",
+   "pt": "Nenhum post ainda. Depois de uma tarefa longa, seu agente sugere um; você decide.",
+   "zh": "还没有帖子。长任务结束后,智能体会提议一条,由你决定。"
   }
  },
  "patterns": [

@@ -6,6 +6,7 @@
 import { tete } from './root.js'
 import { esc, riche, feuille, fermerFeuille, toast, aller, copier } from './app.js'
 import { entree, zoomActuel } from './plateforme.js'
+import { foule } from './foule.js'
 
 const $ = (s, r = document) => r.querySelector(s)
 const $$ = (s, r = document) => [...r.querySelectorAll(s)]
@@ -165,7 +166,7 @@ function carte(p, i) {
       ${p.agent ? `<div class="pagent">${ico('etincelle')}written with ${esc(p.agent)}</div>` : ''}
       ${p.exemple ? '<div class="pagent" style="color:var(--ambre)">an example</div>' : ''}
       <div class="pact"><button data-a="rep" title="answer">${ico('repondre')}<span>${nb((p.counts || {}).replies) || ''}</span></button>
-        <button data-a="rt" class="${mine.repost ? 'on rt' : ''}" title="repost">${ico('republier')}<span>${nb((p.counts || {}).reposts) || ''}</span></button>
+        ${foule() ? `<button data-a="rt" class="${mine.repost ? 'on rt' : ''}" title="repost">${ico('republier')}<span>${nb((p.counts || {}).reposts) || ''}</span></button>` : ''}
         <button data-a="coeur" class="${mine.reaction ? 'on coeur' : ''}" title="like">${ico('coeur')}<span>${nb((p.counts || {}).reactions) || ''}</span></button>
         <button data-a="part" title="share">${ico('partage')}</button><button data-a="plus" title="more">${ico('points')}</button></div></div></article>`
 }
@@ -373,6 +374,7 @@ const TYPES = { progress: 'in progress', project: 'project', hackathon: 'hackath
 const travail = (work) => (Array.isArray(work) ? work : []).map((t, i) => `<div class="verre tr" style="--i:${i}">${lien(t.image) ? `<div class="tr-img" style="background-image:url('${esc(cssUrl(t.image))}')"></div>` : ''}<div class="tr-q${t.kind === 'progress' || t.live ? ' vivant' : ''}">${t.kind === 'progress' || t.live ? '<i></i>' : ''}${esc(TYPES[t.kind] || t.kind)}</div>
   <div class="tr-t">${lien(t.url) ? `<a href="${esc(t.url)}" target="_blank" rel="noopener">${esc(t.title)}</a>` : esc(t.title)}</div>${t.text ? `<div class="tr-d">${esc(t.text)}</div>` : ''}${t.when ? `<div class="tr-w">${esc(t.when)}</div>` : ''}</div>`).join('')
 function rendrePage(v, mur, H) {
+  if (!foule() && ONGLET_P === 'reposts') ONGLET_P = 'posts'   // reposts are paused with the crowd
   const p = mur.profile, mine = !!p.mine, badges = mur.badges || [], epingles = badges.filter((b) => b.pinned), montres = epingles.length ? epingles : badges.slice(0, 6)
   v.innerHTML = `<div class="defile" style="padding-top:0"><div class="colonne">
     <div class="couverture"${image(p.banner) ? ` style="background-image:url('${esc(cssUrl(image(p.banner)))}')${cadrage(p.banner_frame)}"` : ''}></div>
@@ -383,10 +385,10 @@ function rendrePage(v, mur, H) {
       ${p.school || p.role ? `<span class="etat">${esc([p.school, p.role].filter(Boolean).join(' · '))}</span>` : ''}${niveau(p.level, p.level_label)}</div>
     ${p.about ? `<div class="p-bio">${esc(p.about)}</div>` : ''}
     <div class="p-chiffres"><button class="p-lien" id="p-abonnes"><b>${nb((mur.followers || []).length)}</b> follower${nb((mur.followers || []).length) === 1 ? '' : 's'}</button><button class="p-lien" id="p-abonnements"><b>${nb((mur.following || []).length)}</b> following</button><span><b>${nb((mur.posts || []).length)}</b> post${nb((mur.posts || []).length) === 1 ? '' : 's'}</span></div>
-    <div class="p-badges" id="p-badges">${montres.map((b, i) => { const r = look(b); return `<span style="--i:${i}">${badge(r, true, 38)}<b class="pb-n">${esc(r.nom)}</b></span>` }).join('')}${mine || badges.length ? `<button class="bouton" id="p-tous">${mine ? 'all badges' : 'badges'}</button>` : ''}</div>
+    ${foule() ? `<div class="p-badges" id="p-badges">${montres.map((b, i) => { const r = look(b); return `<span style="--i:${i}">${badge(r, true, 38)}<b class="pb-n">${esc(r.nom)}</b></span>` }).join('')}${mine || badges.length ? `<button class="bouton" id="p-tous">${mine ? 'all badges' : 'badges'}</button>` : ''}</div>` : ''}
     <div class="section">${mine ? 'my work' : 'work'}${p.state === 'cherche' ? ' · available for work' : ''}<span class="ligne"></span></div>
     <div class="p-travail">${travail(p.work)}</div>${!(Array.isArray(p.work) && p.work.length) ? `<div class="vide">${mine ? 'Add what you build, your hackathons, what is in progress: Edit profile.' : 'Nothing shown yet.'}</div>` : ''}
-    <div class="p-onglets">${[['posts', 'Posts'], ['replies', 'Replies'], ['reposts', 'Reposts'], ['media', 'Photos & videos']].map(([k, t]) => `<button data-o="${k}" class="${k === ONGLET_P ? 'on' : ''}">${t}</button>`).join('')}</div>
+    <div class="p-onglets">${[['posts', 'Posts'], ['replies', 'Replies'], ['reposts', 'Reposts'], ['media', 'Photos & videos']].filter(([k]) => foule() || k !== 'reposts').map(([k, t]) => `<button data-o="${k}" class="${k === ONGLET_P ? 'on' : ''}">${t}</button>`).join('')}</div>
     <div id="p-liste"></div></div></div>`
   rendreListe(mur, H)
   // a tab only redraws its list: the page around it stays put
@@ -501,7 +503,7 @@ export function surveillerNotifs(H) {
 function rendreListe(mur, H) {
   const el = $('#p-liste'), mine = !!mur.profile.mine, L = mur[ONGLET_P] || []
   if (ONGLET_P === 'media' && L.length) el.innerHTML = `<div class="grille-media">${L.map((x) => `<div class="gm" data-id="${esc(x.id)}" style="background-image:url('${esc(cssUrl(lien(((x.media || [])[0] || {}).url)))}')"></div>`).join('')}</div>`
-  else el.innerHTML = L.map((x, i) => carte(x, i)).join('') || `<div class="vide">${{ posts: mine ? 'No post yet. In the feed, your agent can write the first one.' : 'No post yet.', replies: 'No reply yet.', reposts: 'Nothing reposted yet.', media: 'Posts with a photo or a video show here.' }[ONGLET_P]}</div>`
+  else el.innerHTML = L.map((x, i) => carte(x, i)).join('') || `<div class="vide">${{ posts: mine ? 'No post yet. After a long task, your agent proposes one; you decide.' : 'No post yet.', replies: 'No reply yet.', reposts: 'Nothing reposted yet.', media: 'Posts with a photo or a video show here.' }[ONGLET_P]}</div>`
   brancher(el, L, H, null)        // hearts and reposts toggle in place: no re-render, the scroll stays
   $$('.gm', el).forEach((g) => g.onclick = () => { const x = L.find((y) => y.id === g.dataset.id); if (x) ouvrirFil(x, H) })
 }
@@ -556,8 +558,7 @@ function editer(H, p) {
     <div class="section">my work<span class="ligne"></span></div><div id="e-work"></div>
     <div class="boutons"><button class="bouton" id="e-plus">+ a line</button><button class="bouton" id="e-suggere">${ico('etincelle')} from my agents</button></div>
     <div class="section">my agent and my posts<span class="ligne"></span></div>
-    <div class="reglage"><div class="l">Proposes a post after a long task<div class="d">It writes it from the work, you decide.</div></div><span class="inter" id="e-suggest"></span></div>
-    <div class="reglage"><div class="l">Posts it by itself<div class="d">Without asking. Off unless you turn it on.</div></div><span class="inter" id="e-auto"></span></div>
+    <div class="reglage"><div class="l">Proposes a post after a long task<div class="d">It writes it from the work, you decide. Nothing is posted without your click.</div></div><span class="inter" id="e-suggest"></span></div>
     <div class="err" id="e-err"></div><div class="boutons"><button class="bouton plein" id="e-ok">Save</button></div>`)
   const lignes = () => { $('#e-work', f).innerHTML = work.map((w, i) => `<div class="rangee" data-i="${i}" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px">
       <select class="champ petit" data-k="kind">${Object.entries(TYPES).map(([k, t]) => `<option value="${k}"${w.kind === k ? ' selected' : ''}>${t}</option>`).join('')}</select>
@@ -585,9 +586,8 @@ function editer(H, p) {
   $('#e-couv', f).onchange = async (e) => { const fi = e.target.files[0]; e.target.value = ''; if (!fi) return
     const r = await recadrer(fi, 'large'); if (!r) return; fCouv = r.file; cCouv = r.frame; toast('Cover ready: it is uploaded when you save.') }
   $('#e-sansphoto', f) && ($('#e-sansphoto', f).onclick = () => { photo = ''; fPhoto = null; cPhoto = null; toast('Back to Root\'s head.') })
-  H.network.posting().then((s) => { $('#e-suggest', f).classList.toggle('on', !!s.suggest); $('#e-auto', f).classList.toggle('on', !!s.auto)
-    $('#e-suggest', f).onclick = async () => { const r = await H.network.posting(!s.suggest, null); s.suggest = r.suggest; $('#e-suggest', f).classList.toggle('on', !!r.suggest) }
-    $('#e-auto', f).onclick = async () => { const r = await H.network.posting(null, !s.auto); s.auto = r.auto; $('#e-auto', f).classList.toggle('on', !!r.auto); if (r.auto) toast('Your agent will post about long tasks by itself.') } }).catch(() => {})
+  H.network.posting().then((s) => { $('#e-suggest', f).classList.toggle('on', !!s.suggest)
+    $('#e-suggest', f).onclick = async () => { const r = await H.network.posting(!s.suggest, null); s.suggest = r.suggest; $('#e-suggest', f).classList.toggle('on', !!r.suggest) } }).catch(() => {})
   $('#e-ok', f).onclick = async () => {
     const b = $('#e-ok', f); b.disabled = true; b.textContent = 'Saving...'
     try {
@@ -597,7 +597,7 @@ function editer(H, p) {
         about: $('#e-bio', f).value.trim(), picture: photo, banner: couv, picture_frame: cPhoto, banner_frame: cCouv, work: work.filter((w) => (w.title || '').trim()) })
       if (r && r.error) throw new Error(r.error)
       MOI = null; fermerFeuille(); toast('Profile published.'); vueProfil(H)
-      H.network.checkBadges().then((n) => { if (Array.isArray(n) && n.length) toast('New badge: ' + n.map((id) => (CATALOGUE.find((c) => c.id === id) || { nom: id }).nom).join(', ')) }).catch(() => {})
+      if (foule()) H.network.checkBadges().then((n) => { if (Array.isArray(n) && n.length) toast('New badge: ' + n.map((id) => (CATALOGUE.find((c) => c.id === id) || { nom: id }).nom).join(', ')) }).catch(() => {})
     } catch (e) { $('#e-err', f).textContent = e.message || 'Not saved.'; b.disabled = false; b.textContent = 'Save' }
   }
 }
